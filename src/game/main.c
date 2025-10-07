@@ -1,11 +1,11 @@
 #include "engine.h"
 
 int main() {
-  if (init() != 0) {
+  if (engine_init() != 0) {
     return -1;
   }
 
-  shutdown();
+  engine_shutdown();
 
   return 0;
 }

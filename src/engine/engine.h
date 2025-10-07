@@ -1,8 +1,8 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-int init();
+int engine_init();
 
-int shutdown();
+int engine_shutdown();
 
 #endif
