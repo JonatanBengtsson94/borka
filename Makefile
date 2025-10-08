@@ -8,6 +8,14 @@ ENGINE_SRC = $(shell find src/engine -name '*.c')
 GAME_SRC = src/game/main.c
 SRC = $(ENGINE_SRC) $(GAME_SRC)
 
+BUILD ?= debug
+
+ifeq ($(BUILD),debug)
+	CFLAGS += -DLOG_LEVEL_MIN=0 -g
+else ifeq ($(BUILD),release)
+	CFLAGS += -DLOG_LEVEL_MIN=2 -O2
+endif
+
 all: $(OUT)
 
 $(OUT) : $(SRC)
