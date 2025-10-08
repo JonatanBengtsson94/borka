@@ -10,7 +10,7 @@ typedef enum {
 } LogLevel;
 
 void logger_init(const char *filename);
-void logger_shutdown();
+void logger_shutdown(void);
 void logger_message(LogLevel level, const char *message);
 
 #endif

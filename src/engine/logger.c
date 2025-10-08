@@ -14,7 +14,7 @@ void logger_init(const char *filename) {
   }
 }
 
-void logger_shutdown() {
+void logger_shutdown(void) {
   if (log_file) {
     fclose(log_file);
     log_file = NULL;
