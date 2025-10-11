@@ -2,11 +2,28 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <time.h>
+
+#ifndef GAME_NAME
+#define GAME_NAME "defaultgame"
+#endif
+#ifdef __linux__
+#include <sys/types.h>
+#include <unistd.h>
+#define mkdir_p(path) mkdir(path, 0755)
+#define PATH_SEP '/'
+#else
+#error "Unsupported platform."
+#endif
 
 #define MAX_MESSAGE_LENGTH 512
 #define MESSAGE_QUEUE_SIZE 256
+#define MAX_LOG_SIZE (10 * 1024 * 1024)
+#define MAX_LOG_FILES 5
+#define MAX_LOG_FILE_PATH_SIZE 512
 
 typedef struct {
   LogLevel level;
@@ -28,8 +45,83 @@ typedef struct {
 static FILE *log_file = NULL;
 static const char *level_strings[] = {"DEBUG", "INFO", "WARN", "ERROR",
                                       "FATAL"};
+static char current_log_path[MAX_LOG_FILE_PATH_SIZE];
+static size_t bytes_written = 0;
 static pthread_t logger_thread;
 static MessageQueue msg_queue;
+
+// --- File handling ---
+
+static void get_log_dir(char *buffer, size_t size) {
+#ifdef __linux__
+  const char *home = getenv("HOME");
+  if (home) {
+    snprintf(buffer, size, "%s/.local/share/%s/logs", home, GAME_NAME);
+  } else {
+    snprintf(buffer, size, ".logs");
+  }
+#else
+#error "Unsupported platform"
+#endif
+}
+
+static int create_dir_r(const char *path) {
+  char tmp[MAX_LOG_FILE_PATH_SIZE];
+  char *p = NULL;
+  size_t len;
+
+  snprintf(tmp, sizeof(tmp), "%s", path);
+  len = strlen(tmp);
+
+  if (len > 0 && tmp[len - 1] == PATH_SEP) {
+    tmp[len - 1] = '\0';
+  }
+
+  for (p = tmp + 1; *p; p++) {
+    if (*p == PATH_SEP) {
+      *p = '\0';
+      mkdir_p(tmp);
+      *p = PATH_SEP;
+    }
+  }
+
+  return mkdir_p(tmp);
+}
+
+static void logger_rotate(void) {
+  if (!log_file)
+    return;
+
+  fclose(log_file);
+  log_file = NULL;
+
+  char old_path[MAX_LOG_FILE_PATH_SIZE];
+  snprintf(old_path, sizeof(old_path), "%s.%d", current_log_path,
+           MAX_LOG_FILES);
+  remove(old_path);
+
+  // Shift existing log files: game.log.N -> game.log.N+1
+  for (int i = MAX_LOG_FILES - 1; i >= 1; i--) {
+    char src[MAX_LOG_FILE_PATH_SIZE], dst[MAX_LOG_FILE_PATH_SIZE];
+    snprintf(src, sizeof(src), "%s.%d", current_log_path, i);
+    snprintf(dst, sizeof(dst), "%s.%d", current_log_path, i + 1);
+    rename(src, dst);
+  }
+
+  // Rename current log: game.log -> game.log.1
+  char backup[MAX_LOG_FILE_PATH_SIZE];
+  snprintf(backup, sizeof(backup), "%s.1", current_log_path);
+  rename(current_log_path, backup);
+
+  log_file = fopen(current_log_path, "w");
+  if (!log_file) {
+    fprintf(stderr, "Failed to reopen log file after rotation: %s\n",
+            current_log_path);
+  }
+  bytes_written = 0;
+}
+
+// --- Queue operations ---
 
 static void queue_init(MessageQueue *q) {
   q->head = 0;
@@ -89,6 +181,8 @@ static bool queue_pop(MessageQueue *q, LogMessage *msg) {
   return true;
 }
 
+// --- Logger thread ---
+
 static void *logger_thread_func(void *arg) {
   LogMessage msg;
 
@@ -97,21 +191,52 @@ static void *logger_thread_func(void *arg) {
     char time_buf[9];
     strftime(time_buf, sizeof(time_buf), "%H:%M:%S", t);
 
-    fprintf(stdout, "[%s] [%s] %s\n", time_buf, level_strings[msg.level],
-            msg.message);
+    char log_line[MAX_MESSAGE_LENGTH];
+    int len = snprintf(log_line, sizeof(log_line), "[%s] [%s] %s\n", time_buf,
+                       level_strings[msg.level], msg.message);
+
+    fprintf(stdout, "%s", log_line);
 
     if (log_file) {
-      fprintf(log_file, "[%s] [%s] %s\n", time_buf, level_strings[msg.level],
-              msg.message);
+      fprintf(log_file, "%s", log_line);
       fflush(log_file);
+
+      bytes_written += len;
+
+      if (bytes_written > MAX_LOG_SIZE) {
+        logger_rotate();
+      }
     }
   }
 
   return NULL;
 }
 
+// --- Public API ---
+
 void logger_init(const char *filename) {
-  log_file = fopen(filename, "w");
+  char log_dir[MAX_LOG_FILE_PATH_SIZE];
+  get_log_dir(log_dir, sizeof(log_dir));
+  create_dir_r(log_dir);
+
+  snprintf(current_log_path, sizeof(current_log_path), "%s%c%s.log", log_dir,
+           PATH_SEP, GAME_NAME);
+
+  struct stat st;
+  if (stat(current_log_path, &st) == 0) {
+    bytes_written = st.st_size;
+
+    if (bytes_written > MAX_LOG_SIZE) {
+      log_file = fopen(current_log_path, "a");
+      logger_rotate();
+    } else {
+      log_file = fopen(current_log_path, "a");
+    }
+  } else {
+    log_file = fopen(current_log_path, "w");
+    bytes_written = 0;
+  }
+
   if (!log_file) {
     fprintf(stderr, "Failed to open log file: %s\n", filename);
   }
