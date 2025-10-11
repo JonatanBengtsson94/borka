@@ -96,21 +96,42 @@ static void logger_rotate(void) {
   log_file = NULL;
 
   char old_path[MAX_LOG_FILE_PATH_SIZE];
-  snprintf(old_path, sizeof(old_path), "%s.%d", current_log_path,
-           MAX_LOG_FILES);
+  int ret = snprintf(old_path, sizeof(old_path), "%s.%d", current_log_path,
+                     MAX_LOG_FILES);
+  if (ret < 0 || (size_t)ret >= sizeof(old_path)) {
+    fprintf(stderr, "Failed to format log path correctly\n");
+    return;
+  }
   remove(old_path);
 
   // Shift existing log files: game.log.N -> game.log.N+1
   for (int i = MAX_LOG_FILES - 1; i >= 1; i--) {
     char src[MAX_LOG_FILE_PATH_SIZE], dst[MAX_LOG_FILE_PATH_SIZE];
-    snprintf(src, sizeof(src), "%s.%d", current_log_path, i);
-    snprintf(dst, sizeof(dst), "%s.%d", current_log_path, i + 1);
+
+    ret = snprintf(src, sizeof(src), "%s.%d", current_log_path, i);
+    if (ret < 0 || (size_t)ret >= sizeof(src)) {
+      fprintf(stderr, "Failed to format log path correctly\n");
+      return;
+    }
+
+    ret = snprintf(dst, sizeof(dst), "%s.%d", current_log_path, i + 1);
+    if (ret < 0 || (size_t)ret >= sizeof(dst)) {
+      fprintf(stderr, "Failed to format log path correctly\n");
+      return;
+    }
+
     rename(src, dst);
   }
 
   // Rename current log: game.log -> game.log.1
   char backup[MAX_LOG_FILE_PATH_SIZE];
-  snprintf(backup, sizeof(backup), "%s.1", current_log_path);
+
+  ret = snprintf(backup, sizeof(backup), "%s.1", current_log_path);
+  if (ret < 0 || (size_t)ret >= sizeof(backup)) {
+    fprintf(stderr, "Failed to format log path correctly\n");
+    return;
+  }
+
   rename(current_log_path, backup);
 
   log_file = fopen(current_log_path, "w");
@@ -219,8 +240,12 @@ void logger_init(const char *filename) {
   get_log_dir(log_dir, sizeof(log_dir));
   create_dir_r(log_dir);
 
-  snprintf(current_log_path, sizeof(current_log_path), "%s%c%s.log", log_dir,
-           PATH_SEP, GAME_NAME);
+  int ret = snprintf(current_log_path, sizeof(current_log_path), "%s%c%s.log",
+                     log_dir, PATH_SEP, GAME_NAME);
+  if (ret < 0 || (size_t)ret >= sizeof(current_log_path)) {
+    fprintf(stderr, "Failed to format log path correctly\n");
+    return;
+  }
 
   struct stat st;
   if (stat(current_log_path, &st) == 0) {
