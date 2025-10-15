@@ -1,7 +1,7 @@
 #include "engine.h"
 
 int main() {
-  if (engine_init() != 0) {
+  if (engine_init("breakout") != 0) {
     return -1;
   }
 

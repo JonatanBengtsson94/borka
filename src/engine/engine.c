@@ -1,8 +1,8 @@
 #include "engine.h"
 #include "logger.h"
 
-int engine_init(void) {
-  logger_init("");
+int engine_init(const char *game_name) {
+  logger_init(game_name);
   LOG_INFO("Engine initialized");
   return 0;
 }

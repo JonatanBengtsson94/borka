@@ -7,9 +7,6 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#ifndef GAME_NAME
-#define GAME_NAME "defaultgame"
-#endif
 #ifdef __linux__
 #include <sys/types.h>
 #include <unistd.h>
@@ -52,11 +49,11 @@ static MessageQueue msg_queue;
 
 // --- File handling ---
 
-static void get_log_dir(char *buffer, size_t size) {
+static void get_log_dir(char *buffer, size_t size, const char *game_name) {
 #ifdef __linux__
   const char *home = getenv("HOME");
   if (home) {
-    snprintf(buffer, size, "%s/.local/share/%s/logs", home, GAME_NAME);
+    snprintf(buffer, size, "%s/.local/share/%s/logs", home, game_name);
   } else {
     snprintf(buffer, size, ".logs");
   }
@@ -235,13 +232,13 @@ static void *logger_thread_func(void *arg) {
 
 // --- Public API ---
 
-void logger_init(const char *filename) {
+void logger_init(const char *game_name) {
   char log_dir[MAX_LOG_FILE_PATH_SIZE];
-  get_log_dir(log_dir, sizeof(log_dir));
+  get_log_dir(log_dir, sizeof(log_dir), game_name);
   create_dir_r(log_dir);
 
   int ret = snprintf(current_log_path, sizeof(current_log_path), "%s%c%s.log",
-                     log_dir, PATH_SEP, GAME_NAME);
+                     log_dir, PATH_SEP, game_name);
   if (ret < 0 || (size_t)ret >= sizeof(current_log_path)) {
     fprintf(stderr, "Failed to format log path correctly\n");
     return;
@@ -263,7 +260,7 @@ void logger_init(const char *filename) {
   }
 
   if (!log_file) {
-    fprintf(stderr, "Failed to open log file: %s\n", filename);
+    fprintf(stderr, "Failed to open log file: %s\n", current_log_path);
   }
 
   queue_init(&msg_queue);

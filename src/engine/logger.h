@@ -13,7 +13,7 @@ typedef enum {
 #define LOG_LEVEL_MIN LOG_LEVEL_DEBUG
 #endif
 
-void logger_init(const char *filename);
+void logger_init(const char *game_name);
 void logger_shutdown(void);
 void logger_message(LogLevel level, const char *message);
 
