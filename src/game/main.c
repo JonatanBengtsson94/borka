@@ -1,11 +1,11 @@
-#include "engine.h"
+#include "borka.h"
 
 int main() {
-  if (engine_init("breakout") != 0) {
+  if (br_init("breakout") != 0) {
     return -1;
   }
 
-  engine_shutdown();
+  br_shutdown();
 
   return 0;
 }

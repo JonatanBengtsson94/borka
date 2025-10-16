@@ -23,7 +23,7 @@
 #define MAX_LOG_FILE_PATH_SIZE 512
 
 typedef struct {
-  LogLevel level;
+  BrLogLevel level;
   char message[MAX_MESSAGE_LENGTH];
   time_t timestamp;
 } LogMessage;
@@ -232,7 +232,7 @@ static void *logger_thread_func(void *arg) {
 
 // --- Public API ---
 
-void logger_init(const char *game_name) {
+void br_logger_init(const char *game_name) {
   char log_dir[MAX_LOG_FILE_PATH_SIZE];
   get_log_dir(log_dir, sizeof(log_dir), game_name);
   create_dir_r(log_dir);
@@ -275,7 +275,7 @@ void logger_init(const char *game_name) {
   }
 }
 
-void logger_shutdown(void) {
+void br_logger_shutdown(void) {
   pthread_mutex_lock(&msg_queue.mutex);
   msg_queue.shutdown = true;
   pthread_cond_broadcast(&msg_queue.not_empty);
@@ -291,7 +291,7 @@ void logger_shutdown(void) {
   }
 }
 
-void logger_message(LogLevel level, const char *message) {
+void br_logger_message(BrLogLevel level, const char *message) {
   LogMessage msg;
   msg.level = level;
   msg.timestamp = time(NULL);
