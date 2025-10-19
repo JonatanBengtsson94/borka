@@ -2,15 +2,6 @@
 #define LOGGER_H
 
 /**
- * @file logger.h
- * @brief Simple logging system with compile-time log level filtering.
- *
- * This logger provides a minimal interface for structured log messages.
- * It supports multiple log levels and allows compile-time filtering to
- * strip out unwanted verbosity in production builds.
- */
-
-/**
  * @enum LogLevel
  * @brief Describes the severity of a log message.
  */

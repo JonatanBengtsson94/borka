@@ -47,7 +47,7 @@ static size_t bytes_written = 0;
 static pthread_t logger_thread;
 static MessageQueue msg_queue;
 
-// --- File handling ---
+// --- FILE HANDLING ---
 
 static void get_log_dir(char *buffer, size_t size, const char *game_name) {
 #ifdef __linux__
@@ -139,7 +139,7 @@ static void logger_rotate(void) {
   bytes_written = 0;
 }
 
-// --- Queue operations ---
+// --- QUEUE OPERATIONS ---
 
 static void queue_init(MessageQueue *q) {
   q->head = 0;
@@ -199,7 +199,7 @@ static bool queue_pop(MessageQueue *q, LogMessage *msg) {
   return true;
 }
 
-// --- Logger thread ---
+// --- LOGGER THREAD ---
 
 static void *logger_thread_func(void *arg) {
   LogMessage msg;
@@ -230,7 +230,7 @@ static void *logger_thread_func(void *arg) {
   return NULL;
 }
 
-// --- Public API ---
+// --- PUBLIC API ---
 
 void br_logger_init(const char *game_name) {
   char log_dir[MAX_LOG_FILE_PATH_SIZE];
