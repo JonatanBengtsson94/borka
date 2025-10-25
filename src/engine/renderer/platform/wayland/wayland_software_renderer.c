@@ -1,22 +1,19 @@
-#include "logger.h"
-#include "render/render.h"
+#include "renderer/platform/wayland/wayland_software_renderer.h"
+#include "logger/logger.h"
+#include "renderer/renderer.h"
 #include "window/platform/wayland/wayland_shm.h"
 #include "window/platform/wayland/wayland_window.h"
 #include "window/window.h"
 #include <stddef.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <wayland-client.h>
 
-struct BrRenderer {
-  uint32_t *pixels;
-  struct wl_shm *wl_shm;
-  struct wl_surface *wl_surface;
-  int width;
-  int height;
-};
+BrRenderer *br_renderer_create(BrWindow *window) {
+  if (!window) {
+    BR_LOG_ERROR("Cannot create renderer with NULL window");
+    return NULL;
+  }
 
-BrRenderer *wayland_software_renderer_create(BrWindow *window) {
   BrRenderer *renderer = calloc(1, sizeof(BrRenderer));
   if (!renderer) {
     return NULL;
@@ -43,9 +40,18 @@ BrRenderer *wayland_software_renderer_create(BrWindow *window) {
   return renderer;
 }
 
-void wayland_software_renderer_destroy(BrRenderer *renderer) { free(renderer); }
+void br_renderer_destroy(BrRenderer *renderer) {
+  if (renderer) {
+    free(renderer);
+  }
+}
 
-void wayland_software_renderer_present(BrRenderer *renderer) {
+void br_renderer_present(BrRenderer *renderer) {
+  if (!renderer) {
+    BR_LOG_ERROR("Can not present with NULL renderer");
+    return;
+  }
+
   ShmBuffer *shm_buf = wayland_shm_buffer_create(
       renderer->wl_shm, renderer->width, renderer->height);
 

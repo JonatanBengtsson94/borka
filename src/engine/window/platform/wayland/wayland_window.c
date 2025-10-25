@@ -1,6 +1,6 @@
 #include "wayland_window.h"
-#include "logger.h"
-#include "render/render.h"
+#include "logger/logger.h"
+#include "window/window.h"
 #include "xdg-shell-client-protocol.h"
 #include <stddef.h>
 #include <stdlib.h>
@@ -107,7 +107,7 @@ static void window_cleanup(BrWindow *window) {
 
 // --- Public API ---
 
-BrWindow *wayland_window_create(const BrWindowProps *props) {
+BrWindow *br_window_create(const BrWindowProps *props) {
   BrWindow *window = calloc(1, sizeof(BrWindow));
   if (!window) {
     return NULL;
@@ -188,9 +188,9 @@ BrWindow *wayland_window_create(const BrWindowProps *props) {
   return window;
 }
 
-void wayland_window_destroy(BrWindow *window) { window_cleanup(window); }
+void br_window_destroy(BrWindow *window) { window_cleanup(window); }
 
-bool wayland_window_poll_events(BrWindow *window) {
+bool br_window_poll_events(BrWindow *window) {
 
   if (wl_display_dispatch_pending(window->wl_display) == -1) {
     return false;

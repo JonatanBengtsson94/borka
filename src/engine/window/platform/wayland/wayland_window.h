@@ -1,4 +1,3 @@
-#include "window/window.h"
 #include <stdbool.h>
 
 struct BrWindow {
@@ -14,7 +13,3 @@ struct BrWindow {
   struct xdg_toplevel *xdg_toplevel;
   struct xdg_surface *xdg_surface;
 };
-
-BrWindow *wayland_window_create(const BrWindowProps *props);
-void wayland_window_destroy(BrWindow *window);
-bool wayland_window_poll_events(BrWindow *window);

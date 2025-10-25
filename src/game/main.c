@@ -1,5 +1,5 @@
 #include "borka.h"
-#include "render/render.h"
+#include "renderer/renderer.h"
 #include "window/window.h"
 
 int main() {
@@ -10,11 +10,11 @@ int main() {
 
   BrWindowProps window_props = {800, 600, "Breakout"};
   BrWindow *window = br_window_create(&window_props);
-  BrRenderer *renderer = br_render_create(window);
+  BrRenderer *renderer = br_renderer_create(window);
 
   while (running) {
     br_window_poll_events(window);
-    br_render_draw(renderer);
+    br_renderer_present(renderer);
   }
 
   if (window) {

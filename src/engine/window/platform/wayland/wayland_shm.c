@@ -1,5 +1,5 @@
 #include "wayland_shm.h"
-#include "logger.h"
+#include "logger/logger.h"
 #include <fcntl.h>
 #include <stddef.h>
 #include <stdlib.h>

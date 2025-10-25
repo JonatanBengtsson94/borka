@@ -10,6 +10,7 @@ SRC = $(ENGINE_SRC) $(GAME_SRC)
 
 BUILD ?= debug
 WINDOW_BACKEND ?= wayland
+RENDER_BACKEND ?= software
 
 # Build specific flags
 ifeq ($(BUILD),debug)
@@ -18,12 +19,16 @@ else ifeq ($(BUILD),release)
 	CFLAGS += -DLOG_LEVEL_MIN=2 -O2
 endif
 
-# Wayland specific flags
+# Window backend flags
 ifeq ($(WINDOW_BACKEND),wayland)
 	CFLAGS += -DWINDOW_BACKEND_WAYLAND
 	LDFLAGS += -lwayland-client
 	SRC += src/engine/window/platform/wayland/*.c
-	SRC += src/engine/render/platform/wayland/*.c
+
+	ifeq ($(RENDER_BACKEND),software)
+		CFLAGS += -DRENDER_BACKEND_SOFTWARE
+		SRC += src/engine/renderer/platform/wayland/wayland_software_renderer.c
+	endif
 endif
 
 all: $(OUT)
