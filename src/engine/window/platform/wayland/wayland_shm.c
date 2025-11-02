@@ -31,52 +31,93 @@ static int create_shm_file(size_t size) {
 }
 
 static void wl_buffer_release(void *data, struct wl_buffer *wl_buffer) {
-  wl_buffer_destroy(wl_buffer);
+  (void)wl_buffer;
+
+  bool *busy_flag = data;
+  if (busy_flag) {
+    *busy_flag = false;
+  }
 }
 
 static const struct wl_buffer_listener buffer_listener = {
     .release = wl_buffer_release,
 };
 
-ShmBuffer *wayland_shm_buffer_create(struct wl_shm *shm, int width,
-                                     int height) {
+ShmBufferPair *wayland_shm_buffer_pair_create(struct wl_shm *shm, int width,
+                                              int height) {
   int stride = width * 4;
-  int size = stride * height;
-  int fd = create_shm_file(size);
+  int buffer_size = stride * height;
+  int total_size = buffer_size * 2;
+
+  int fd = create_shm_file(total_size);
   if (fd < 0) {
     BR_LOG_ERROR("Failed to create shm");
     return NULL;
   }
 
-  void *data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  void *data =
+      mmap(NULL, total_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   if (data == MAP_FAILED) {
     BR_LOG_ERROR("Failed to mmap shm file");
     close(fd);
     return NULL;
   }
 
-  struct wl_shm_pool *pool = wl_shm_create_pool(shm, fd, size);
-  struct wl_buffer *buffer = wl_shm_pool_create_buffer(
+  struct wl_shm_pool *pool = wl_shm_create_pool(shm, fd, total_size);
+  if (!pool) {
+    BR_LOG_ERROR("Failed to create shm_pool");
+    munmap(data, total_size);
+    close(fd);
+    return NULL;
+  }
+
+  ShmBufferPair *pair = malloc(sizeof(ShmBufferPair));
+  if (!pair) {
+    BR_LOG_ERROR("Failed to allocated buffer pair");
+    munmap(data, total_size);
+    wl_shm_pool_destroy(pool);
+    close(fd);
+    return NULL;
+  }
+
+  pair->shared_data = data;
+  pair->buffer_size = buffer_size;
+
+  pair->buffer_data[0] = data;
+  pair->wl_buffers[0] = wl_shm_pool_create_buffer(
       pool, 0, width, height, stride, WL_SHM_FORMAT_ARGB8888);
-  wl_buffer_add_listener(buffer, &buffer_listener, NULL);
+  wl_buffer_add_listener(pair->wl_buffers[0], &buffer_listener,
+                         &pair->buffer_busy[0]);
+
+  pair->buffer_data[1] = (uint8_t *)data + buffer_size;
+  pair->wl_buffers[1] = wl_shm_pool_create_buffer(
+      pool, buffer_size, width, height, stride, WL_SHM_FORMAT_ARGB8888);
+  wl_buffer_add_listener(pair->wl_buffers[1], &buffer_listener,
+                         &pair->buffer_busy[1]);
 
   wl_shm_pool_destroy(pool);
   close(fd);
 
-  ShmBuffer *shm_buf = malloc(sizeof(ShmBuffer));
-  if (!shm_buf) {
-    BR_LOG_ERROR("Failed to create shm buffer");
-  }
-
-  shm_buf->buffer = buffer;
-  shm_buf->data = data;
-  shm_buf->size = size;
-
-  return shm_buf;
+  BR_LOG_DEBUG("Created double buffer pair");
+  return pair;
 }
 
-void wayland_shm_buffer_destroy(ShmBuffer *shm_buf) {
-  munmap(shm_buf->data, shm_buf->size);
-  wl_buffer_destroy(shm_buf->buffer);
-  free(shm_buf);
+void wayland_shm_buffer_pair_destroy(ShmBufferPair *pair) {
+  if (!pair) {
+    return;
+  }
+
+  if (pair->wl_buffers[0]) {
+    wl_buffer_destroy(pair->wl_buffers[0]);
+  }
+
+  if (pair->wl_buffers[1]) {
+    wl_buffer_destroy(pair->wl_buffers[1]);
+  }
+
+  if (pair->shared_data) {
+    munmap(pair->shared_data, pair->buffer_size * 2);
+  }
+
+  free(pair);
 }

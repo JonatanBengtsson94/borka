@@ -2,6 +2,7 @@
 #include "logger/br_logger.h"
 #include "window/br_window.h"
 #include "xdg-shell-client-protocol.h"
+#include <poll.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,13 +12,17 @@
 
 static void xdg_surface_configure(void *data, struct xdg_surface *surface,
                                   uint32_t serial) {
-  BrWindow *window = data;
+  (void)data;
+
   xdg_surface_ack_configure(surface, serial);
 }
 
 static void xdg_toplevel_configure(void *data, struct xdg_toplevel *toplevel,
                                    int32_t width, int32_t height,
                                    struct wl_array *states) {
+  (void)toplevel;
+  (void)states;
+
   BrWindow *window = data;
   if (width > 0 && height > 0) {
     window->width = width;
@@ -25,7 +30,13 @@ static void xdg_toplevel_configure(void *data, struct xdg_toplevel *toplevel,
   }
 }
 
-static void xdg_toplevel_close(void *data, struct xdg_toplevel *toplevel) {}
+static void xdg_toplevel_close(void *data, struct xdg_toplevel *toplevel) {
+  (void)toplevel;
+
+  BrWindow *window = data;
+  BR_LOG_INFO("Recieved close event from compositor");
+  window->should_close = true;
+}
 
 static const struct xdg_toplevel_listener xdg_toplevel_listener = {
     .configure = xdg_toplevel_configure,
@@ -38,6 +49,8 @@ static const struct xdg_surface_listener xdg_surface_listener = {
 
 static void xdg_wm_base_ping(void *data, struct xdg_wm_base *xdg_wm_base,
                              uint32_t serial) {
+  (void)data;
+
   xdg_wm_base_pong(xdg_wm_base, serial);
 }
 
@@ -50,6 +63,8 @@ static const struct xdg_wm_base_listener xdg_wm_base_listener = {
 static void registry_handle_global(void *data, struct wl_registry *registry,
                                    uint32_t name, const char *interface,
                                    uint32_t version) {
+  (void)version;
+
   BrWindow *window = data;
 
   if (strcmp(interface, wl_compositor_interface.name) == 0) {
@@ -67,7 +82,11 @@ static void registry_handle_global(void *data, struct wl_registry *registry,
 
 static void registry_handle_global_remove(void *data,
                                           struct wl_registry *registry,
-                                          uint32_t name) {}
+                                          uint32_t name) {
+  (void)data;
+  (void)registry;
+  (void)name;
+}
 
 static const struct wl_registry_listener registry_listener = {
     .global = registry_handle_global,
@@ -108,6 +127,10 @@ static void window_cleanup(BrWindow *window) {
 // --- Public API ---
 
 BrWindow *br_window_create(const BrWindowProps *props) {
+  if (!props) {
+    return NULL;
+  }
+
   BrWindow *window = calloc(1, sizeof(BrWindow));
   if (!window) {
     return NULL;
@@ -182,9 +205,6 @@ BrWindow *br_window_create(const BrWindowProps *props) {
   xdg_toplevel_set_min_size(window->xdg_toplevel, window->width,
                             window->height);
 
-  wl_surface_commit(window->wl_surface);
-  wl_display_roundtrip(window->wl_display);
-
   return window;
 }
 
@@ -196,12 +216,26 @@ void br_window_destroy(BrWindow *window) {
 }
 
 bool br_window_poll_events(BrWindow *window) {
-
   if (wl_display_dispatch_pending(window->wl_display) == -1) {
     return false;
   }
 
   if (wl_display_flush(window->wl_display) == -1) {
+    return false;
+  }
+
+  struct pollfd fds = {
+      .fd = wl_display_get_fd(window->wl_display),
+      .events = POLLIN,
+  };
+
+  if (poll(&fds, 1, 0) > 0) {
+    if (wl_display_dispatch(window->wl_display) == -1) {
+      return false;
+    }
+  }
+
+  if (window->should_close) {
     return false;
   }
 

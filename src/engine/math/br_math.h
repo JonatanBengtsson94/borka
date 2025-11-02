@@ -20,6 +20,22 @@ static inline int min_int(int a, int b) { return a < b ? a : b; }
 static inline int max_int(int a, int b) { return a > b ? a : b; }
 
 /**
+ * @brief Clamps a integer between a minumum and maximum.
+ *
+ * @param value The value to clamp.
+ * @param min Minimum allowed value.
+ * @param max Maximum allowed value.
+ * @return The clamped value.
+ */
+static inline int clamp_int(int value, int min, int max) {
+  if (value < min)
+    return min;
+  if (value > max)
+    return max;
+  return value;
+}
+
+/**
  * @brief 2D integer vector.
  */
 typedef struct {

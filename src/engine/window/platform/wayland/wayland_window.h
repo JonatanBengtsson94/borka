@@ -4,9 +4,6 @@
 #include <stdbool.h>
 
 struct BrWindow {
-  int width;
-  int height;
-  const char *title;
   struct wl_display *wl_display;
   struct wl_registry *wl_registry;
   struct wl_compositor *wl_compositor;
@@ -15,6 +12,10 @@ struct BrWindow {
   struct xdg_wm_base *xdg_wm_base;
   struct xdg_toplevel *xdg_toplevel;
   struct xdg_surface *xdg_surface;
+  const char *title;
+  int width;
+  int height;
+  bool should_close;
 };
 
 #endif // WAYLAND_WINDOW_H

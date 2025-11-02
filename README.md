@@ -10,6 +10,6 @@
     - Linux (Wayland).
     - Coming soon: Windows.
 - Pluggable rendering backends.
-    - Software renering.
+    - Double-buffered software renering.
     - Coming soon: OpenGL.
 

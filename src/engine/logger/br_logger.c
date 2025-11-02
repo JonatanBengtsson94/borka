@@ -202,6 +202,8 @@ static bool queue_pop(MessageQueue *q, LogMessage *msg) {
 // --- LOGGER THREAD ---
 
 static void *logger_thread_func(void *arg) {
+  (void)arg;
+
   LogMessage msg;
 
   while (queue_pop(&msg_queue, &msg)) {

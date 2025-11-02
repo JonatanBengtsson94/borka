@@ -23,6 +23,7 @@ struct BrRenderer *br_renderer_create(struct BrWindow *window) {
 
   renderer->wl_shm = window->wl_shm;
   renderer->wl_surface = window->wl_surface;
+  renderer->wl_display = window->wl_display;
   renderer->width = window->width;
   renderer->height = window->height;
 
@@ -38,11 +39,13 @@ struct BrRenderer *br_renderer_create(struct BrWindow *window) {
     return NULL;
   }
 
-  renderer->shm_buf = wayland_shm_buffer_create(
+  renderer->buffers = wayland_shm_buffer_pair_create(
       renderer->wl_shm, renderer->width, renderer->height);
+  renderer->front_buffer_index = 0;
+  renderer->back_buffer_index = 1;
 
-  if (!renderer->shm_buf) {
-    BR_LOG_ERROR("Failed to create SHM buffer");
+  if (!renderer->buffers) {
+    BR_LOG_ERROR("Failed to create shm buffers");
     free(renderer);
     return NULL;
   }
@@ -55,8 +58,8 @@ void br_renderer_destroy(struct BrRenderer *renderer) {
   if (!renderer) {
     return;
   }
-  if (renderer->shm_buf) {
-    wayland_shm_buffer_destroy(renderer->shm_buf);
+  if (renderer->buffers) {
+    wayland_shm_buffer_pair_destroy(renderer->buffers);
     free(renderer);
   }
 }
@@ -66,8 +69,9 @@ void br_renderer_clear(struct BrRenderer *renderer, int color) {
     BR_LOG_ERROR("Could not clear: renderer is NULL");
     return;
   }
-  software_clear(renderer->shm_buf->data, renderer->width, renderer->height,
-                 color);
+
+  software_clear(renderer->buffers->buffer_data[renderer->back_buffer_index],
+                 renderer->width, renderer->height, color);
 }
 
 void br_renderer_draw_triangle(struct BrRenderer *renderer, BrVec2 v0,
@@ -76,8 +80,10 @@ void br_renderer_draw_triangle(struct BrRenderer *renderer, BrVec2 v0,
     BR_LOG_ERROR("Could not draw: renderer is NULL");
     return;
   }
-  software_draw_triangle(renderer->shm_buf->data, renderer->width,
-                         renderer->height, v0, v1, v2, color);
+
+  software_draw_triangle(
+      renderer->buffers->buffer_data[renderer->back_buffer_index],
+      renderer->width, renderer->height, v0, v1, v2, color);
 }
 
 void br_renderer_present(struct BrRenderer *renderer) {
@@ -86,8 +92,21 @@ void br_renderer_present(struct BrRenderer *renderer) {
     return;
   }
 
-  wl_surface_attach(renderer->wl_surface, renderer->shm_buf->buffer, 0, 0);
+  int back = renderer->back_buffer_index;
+
+  while (renderer->buffers->buffer_busy[back]) {
+    BR_LOG_WARN("Back buffer is busy");
+    wl_display_dispatch(renderer->wl_display);
+  }
+
+  renderer->buffers->buffer_busy[back] = true;
+  wl_surface_attach(renderer->wl_surface, renderer->buffers->wl_buffers[back],
+                    0, 0);
   wl_surface_damage_buffer(renderer->wl_surface, 0, 0, renderer->width,
                            renderer->height);
   wl_surface_commit(renderer->wl_surface);
+
+  int temp = renderer->front_buffer_index;
+  renderer->front_buffer_index = renderer->back_buffer_index;
+  renderer->back_buffer_index = temp;
 }

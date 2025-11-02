@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 /**
- * @brief Opaque handle to platform-independent window.
+ * @brief Opaque window handle.
  */
 typedef struct BrWindow BrWindow;
 
@@ -21,16 +21,18 @@ typedef struct {
  * @brief Creates a new window with the specified properties.
  *
  * @param props Pointer to a BrWindowProps struct defining the window
- * parameters.
+ * parameters. Passing NULL is safe and does nothing.
  * @return Pointer to a newly created BrWindow instance, or NULL on failure.
+ *
+ * @note The window should be destroyed with br_window_destroy when no longer
+ * needed.
  */
 BrWindow *br_window_create(const BrWindowProps *props);
 
 /**
- * @brief Destroys a previously created window and releases associated
- * resources.
+ * @brief Destroys a window and releases associated resources.
  *
- * @param window Pointer to the window that should be destroyed.
+ * @param window The window to destroy. Safe to pass NULL.
  */
 void br_window_destroy(BrWindow *window);
 
@@ -40,9 +42,11 @@ void br_window_destroy(BrWindow *window);
  * This function checks for events from the window system (such as resize,
  * input, or close request) and dispatches them to appropriate handlers.
  *
- * @param window Pointer to the window to poll events for.
- * @return true if successful, false if an error occured or the connection was
- * lost.
+ * @param window Window to poll events for. Passin NULL is safe and does
+ * nothing.
+ * @return true if the window should continue running, false if the window
+ * received a close request, an error occurred, or the connection to the display
+ * was lost.
  */
 bool br_window_poll_events(BrWindow *window);
 

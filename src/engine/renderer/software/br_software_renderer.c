@@ -19,10 +19,10 @@ void software_draw_triangle(int *pixels, int width, int height, BrVec2 v0,
     BR_LOG_WARN("Skipping draw: Pixel buffer is NULL");
     return;
   }
-  int minX = min_int(min_int(v0.x, v1.x), v2.x);
-  int maxX = max_int(max_int(v0.x, v1.x), v2.x);
-  int minY = min_int(min_int(v0.y, v1.y), v2.y);
-  int maxY = max_int(max_int(v0.y, v1.y), v2.y);
+  int minX = clamp_int(min_int(min_int(v0.x, v1.x), v2.x), 0, width - 1);
+  int maxX = clamp_int(max_int(max_int(v0.x, v1.x), v2.x), 0, width - 1);
+  int minY = clamp_int(min_int(min_int(v0.y, v1.y), v2.y), 0, height - 1);
+  int maxY = clamp_int(max_int(max_int(v0.y, v1.y), v2.y), 0, height - 1);
 
   // Edge vectors (CCW)
   BrVec2 e0 = br_vec2_sub(v1, v0);
