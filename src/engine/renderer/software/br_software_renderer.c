@@ -32,16 +32,20 @@ void software_draw_triangle(int *pixels, int width, int height, BrVec2 v0,
   for (int y = minY; y <= maxY; ++y) {
     for (int x = minX; x <= maxX; ++x) {
       BrVec2 p = {x, y};
+
       int c0 = br_vec2_cross(e0, br_vec2_sub(p, v0));
-      if (c0 >= 0) {
-        int c1 = br_vec2_cross(e1, br_vec2_sub(p, v1));
-        if (c1 >= 0) {
-          int c2 = br_vec2_cross(e2, br_vec2_sub(p, v2));
-          if (c2 >= 0) {
-            pixels[y * width + x] = color;
-          }
-        }
-      }
+      if (c0 < 0)
+        continue;
+
+      int c1 = br_vec2_cross(e1, br_vec2_sub(p, v1));
+      if (c1 < 0)
+        continue;
+
+      int c2 = br_vec2_cross(e2, br_vec2_sub(p, v2));
+      if (c2 < 0)
+        continue;
+
+      pixels[y * width + x] = color;
     }
   }
 }

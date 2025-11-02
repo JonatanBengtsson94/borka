@@ -12,9 +12,9 @@ int main() {
   BrWindow *window = br_window_create(&window_props);
   BrRenderer *renderer = br_renderer_create(window);
 
-  BrVec2 a = {50, 50};
-  BrVec2 b = {100, 10};
-  BrVec2 c = {10, 100};
+  BrVec2 a = {50, 10};
+  BrVec2 b = {90, 80};
+  BrVec2 c = {10, 80};
 
   int frame_count = 0;
   struct timespec sleep_time = {0, 16666666};
