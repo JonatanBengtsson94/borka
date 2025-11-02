@@ -27,7 +27,8 @@ ifeq ($(WINDOW_BACKEND),wayland)
 
 	ifeq ($(RENDER_BACKEND),software)
 		CFLAGS += -DRENDER_BACKEND_SOFTWARE
-		SRC += src/engine/renderer/platform/wayland/wayland_software_renderer.c
+		SRC += src/engine/renderer/software/br_software_renderer.c
+		SRC += src/engine/renderer/software/platform/wayland/*.c
 	endif
 endif
 

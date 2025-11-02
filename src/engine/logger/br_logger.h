@@ -1,5 +1,5 @@
-#ifndef LOGGER_H
-#define LOGGER_H
+#ifndef BR_LOGGER_H
+#define BR_LOGGER_H
 
 /**
  * @enum LogLevel
@@ -102,4 +102,4 @@ void br_logger_message(BrLogLevel level, const char *message);
 #define BR_LOG_FATAL(msg) ((void)0)
 #endif
 
-#endif // LOGGER_H
+#endif // BR_LOGGER_H

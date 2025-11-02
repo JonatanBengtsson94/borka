@@ -6,3 +6,10 @@
 
 - Multithreaded logging system.
 - Compile-time log level filtering.
+- Multiplatform.
+    - Linux (Wayland).
+    - Coming soon: Windows.
+- Pluggable rendering backends.
+    - Software renering.
+    - Coming soon: OpenGL.
+

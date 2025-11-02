@@ -1,5 +1,5 @@
 #include "wayland_shm.h"
-#include "logger/logger.h"
+#include "logger/br_logger.h"
 #include <fcntl.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -57,7 +57,7 @@ ShmBuffer *wayland_shm_buffer_create(struct wl_shm *shm, int width,
 
   struct wl_shm_pool *pool = wl_shm_create_pool(shm, fd, size);
   struct wl_buffer *buffer = wl_shm_pool_create_buffer(
-      pool, 0, width, height, stride, WL_SHM_FORMAT_XRGB8888);
+      pool, 0, width, height, stride, WL_SHM_FORMAT_ARGB8888);
   wl_buffer_add_listener(buffer, &buffer_listener, NULL);
 
   wl_shm_pool_destroy(pool);

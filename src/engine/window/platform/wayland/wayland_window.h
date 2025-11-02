@@ -1,3 +1,6 @@
+#ifndef WAYLAND_WINDOW_H
+#define WAYLAND_WINDOW_H
+
 #include <stdbool.h>
 
 struct BrWindow {
@@ -13,3 +16,5 @@ struct BrWindow {
   struct xdg_toplevel *xdg_toplevel;
   struct xdg_surface *xdg_surface;
 };
+
+#endif // WAYLAND_WINDOW_H

@@ -1,5 +1,5 @@
 #include "borka.h"
-#include "logger/logger.h"
+#include "logger/br_logger.h"
 
 int br_init(const char *game_name) {
   br_logger_init(game_name);

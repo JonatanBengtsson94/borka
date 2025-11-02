@@ -1,6 +1,6 @@
 #include "wayland_window.h"
-#include "logger/logger.h"
-#include "window/window.h"
+#include "logger/br_logger.h"
+#include "window/br_window.h"
 #include "xdg-shell-client-protocol.h"
 #include <stddef.h>
 #include <stdlib.h>
@@ -188,7 +188,12 @@ BrWindow *br_window_create(const BrWindowProps *props) {
   return window;
 }
 
-void br_window_destroy(BrWindow *window) { window_cleanup(window); }
+void br_window_destroy(BrWindow *window) {
+  if (!window) {
+    return;
+  }
+  window_cleanup(window);
+}
 
 bool br_window_poll_events(BrWindow *window) {
 
