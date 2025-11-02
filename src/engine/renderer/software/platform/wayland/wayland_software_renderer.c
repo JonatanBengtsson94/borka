@@ -60,8 +60,8 @@ void br_renderer_destroy(struct BrRenderer *renderer) {
   }
   if (renderer->buffers) {
     wayland_shm_buffer_pair_destroy(renderer->buffers);
-    free(renderer);
   }
+  free(renderer);
 }
 
 void br_renderer_clear(struct BrRenderer *renderer, int color) {
