@@ -1,5 +1,5 @@
-#ifndef RENDERER_H
-#define RENDERER_H
+#ifndef BR_RENDERER_H
+#define BR_RENDERER_H
 
 #include "math/br_math.h"
 #include "window/br_window.h"
@@ -63,4 +63,4 @@ void br_renderer_draw_quad();
  */
 void br_renderer_present(BrRenderer *renderer);
 
-#endif // RENDERER_H
+#endif // BR_RENDERER_H

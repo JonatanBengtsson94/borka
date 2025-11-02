@@ -1,5 +1,5 @@
-#ifndef WINDOW_H
-#define WINDOW_H
+#ifndef BR_WINDOW_H
+#define BR_WINDOW_H
 
 #include <stdbool.h>
 
@@ -46,4 +46,4 @@ void br_window_destroy(BrWindow *window);
  */
 bool br_window_poll_events(BrWindow *window);
 
-#endif // WINDOW_H
+#endif // BR_WINDOW_H

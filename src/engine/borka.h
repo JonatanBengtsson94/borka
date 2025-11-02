@@ -1,8 +1,7 @@
-#ifndef ENGINE_H
-#define ENGINE_H
+#ifndef BORKA_H
+#define BORKA_H
 
 int br_init(const char *game_name);
-
 int br_shutdown(void);
 
-#endif
+#endif // BORKA_H
