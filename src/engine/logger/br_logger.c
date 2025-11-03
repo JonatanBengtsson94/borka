@@ -234,7 +234,7 @@ static void *logger_thread_func(void *arg) {
 
 // --- PUBLIC API ---
 
-void br_logger_init(const char *game_name) {
+bool br_logger_init(const char *game_name) {
   char log_dir[MAX_LOG_FILE_PATH_SIZE];
   get_log_dir(log_dir, sizeof(log_dir), game_name);
   create_dir_r(log_dir);
@@ -243,7 +243,7 @@ void br_logger_init(const char *game_name) {
                      log_dir, PATH_SEP, game_name);
   if (ret < 0 || (size_t)ret >= sizeof(current_log_path)) {
     fprintf(stderr, "Failed to format log path correctly\n");
-    return;
+    return false;
   }
 
   struct stat st;
@@ -274,7 +274,10 @@ void br_logger_init(const char *game_name) {
       log_file = NULL;
     }
     queue_destroy(&msg_queue);
+    return false;
   }
+
+  return true;
 }
 
 void br_logger_shutdown(void) {

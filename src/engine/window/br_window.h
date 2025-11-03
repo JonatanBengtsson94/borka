@@ -9,25 +9,17 @@
 typedef struct BrWindow BrWindow;
 
 /**
- * @brief Properties used to create a new window.
- */
-typedef struct {
-  int width;         /**< Width of the window in pixels. */
-  int height;        /**< Height of the window in pixels. */
-  const char *title; /**< Window title string. */
-} BrWindowProps;
-
-/**
  * @brief Creates a new window with the specified properties.
  *
- * @param props Pointer to a BrWindowProps struct defining the window
- * parameters. Passing NULL is safe and does nothing.
+ * @param title The title of the window.
+ * @param width Width of the window in pixels.
+ * @param height Height of the window in pixels.
  * @return Pointer to a newly created BrWindow instance, or NULL on failure.
  *
  * @note The window should be destroyed with br_window_destroy when no longer
  * needed.
  */
-BrWindow *br_window_create(const BrWindowProps *props);
+BrWindow *br_window_create(const char *title, int width, int height);
 
 /**
  * @brief Destroys a window and releases associated resources.

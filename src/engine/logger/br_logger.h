@@ -1,6 +1,8 @@
 #ifndef BR_LOGGER_H
 #define BR_LOGGER_H
 
+#include <stdbool.h>
+
 /**
  * @enum LogLevel
  * @brief Describes the severity of a log message.
@@ -32,8 +34,9 @@ typedef enum {
  *
  * @param game_name Name of the application, used to construct the log file path
  * and filename.
+ * @return true on success, false if the logger system failed to initalize.
  */
-void br_logger_init(const char *game_name);
+bool br_logger_init(const char *game_name);
 
 /**
  * @brief Shuts down the logger and releases any associated resources.

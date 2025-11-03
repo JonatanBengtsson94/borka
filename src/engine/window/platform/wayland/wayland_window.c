@@ -126,18 +126,15 @@ static void window_cleanup(BrWindow *window) {
 
 // --- Public API ---
 
-BrWindow *br_window_create(const BrWindowProps *props) {
-  if (!props) {
-    return NULL;
-  }
-
+BrWindow *br_window_create(const char *title, int width, int height) {
   BrWindow *window = calloc(1, sizeof(BrWindow));
   if (!window) {
     return NULL;
   }
-  window->height = props->height;
-  window->width = props->width;
-  window->title = props->title;
+
+  window->height = height;
+  window->width = width;
+  window->title = title;
 
   window->wl_display = wl_display_connect(NULL);
   if (!window->wl_display) {
