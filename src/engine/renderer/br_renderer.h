@@ -10,7 +10,7 @@
 typedef struct BrRenderer BrRenderer;
 
 /**
- * @brief Creates a renderer for the specified window.
+ * @brief Creates a new instance of BrRenderer.
  *
  * @param window The window to render to. Passing NULL is safe and does nothing.
  * @return Pointer to a newly created BrRenderer instance, or NULL on failure.

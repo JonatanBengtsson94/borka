@@ -9,7 +9,7 @@
 typedef struct BrWindow BrWindow;
 
 /**
- * @brief Creates a new window with the specified properties.
+ * @brief Creates a new BrWindow instance.
  *
  * @param title The title of the window.
  * @param width Width of the window in pixels.
@@ -34,7 +34,7 @@ void br_window_destroy(BrWindow *window);
  * This function checks for events from the window system (such as resize,
  * input, or close request) and dispatches them to appropriate handlers.
  *
- * @param window Window to poll events for. Passin NULL is safe and does
+ * @param window Window to poll events for. Passing NULL is safe and does
  * nothing.
  * @return true if the window should continue running, false if the window
  * received a close request, an error occurred, or the connection to the display
