@@ -32,54 +32,54 @@ typedef enum {
  * @param level The severity level of the message.
  * @param message The message to log (null-terminated string).
  */
-void _br_logger_message(BrLogLevel level, const char *message);
+void _br_logger_message(BrLogLevel level, const char *format, ...);
 
 /**
- * @def BR_LOG_DEBUG(msg)
+ * @def BR_LOG_DEBUG(format, ...)
  * @brief Logs a debug-level message (if LOG_LEVEL_MIN <= DEBUG).
  */
 #if BR_LOG_LEVEL_DEBUG >= BR_LOG_LEVEL_MIN
-#define BR_LOG_DEBUG(msg) _br_logger_message(BR_LOG_LEVEL_DEBUG, msg)
+#define BR_LOG_DEBUG(...) _br_logger_message(BR_LOG_LEVEL_DEBUG, __VA_ARGS__)
 #else
 #define BR_LOG_DEBUG(msg) ((void)0)
 #endif
 
 /**
- * @def BR_LOG_INFO(msg)
+ * @def BR_LOG_INFO(format, ...)
  * @brief Logs an info-level message (if LOG_LEVEL_MIN <= INFO).
  */
 #if BR_LOG_LEVEL_INFO >= BR_LOG_LEVEL_MIN
-#define BR_LOG_INFO(msg) _br_logger_message(BR_LOG_LEVEL_INFO, msg)
+#define BR_LOG_INFO(...) _br_logger_message(BR_LOG_LEVEL_INFO, __VA_ARGS__)
 #else
 #define BR_LOG_INFO(msg) ((void)0)
 #endif
 
 /**
- * @def BR_LOG_WARN(msg)
+ * @def BR_LOG_WARN(format, ...)
  * @brief Logs a warning-level message (if LOG_LEVEL_MIN <= WARN).
  */
 #if BR_LOG_LEVEL_WARN >= BR_LOG_LEVEL_MIN
-#define BR_LOG_WARN(msg) _br_logger_message(BR_LOG_LEVEL_WARN, msg)
+#define BR_LOG_WARN(...) _br_logger_message(BR_LOG_LEVEL_WARN, __VA_ARGS__)
 #else
 #define BR_LOG_WARN(msg) ((void)0)
 #endif
 
 /**
- * @def BR_LOG_ERROR(msg)
+ * @def BR_LOG_ERROR(format, ...)
  * @brief Logs an error-level message (if LOG_LEVEL_MIN <= ERROR).
  */
 #if BR_LOG_LEVEL_ERROR >= BR_LOG_LEVEL_MIN
-#define BR_LOG_ERROR(msg) _br_logger_message(BR_LOG_LEVEL_ERROR, msg)
+#define BR_LOG_ERROR(...) _br_logger_message(BR_LOG_LEVEL_ERROR, __VA_ARGS__)
 #else
 #define BR_LOG_ERROR(msg) ((void)0)
 #endif
 
 /**
- * @def BR_LOG_FATAL(msg)
+ * @def BR_LOG_FATAL(format, ...)
  * @brief Logs a fatal-level message (if LOG_LEVEL_MIN <= FATAL).
  */
 #if BR_LOG_LEVEL_FATAL >= BR_LOG_LEVEL_MIN
-#define BR_LOG_FATAL(msg) _br_logger_message(BR_LOG_LEVEL_FATAL, msg)
+#define BR_LOG_FATAL(...) _br_logger_message(BR_LOG_LEVEL_FATAL, __VA_ARGS__)
 #else
 #define BR_LOG_FATAL(msg) ((void)0)
 #endif

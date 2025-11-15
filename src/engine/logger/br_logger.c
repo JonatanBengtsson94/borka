@@ -1,5 +1,6 @@
 #include "borka_log.h"
 #include <pthread.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -296,13 +297,16 @@ void br_logger_shutdown(void) {
   }
 }
 
-void _br_logger_message(BrLogLevel level, const char *message) {
+void _br_logger_message(BrLogLevel level, const char *format, ...) {
   LogMessage msg;
   msg.level = level;
   msg.timestamp = time(NULL);
 
-  strncpy(msg.message, message, MAX_MESSAGE_LENGTH - 1);
-  msg.message[MAX_MESSAGE_LENGTH - 1] = '\0';
+  va_list args;
+  va_start(args, format);
+  vsnprintf(msg.message, MAX_MESSAGE_LENGTH, format, args);
+  va_end(args);
 
+  msg.message[MAX_MESSAGE_LENGTH - 1] = '\0';
   queue_push(&msg_queue, &msg);
 }

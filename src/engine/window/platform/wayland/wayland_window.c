@@ -24,18 +24,25 @@ static void xdg_toplevel_configure(void *data, struct xdg_toplevel *toplevel,
   (void)toplevel;
   (void)states;
 
+  BrWindow *window = data;
+
   if (width <= 0 || height <= 0) {
     BR_LOG_ERROR("xdg toplevel configure with zero or less dimensions");
     return;
   }
 
-  BrWindow *window = data;
+  if (window->width == width && window->height == height) {
+    return;
+  }
+
+  BR_LOG_DEBUG("Window resizing: %dx%d -> %dx%d", window->width, window->height,
+               width, height);
+
   window->width = width;
   window->height = height;
 
   BrWindowEvent e = {.type = BR_WINDOW_EVENT_RESIZE,
                      .resize = {.width = width, .height = height}};
-  BR_LOG_DEBUG("Window resize event registered");
 
   br_window_event_push(&e);
 }
