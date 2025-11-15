@@ -30,7 +30,8 @@ typedef enum {
  * Should not be used directly — prefer the LOG_* macros.
  *
  * @param level The severity level of the message.
- * @param message The message to log (null-terminated string).
+ * @param format The format string (printf-style).
+ * @param ... Variable arguments for the format string.
  */
 void _br_logger_message(BrLogLevel level, const char *format, ...);
 
