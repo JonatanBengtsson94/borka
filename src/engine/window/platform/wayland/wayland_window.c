@@ -1,4 +1,5 @@
 #include "wayland_window.h"
+#include "event/br_window_event.h"
 #include "logger/br_logger.h"
 #include "window/br_window.h"
 #include "xdg-shell-client-protocol.h"
@@ -23,19 +24,30 @@ static void xdg_toplevel_configure(void *data, struct xdg_toplevel *toplevel,
   (void)toplevel;
   (void)states;
 
-  BrWindow *window = data;
-  if (width > 0 && height > 0) {
-    window->width = width;
-    window->height = height;
+  if (width <= 0 || height <= 0) {
+    BR_LOG_ERROR("xdg toplevel configure with zero or less dimensions");
+    return;
   }
+
+  BrWindow *window = data;
+  window->width = width;
+  window->height = height;
+
+  BrWindowEvent e = {.type = BR_WINDOW_EVENT_RESIZE,
+                     .resize = {.width = width, .height = height}};
+  BR_LOG_DEBUG("Window resize event registered");
+
+  br_window_event_push(&e);
 }
 
 static void xdg_toplevel_close(void *data, struct xdg_toplevel *toplevel) {
   (void)toplevel;
+  (void)data;
 
-  BrWindow *window = data;
-  BR_LOG_INFO("Recieved close event from compositor");
-  window->should_close = true;
+  BrWindowEvent e = {.type = BR_WINDOW_EVENT_CLOSE};
+  BR_LOG_DEBUG("Window close event registered");
+
+  br_window_event_push(&e);
 }
 
 static const struct xdg_toplevel_listener xdg_toplevel_listener = {
@@ -202,6 +214,7 @@ BrWindow *br_window_create(const char *title, int width, int height) {
   xdg_toplevel_set_min_size(window->xdg_toplevel, window->width,
                             window->height);
 
+  BR_LOG_INFO("Window instance created");
   return window;
 }
 
@@ -212,29 +225,33 @@ void br_window_destroy(BrWindow *window) {
   window_cleanup(window);
 }
 
-bool br_window_poll_events(BrWindow *window) {
-  if (wl_display_dispatch_pending(window->wl_display) == -1) {
+bool br_window_poll_events(BrWindow *window, BrWindowEvent *out_event) {
+  if (!window) {
+    BR_LOG_ERROR("Can't poll NULL window");
     return false;
   }
 
-  if (wl_display_flush(window->wl_display) == -1) {
+  if (!window->wl_display) {
+    BR_LOG_ERROR("wl display was NULL");
     return false;
   }
 
-  struct pollfd fds = {
-      .fd = wl_display_get_fd(window->wl_display),
-      .events = POLLIN,
-  };
-
-  if (poll(&fds, 1, 0) > 0) {
-    if (wl_display_dispatch(window->wl_display) == -1) {
-      return false;
-    }
+  while (wl_display_prepare_read(window->wl_display) != 0) {
+    wl_display_dispatch_pending(window->wl_display);
   }
 
-  if (window->should_close) {
-    return false;
+  wl_display_flush(window->wl_display);
+
+  struct pollfd pfd = {.fd = wl_display_get_fd(window->wl_display),
+                       .events = POLLIN};
+
+  if (poll(&pfd, 1, 0) > 0) {
+    wl_display_read_events(window->wl_display);
+  } else {
+    wl_display_cancel_read(window->wl_display);
   }
 
-  return true;
+  wl_display_dispatch_pending(window->wl_display);
+
+  return br_window_event_poll(out_event);
 }

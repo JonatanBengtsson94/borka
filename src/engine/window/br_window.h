@@ -1,6 +1,7 @@
 #ifndef BR_WINDOW_H
 #define BR_WINDOW_H
 
+#include "event/br_window_event.h"
 #include <stdbool.h>
 
 /**
@@ -29,17 +30,16 @@ BrWindow *br_window_create(const char *title, int width, int height);
 void br_window_destroy(BrWindow *window);
 
 /**
- * @brief Polls and processes window events without blocking.
+ * @brief Polls for window events (non-blocking).
  *
- * This function checks for events from the window system (such as resize,
- * input, or close request) and dispatches them to appropriate handlers.
+ * This function processess all pending platform events (such as buffer
+ * releases, input events, etc.) and returns the next queued window event if
+ * available. It should be called once per frame in the main loop.
  *
- * @param window Window to poll events for. Passing NULL is safe and does
- * nothing.
- * @return true if the window should continue running, false if the window
- * received a close request, an error occurred, or the connection to the display
- * was lost.
+ * @param window The window to poll events from.
+ * @param out_event The BrWindowEvent structure to fill with event data.
+ * @return true if an event was retrieved, false if the queue was empty.
  */
-bool br_window_poll_events(BrWindow *window);
+bool br_window_poll_events(BrWindow *window, BrWindowEvent *out_event);
 
 #endif // BR_WINDOW_H

@@ -1,0 +1,36 @@
+#include "br_window_event.h"
+#include "logger/br_logger.h"
+
+#define EVENT_QUEUE_SIZE 32
+
+typedef struct {
+  BrWindowEvent events[EVENT_QUEUE_SIZE];
+  int head;
+  int tail;
+  int count;
+} EventQueue;
+
+static EventQueue event_queue;
+
+bool br_window_event_push(const BrWindowEvent *event) {
+  if (event_queue.count >= EVENT_QUEUE_SIZE) {
+    BR_LOG_ERROR("Window event queue is full, dropped event");
+    return false;
+  }
+
+  event_queue.events[event_queue.tail] = *event;
+  event_queue.tail = (event_queue.tail + 1) % EVENT_QUEUE_SIZE;
+  event_queue.count++;
+  return true;
+}
+
+bool br_window_event_poll(BrWindowEvent *out_event) {
+  if (event_queue.count == 0) {
+    return false;
+  }
+
+  *out_event = event_queue.events[event_queue.head];
+  event_queue.head = (event_queue.head + 1) % EVENT_QUEUE_SIZE;
+  event_queue.count--;
+  return true;
+}
