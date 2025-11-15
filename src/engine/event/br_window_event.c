@@ -1,5 +1,5 @@
 #include "br_window_event.h"
-#include "logger/br_logger.h"
+#include "borka_log.h"
 
 #define EVENT_QUEUE_SIZE 32
 

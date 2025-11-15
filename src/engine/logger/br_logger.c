@@ -1,4 +1,4 @@
-#include "br_logger.h"
+#include "borka_log.h"
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -296,7 +296,7 @@ void br_logger_shutdown(void) {
   }
 }
 
-void br_logger_message(BrLogLevel level, const char *message) {
+void _br_logger_message(BrLogLevel level, const char *message) {
   LogMessage msg;
   msg.level = level;
   msg.timestamp = time(NULL);

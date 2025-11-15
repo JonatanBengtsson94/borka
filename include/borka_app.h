@@ -1,8 +1,8 @@
-#ifndef BORKA_H
-#define BORKA_H
+#ifndef BORKA_APP_H
+#define BORKA_APP_H
 
-#include "renderer/br_renderer.h"
-#include "window/br_window.h"
+#include "borka_render.h"
+#include "borka_window.h"
 
 /**
  * @brief Represents an application instance containing a window and a render.
@@ -13,7 +13,7 @@
  */
 typedef struct BrApp {
   BrWindow *window;     /**< The window instance used by the application. */
-  BrRenderer *renderer; /**< The renderer responsible for drawubg. */
+  BrRenderer *renderer; /**< The renderer responsible for drawing. */
 } BrApp;
 
 /**
@@ -39,4 +39,4 @@ BrApp *br_app_create(const char *title, int width, int height);
  */
 void br_app_destroy(BrApp *app);
 
-#endif // BORKA_H
+#endif // BORKA_APP_H

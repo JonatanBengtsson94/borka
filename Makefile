@@ -1,5 +1,8 @@
 cc = gcc
-CFLAGS = -pthread -Wall -Wextra -std=c99 -Isrc/engine -Isrc/game
+CFLAGS = -pthread -Wall -Wextra -std=c99 \
+				 -Iinclude \
+				 -Isrc/engine \
+				 -Isrc/game
 
 OUT_DIR = bin
 OUT = $(OUT_DIR)/breakout

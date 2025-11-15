@@ -1,6 +1,6 @@
 #include "br_software_renderer.h"
-#include "../engine/logger/br_logger.h"
-#include "../engine/math/br_math.h"
+#include "borka_log.h"
+#include "borka_math.h"
 #include <stddef.h>
 
 void software_clear(int *pixels, int width, int height, int color) {

@@ -1,6 +1,6 @@
 #include "renderer/software/platform/wayland/wayland_software_renderer.h"
-#include "logger/br_logger.h"
-#include "math/br_math.h"
+#include "borka_log.h"
+#include "borka_math.h"
 #include "renderer/software/br_software_renderer.h"
 #include "wayland_software_renderer.h"
 #include "window/platform/wayland/wayland_shm.h"

@@ -1,6 +1,8 @@
 #include "borka.h"
+#include "borka_log.h"
 #include "logger/br_logger.h"
 #include "renderer/br_renderer.h"
+#include "window/br_window.h"
 #include <stddef.h>
 #include <stdlib.h>
 

@@ -1,5 +1,5 @@
 #include "wayland_shm.h"
-#include "logger/br_logger.h"
+#include "borka_log.h"
 #include <fcntl.h>
 #include <stddef.h>
 #include <stdlib.h>

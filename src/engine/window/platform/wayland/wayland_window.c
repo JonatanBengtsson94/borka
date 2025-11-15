@@ -1,6 +1,6 @@
 #include "wayland_window.h"
+#include "borka_log.h"
 #include "event/br_window_event.h"
-#include "logger/br_logger.h"
 #include "window/br_window.h"
 #include "xdg-shell-client-protocol.h"
 #include <poll.h>
