@@ -20,7 +20,16 @@ int main() {
         break;
 
       case BR_WINDOW_EVENT_RESIZE:
-        br_renderer_resize(app->renderer, e.resize.width, e.resize.height);
+        br_renderer_resize(app->renderer, e.data.resize.width,
+                           e.data.resize.height);
+        break;
+
+      case BR_WINDOW_EVENT_KEY_PRESSED:
+        BR_LOG_DEBUG("Key %d pressed", e.data.keycode);
+        break;
+
+      case BR_WINDOW_EVENT_KEY_RELEASED:
+        BR_LOG_DEBUG("Key %d released", e.data.keycode);
         break;
       }
     }

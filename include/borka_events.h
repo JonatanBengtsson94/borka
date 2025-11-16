@@ -5,8 +5,10 @@
  * @brief Describes the type of window event.
  */
 typedef enum {
-  BR_WINDOW_EVENT_CLOSE, /**< The window has been requested to close. */
-  BR_WINDOW_EVENT_RESIZE /**< The window size has changed. */
+  BR_WINDOW_EVENT_CLOSE,        /**< The window has been requested to close. */
+  BR_WINDOW_EVENT_RESIZE,       /**< The window size has changed. */
+  BR_WINDOW_EVENT_KEY_PRESSED,  /** A key has been pressed. */
+  BR_WINDOW_EVENT_KEY_RELEASED, /** A key has been released. */
 } BrWindowEventType;
 
 /**
@@ -17,13 +19,18 @@ typedef enum {
  */
 typedef struct {
   BrWindowEventType type; /**< The type of window event. */
+
   union {
-    /** Data for BR_WINDOW_EVENT_RESIZE. */
+    /** Data for resize events. */
     struct {
       int width;  /**< The new width of the window in pixels. */
       int height; /**< The new height of the window in pixels. */
     } resize;
-  };
+
+    /** Data for key events. */
+    int keycode; /**< The key code associated with the event (raw evdev). */
+
+  } data;
 } BrWindowEvent;
 
 #endif // BORKA_EVENTS_H

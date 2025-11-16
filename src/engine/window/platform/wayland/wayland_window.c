@@ -1,4 +1,5 @@
 #include "wayland_window.h"
+#include "borka_events.h"
 #include "borka_log.h"
 #include "event/br_window_event.h"
 #include "window/br_window.h"
@@ -7,6 +8,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wayland-client-protocol.h>
 #include <wayland-client.h>
 
 // --- XDG SETUP ---
@@ -42,7 +44,7 @@ static void xdg_toplevel_configure(void *data, struct xdg_toplevel *toplevel,
   window->height = height;
 
   BrWindowEvent e = {.type = BR_WINDOW_EVENT_RESIZE,
-                     .resize = {.width = width, .height = height}};
+                     .data.resize = {.width = width, .height = height}};
 
   br_window_event_push(&e);
 }
@@ -77,6 +79,106 @@ static const struct xdg_wm_base_listener xdg_wm_base_listener = {
     .ping = xdg_wm_base_ping,
 };
 
+// --- INPUT ---
+
+void keyboard_keymap(void *data, struct wl_keyboard *kb, uint32_t format,
+                     int32_t fd, uint32_t size) {
+  (void)data;
+  (void)kb;
+  (void)format;
+  (void)fd;
+  (void)size;
+}
+
+void keyboard_enter(void *data, struct wl_keyboard *kb, uint32_t serial,
+                    struct wl_surface *surface, struct wl_array *keys) {
+  (void)data;
+  (void)kb;
+  (void)serial;
+  (void)surface;
+  (void)keys;
+}
+
+void keyboard_leave(void *data, struct wl_keyboard *kb, uint32_t serial,
+                    struct wl_surface *surface) {
+
+  (void)data;
+  (void)kb;
+  (void)serial;
+  (void)surface;
+}
+
+void keyboard_key(void *data, struct wl_keyboard *kb, uint32_t serial,
+                  uint32_t time, uint32_t key, uint32_t state) {
+  (void)data;
+  (void)kb;
+  (void)serial;
+  (void)time;
+
+  BrWindowEvent e;
+
+  if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+    e.type = BR_WINDOW_EVENT_KEY_PRESSED;
+    e.data.keycode = key;
+  } else {
+    e.type = BR_WINDOW_EVENT_KEY_RELEASED;
+    e.data.keycode = key;
+  }
+
+  br_window_event_push(&e);
+}
+
+void keyboard_modifiers(void *data, struct wl_keyboard *kb, uint32_t serial,
+                        uint32_t mods_depressed, uint32_t mods_latched,
+                        uint32_t mods_locked, uint32_t group) {
+  (void)data;
+  (void)kb;
+  (void)serial;
+  (void)mods_depressed;
+  (void)mods_latched;
+  (void)mods_locked;
+  (void)group;
+}
+
+void keyboard_repeat_info(void *data, struct wl_keyboard *kb, int32_t rate,
+                          int32_t delay) {
+  (void)data;
+  (void)kb;
+  (void)rate;
+  (void)delay;
+}
+
+static const struct wl_keyboard_listener keyboard_listener = {
+    .keymap = keyboard_keymap,
+    .enter = keyboard_enter,
+    .leave = keyboard_leave,
+    .key = keyboard_key,
+    .modifiers = keyboard_modifiers,
+    .repeat_info = keyboard_repeat_info,
+};
+
+void seat_capabilities(void *data, struct wl_seat *seat,
+                       uint32_t capabilities) {
+  BrWindow *window = data;
+
+  if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
+    BR_LOG_DEBUG("Keyboard capability detected");
+    window->wl_keyboard = wl_seat_get_keyboard(seat);
+    wl_keyboard_add_listener(window->wl_keyboard, &keyboard_listener, window);
+  }
+}
+
+void seat_name(void *data, struct wl_seat *seat, const char *name) {
+  (void)data;
+  (void)seat;
+  (void)name;
+}
+
+static const struct wl_seat_listener seat_listener = {
+    .capabilities = seat_capabilities,
+    .name = seat_name,
+};
+
 // --- WAYLAND REGISTRY SETUP ---
 
 static void registry_handle_global(void *data, struct wl_registry *registry,
@@ -92,10 +194,10 @@ static void registry_handle_global(void *data, struct wl_registry *registry,
   } else if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
     window->xdg_wm_base =
         wl_registry_bind(registry, name, &xdg_wm_base_interface, 1);
-    xdg_wm_base_add_listener(window->xdg_wm_base, &xdg_wm_base_listener,
-                             window);
   } else if (strcmp(interface, wl_shm_interface.name) == 0) {
     window->wl_shm = wl_registry_bind(registry, name, &wl_shm_interface, 1);
+  } else if (strcmp(interface, wl_seat_interface.name) == 0) {
+    window->wl_seat = wl_registry_bind(registry, name, &wl_seat_interface, 1);
   }
 }
 
@@ -138,6 +240,12 @@ static void window_cleanup(BrWindow *window) {
   }
   if (window->wl_display) {
     wl_display_disconnect(window->wl_display);
+  }
+  if (window->wl_seat) {
+    wl_seat_destroy(window->wl_seat);
+  }
+  if (window->wl_keyboard) {
+    wl_keyboard_destroy(window->wl_keyboard);
   }
 
   free(window);
@@ -188,6 +296,9 @@ BrWindow *br_window_create(const char *title, int width, int height) {
   }
   BR_LOG_DEBUG("Bound to xdg");
 
+  xdg_wm_base_add_listener(window->xdg_wm_base, &xdg_wm_base_listener, window);
+  wl_seat_add_listener(window->wl_seat, &seat_listener, window);
+
   window->wl_surface = wl_compositor_create_surface(window->wl_compositor);
   if (!window->wl_surface) {
     BR_LOG_ERROR("Failed to create Wayland surface");
@@ -222,7 +333,6 @@ BrWindow *br_window_create(const char *title, int width, int height) {
                             window->height);
 
   wl_surface_commit(window->wl_surface);
-  wl_display_roundtrip(window->wl_display);
 
   BR_LOG_INFO("Window instance created");
   return window;
