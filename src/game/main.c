@@ -2,7 +2,7 @@
 #include <stdbool.h>
 
 int main() {
-  BrApp *app = br_app_create("Breakout", 800, 600);
+  BrApp *app = br_app_create("Breakout", 200, 200);
   bool running = true;
 
   BrVec2 a = {50, 10};
@@ -13,13 +13,14 @@ int main() {
 
   while (running) {
     // Poll for events
-    if (br_window_poll_events(app->window, &e)) {
+    while (br_window_poll_events(app->window, &e)) {
       switch (e.type) {
       case BR_WINDOW_EVENT_CLOSE:
         running = false;
         break;
 
       case BR_WINDOW_EVENT_RESIZE:
+        br_renderer_resize(app->renderer, e.resize.width, e.resize.height);
         break;
       }
     }

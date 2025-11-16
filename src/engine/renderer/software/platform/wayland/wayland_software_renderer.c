@@ -94,9 +94,10 @@ void br_renderer_present(struct BrRenderer *renderer) {
 
   int back = renderer->back_buffer_index;
 
-  while (renderer->buffers->buffer_busy[back]) {
-    BR_LOG_WARN("Back buffer is busy");
-    wl_display_dispatch(renderer->wl_display);
+  if (renderer->buffers->buffer_busy[back]) {
+    BR_LOG_WARN("Back buffer is busy, dropping frame");
+    return;
+    // wl_display_dispatch(renderer->wl_display);
   }
 
   renderer->buffers->buffer_busy[back] = true;
@@ -109,4 +110,36 @@ void br_renderer_present(struct BrRenderer *renderer) {
   int temp = renderer->front_buffer_index;
   renderer->front_buffer_index = renderer->back_buffer_index;
   renderer->back_buffer_index = temp;
+}
+
+void br_renderer_resize(struct BrRenderer *renderer, int width, int height) {
+  if (!renderer) {
+    BR_LOG_ERROR("Cannot resize: renderer is NULL");
+    return;
+  }
+
+  if (renderer->width == width && renderer->height == height) {
+    return;
+  }
+
+  BR_LOG_DEBUG("Renderer resizing: %dx%d -> %dx%d", renderer->width,
+               renderer->height, width, height);
+
+  if (renderer->buffers) {
+    wayland_shm_buffer_pair_destroy(renderer->buffers);
+  }
+
+  renderer->width = width;
+  renderer->height = height;
+
+  renderer->buffers = wayland_shm_buffer_pair_create(
+      renderer->wl_shm, renderer->width, renderer->height);
+
+  if (!renderer->buffers) {
+    BR_LOG_ERROR("Failed to recreate buffers during resize");
+    return;
+  }
+
+  renderer->front_buffer_index = 0;
+  renderer->back_buffer_index = 1;
 }

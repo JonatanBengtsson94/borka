@@ -80,6 +80,9 @@ ShmBufferPair *wayland_shm_buffer_pair_create(struct wl_shm *shm, int width,
     return NULL;
   }
 
+  pair->buffer_busy[0] = false;
+  pair->buffer_busy[1] = false;
+
   pair->shared_data = data;
   pair->buffer_size = buffer_size;
 

@@ -44,4 +44,14 @@ void br_renderer_draw_quad();
  */
 void br_renderer_present(BrRenderer *renderer);
 
+/**
+ * @brief Resizes the renderer and recreates its buffers.
+ *
+ * @param renderer The BrRenderer instance to resize. Passing NULL is safe and
+ * does nothing.
+ * @param width The new width in pixels.
+ * @param height The new height in pixels.
+ */
+void br_renderer_resize(BrRenderer *renderer, int width, int height);
+
 #endif // BORKA_RENDER_H

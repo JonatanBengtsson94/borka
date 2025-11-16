@@ -221,6 +221,9 @@ BrWindow *br_window_create(const char *title, int width, int height) {
   xdg_toplevel_set_min_size(window->xdg_toplevel, window->width,
                             window->height);
 
+  wl_surface_commit(window->wl_surface);
+  wl_display_roundtrip(window->wl_display);
+
   BR_LOG_INFO("Window instance created");
   return window;
 }
