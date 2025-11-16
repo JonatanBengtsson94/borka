@@ -20,6 +20,6 @@ typedef struct BrWindow BrWindow;
  * @param out_event The BrWindowEvent structure to fill with event data.
  * @return true if an event was retrieved, false if the queue was empty.
  */
-bool br_window_poll_events(BrWindow *window, BrWindowEvent *out_event);
+bool br_window_poll_events(BrWindow *window, BrEvent *out_event);
 
 #endif

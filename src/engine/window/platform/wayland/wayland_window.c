@@ -1,7 +1,7 @@
 #include "wayland_window.h"
 #include "borka_events.h"
 #include "borka_log.h"
-#include "event/br_window_event.h"
+#include "event/br_event.h"
 #include "window/br_window.h"
 #include "xdg-shell-client-protocol.h"
 #include <poll.h>
@@ -43,20 +43,20 @@ static void xdg_toplevel_configure(void *data, struct xdg_toplevel *toplevel,
   window->width = width;
   window->height = height;
 
-  BrWindowEvent e = {.type = BR_WINDOW_EVENT_RESIZE,
-                     .data.resize = {.width = width, .height = height}};
+  BrEvent e = {.type = BR_EVENT_WINDOW_RESIZE,
+               .data.resize = {.width = width, .height = height}};
 
-  br_window_event_push(&e);
+  br_event_push(&e);
 }
 
 static void xdg_toplevel_close(void *data, struct xdg_toplevel *toplevel) {
   (void)toplevel;
   (void)data;
 
-  BrWindowEvent e = {.type = BR_WINDOW_EVENT_CLOSE};
+  BrEvent e = {.type = BR_EVENT_WINDOW_CLOSE};
   BR_LOG_DEBUG("Window close event registered");
 
-  br_window_event_push(&e);
+  br_event_push(&e);
 }
 
 static const struct xdg_toplevel_listener xdg_toplevel_listener = {
@@ -115,17 +115,17 @@ void keyboard_key(void *data, struct wl_keyboard *kb, uint32_t serial,
   (void)serial;
   (void)time;
 
-  BrWindowEvent e;
+  BrEvent e;
 
   if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-    e.type = BR_WINDOW_EVENT_KEY_PRESSED;
+    e.type = BR_EVENT_KEY_PRESSED;
     e.data.keycode = key;
   } else {
-    e.type = BR_WINDOW_EVENT_KEY_RELEASED;
+    e.type = BR_EVENT_KEY_RELEASED;
     e.data.keycode = key;
   }
 
-  br_window_event_push(&e);
+  br_event_push(&e);
 }
 
 void keyboard_modifiers(void *data, struct wl_keyboard *kb, uint32_t serial,
@@ -238,14 +238,14 @@ static void window_cleanup(BrWindow *window) {
   if (window->wl_registry) {
     wl_registry_destroy(window->wl_registry);
   }
-  if (window->wl_display) {
-    wl_display_disconnect(window->wl_display);
+  if (window->wl_keyboard) {
+    wl_keyboard_destroy(window->wl_keyboard);
   }
   if (window->wl_seat) {
     wl_seat_destroy(window->wl_seat);
   }
-  if (window->wl_keyboard) {
-    wl_keyboard_destroy(window->wl_keyboard);
+  if (window->wl_display) {
+    wl_display_disconnect(window->wl_display);
   }
 
   free(window);
@@ -345,7 +345,7 @@ void br_window_destroy(BrWindow *window) {
   window_cleanup(window);
 }
 
-bool br_window_poll_events(BrWindow *window, BrWindowEvent *out_event) {
+bool br_window_poll_events(BrWindow *window, BrEvent *out_event) {
   if (!window) {
     BR_LOG_ERROR("Can't poll NULL window");
     return false;
@@ -373,5 +373,5 @@ bool br_window_poll_events(BrWindow *window, BrWindowEvent *out_event) {
 
   wl_display_dispatch_pending(window->wl_display);
 
-  return br_window_event_poll(out_event);
+  return br_event_poll(out_event);
 }
