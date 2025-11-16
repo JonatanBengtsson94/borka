@@ -95,9 +95,8 @@ void br_renderer_present(struct BrRenderer *renderer) {
   int back = renderer->back_buffer_index;
 
   if (renderer->buffers->buffer_busy[back]) {
-    BR_LOG_WARN("Back buffer is busy, dropping frame");
+    BR_LOG_DEBUG("Back buffer is busy, dropping frame");
     return;
-    // wl_display_dispatch(renderer->wl_display);
   }
 
   renderer->buffers->buffer_busy[back] = true;
