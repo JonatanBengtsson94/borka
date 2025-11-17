@@ -12,7 +12,7 @@ typedef enum {
 } BrEventType;
 
 /**
- * @brief Stores a single window event.
+ * @brief Stores a single event.
  *
  * The union contains event-specific data. Only fields corresponding to the
  * value of @ref type are valid.
