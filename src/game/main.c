@@ -5,9 +5,16 @@ int main() {
   BrApp *app = br_app_create("Breakout", 200, 200);
   bool running = true;
 
-  BrVec2 a = {50, 10};
-  BrVec2 b = {90, 80};
-  BrVec2 c = {10, 80};
+  // Quad
+  BrVec2 q0 = {50, 50};
+  BrVec2 q1 = {150, 50};
+  BrVec2 q2 = {150, 150};
+  BrVec2 q3 = {50, 150};
+
+  // Triangle
+  BrVec2 t0 = {100, 50};
+  BrVec2 t1 = {150, 150};
+  BrVec2 t2 = {50, 150};
 
   BrEvent e;
 
@@ -36,7 +43,8 @@ int main() {
 
     // Render
     br_renderer_clear(app->renderer, 0xFFFFFFFF);
-    br_renderer_draw_triangle(app->renderer, a, b, c, 0xFFFF0000);
+    br_renderer_draw_quad(app->renderer, q0, q1, q2, q3, 0xFF0000FF);
+    br_renderer_draw_triangle(app->renderer, t0, t1, t2, 0xFFFFFF00);
     br_renderer_present(app->renderer);
   }
 

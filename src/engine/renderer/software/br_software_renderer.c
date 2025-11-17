@@ -50,6 +50,25 @@ void software_draw_triangle(int *pixels, int width, int height, BrVec2 v0,
   }
 }
 
-void software_draw_quad() {
-  // TODO
+void software_draw_quad(int *pixels, int width, int height, BrVec2 v0,
+                        BrVec2 v1, BrVec2 v2, BrVec2 v3, int color) {
+  if (!pixels) {
+    BR_LOG_WARN("Skipping draw: Pixel buffer is NULL");
+    return;
+  }
+  int minX = clamp_int(min_int(min_int(min_int(v0.x, v1.x), v2.x), v3.x), 0,
+                       width - 1);
+  int maxX = clamp_int(max_int(max_int(max_int(v0.x, v1.x), v2.x), v3.x), 0,
+                       width - 1);
+  int minY = clamp_int(min_int(min_int(min_int(v0.y, v1.y), v2.y), v3.y), 0,
+                       height - 1);
+  int maxY = clamp_int(max_int(max_int(max_int(v0.y, v1.y), v2.y), v3.y), 0,
+                       height - 1);
+
+  for (int y = minY; y <= maxY; ++y) {
+    int rowOffset = y * width;
+    for (int x = minX; x <= maxX; ++x) {
+      pixels[rowOffset + x] = color;
+    }
+  }
 }

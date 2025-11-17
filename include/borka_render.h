@@ -21,7 +21,7 @@ void br_renderer_clear(BrRenderer *renderer, int color);
 /**
  * @brief Draws a filled triangle.
  *
- * @param target the renderer to draw with. Passing NULL is safe and does
+ * @param renderer The renderer to draw with. Passing NULL is safe and does
  * nothing.
  * @param v0 First vertex position in screen coordinates.
  * @param v1 Second vertex position in screen coordinates.
@@ -30,11 +30,26 @@ void br_renderer_clear(BrRenderer *renderer, int color);
  *
  * @note Vertices must be specified in counter-clockwise order, or the triangle
  * will not be rendered.
- * @note Changes are not visable until br_renderer_present() is called.
+ * @note Changes are not visible until br_renderer_present() is called.
  */
 void br_renderer_draw_triangle(BrRenderer *renderer, BrVec2 v0, BrVec2 v1,
                                BrVec2 v2, int color);
-void br_renderer_draw_quad();
+
+/**
+ * @brief Draws a filled rectangle.
+ *
+ * @param The renderer to draw with. Passing NULL is safe and does nothing.
+ * @param v0 First vertex position in screen coordinates.
+ * @param v1 Second vertex position in screen coordinates.
+ * @param v2 Third vertex position in screen coordinates.
+ * @param v3 Fourth vertex position in screen coordinates.
+ * @param color Fill color in 32-bit ARGB format (0xAARRGGBB).
+ *
+ * @note Only supports axis-aligned rectangles.
+ * @note Changes are not visible until br_renderer_present() is called.
+ */
+void br_renderer_draw_quad(BrRenderer *renderer, BrVec2 v0, BrVec2 v1,
+                           BrVec2 v2, BrVec2 v3, int color);
 
 /**
  * @brief Presents the rendered frame to the window.
