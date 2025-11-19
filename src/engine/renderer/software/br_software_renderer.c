@@ -72,3 +72,46 @@ void software_draw_quad(int *pixels, int width, int height, BrVec2 v0,
     }
   }
 }
+
+void software_draw_texture(int *pixels, int width, int height, int x, int y,
+                           const BrTexture *texture) {
+  if (!pixels) {
+    BR_LOG_WARN("Skipping draw: Pixel buffer is NULL");
+    return;
+  }
+  if (!texture) {
+    BR_LOG_WARN("Skipping draw: Texture is NULL");
+    return;
+  }
+  if (!texture->pixels) {
+    BR_LOG_WARN("Skipping draw: Texture pixels is NULL");
+  }
+
+  if (x >= width || y >= height || x + texture->width <= 0 ||
+      y + texture->height <= 0) {
+    return;
+  }
+
+  int startX = clamp_int(-x, 0, texture->width);
+  int startY = clamp_int(-y, 0, texture->height);
+  int endX = clamp_int(width - x, 0, texture->width);
+  int endY = clamp_int(height - y, 0, texture->height);
+
+  for (int textureY = startY; textureY < endY; ++textureY) {
+    for (int textureX = startX; textureX < endX; ++textureX) {
+      int screenX = x + textureX;
+      int screenY = y + textureY;
+
+      if (screenX < 0 || screenX >= width || screenY < 0 || screenY >= height)
+        continue;
+
+      int texture_color = texture->pixels[textureY * texture->width + textureX];
+
+      int alpha = (texture_color >> 24) & 0xFF;
+      if (alpha == 0)
+        continue;
+
+      pixels[screenY * width + screenX] = texture_color;
+    }
+  }
+}

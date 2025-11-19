@@ -25,7 +25,7 @@ endif
 # Window backend flags
 ifeq ($(WINDOW_BACKEND),wayland)
 	CFLAGS += -DWINDOW_BACKEND_WAYLAND
-	LDFLAGS += -lwayland-client
+	LDFLAGS += -lwayland-client -lm # TODO: Remove lm
 	SRC += src/engine/window/platform/wayland/*.c
 
 	ifeq ($(RENDER_BACKEND),software)
@@ -35,7 +35,11 @@ ifeq ($(WINDOW_BACKEND),wayland)
 	endif
 endif
 
-all: $(OUT)
+copy_assets:
+	@mkdir -p $(OUT_DIR)/assets
+	@cp -r assets/* $(OUT_DIR)/assets/
+
+all: $(OUT) copy_assets
 
 $(OUT) : $(SRC)
 	@mkdir -p $(OUT_DIR)

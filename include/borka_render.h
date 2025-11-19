@@ -2,6 +2,7 @@
 #define BORKA_RENDER_H
 
 #include "borka_math.h"
+#include "borka_texture.h"
 
 /**
  * @brief Opaque renderer handle.
@@ -50,6 +51,20 @@ void br_renderer_draw_triangle(BrRenderer *renderer, BrVec2 v0, BrVec2 v1,
  */
 void br_renderer_draw_quad(BrRenderer *renderer, BrVec2 v0, BrVec2 v1,
                            BrVec2 v2, BrVec2 v3, int color);
+
+/*
+ * @brief Draws a texture at the specified position.
+ *
+ * @param renderer The renderer to draw with. Passing NULL is safe and does
+ * nothing.
+ * @param x The X coordinate of the top-left corner in screen space.
+ * @param y The Y coordinate of the top-left corner in screen space.
+ * @param texture The texture to draw. Passing NULL is safe and does nothing.
+ *
+ * @note Changes are not visible until br_renderer_present() is called.
+ */
+void br_renderer_draw_texture(BrRenderer *renderer, int x, int y,
+                              const BrTexture *texture);
 
 /**
  * @brief Presents the rendered frame to the window.

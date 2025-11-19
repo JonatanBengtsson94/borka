@@ -26,6 +26,8 @@ typedef struct BrApp {
  * name. Passing NULL is safe but no instance will be created.
  * @param width The width of the application window in pixels.
  * @param height The height of the application window in pixels.
+ *
+ * @note Should be destroyed with br_app_destroy() when no longer needed.
  */
 BrApp *br_app_create(const char *title, int width, int height);
 

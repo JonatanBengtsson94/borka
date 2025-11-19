@@ -98,6 +98,18 @@ void br_renderer_draw_quad(struct BrRenderer *renderer, BrVec2 v0, BrVec2 v1,
       renderer->width, renderer->height, v0, v1, v2, v3, color);
 }
 
+void br_renderer_draw_texture(struct BrRenderer *renderer, int x, int y,
+                              const BrTexture *texture) {
+  if (!renderer) {
+    BR_LOG_ERROR("Could not draw: renderer is NULL");
+    return;
+  }
+
+  software_draw_texture(
+      renderer->buffers->buffer_data[renderer->back_buffer_index],
+      renderer->width, renderer->height, x, y, texture);
+}
+
 void br_renderer_present(struct BrRenderer *renderer) {
   if (!renderer) {
     BR_LOG_ERROR("Cannot present: renderer is NULL");

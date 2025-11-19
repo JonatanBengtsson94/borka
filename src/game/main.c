@@ -16,6 +16,9 @@ int main() {
   BrVec2 t1 = {150, 150};
   BrVec2 t2 = {50, 150};
 
+  // Ball Texture
+  BrTexture *ball_text = br_texture_load("assets/sprites/ball.png");
+
   BrEvent e;
 
   while (running) {
@@ -42,9 +45,10 @@ int main() {
     }
 
     // Render
-    br_renderer_clear(app->renderer, 0xFFFFFFFF);
+    br_renderer_clear(app->renderer, 0xFF000000);
     br_renderer_draw_quad(app->renderer, q0, q1, q2, q3, 0xFF0000FF);
     br_renderer_draw_triangle(app->renderer, t0, t1, t2, 0xFFFFFF00);
+    br_renderer_draw_texture(app->renderer, 300, 300, ball_text);
     br_renderer_present(app->renderer);
   }
 
