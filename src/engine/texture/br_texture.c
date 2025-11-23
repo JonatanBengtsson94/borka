@@ -193,7 +193,7 @@ static uint8_t *collect_compressed_data(const uint8_t *data, size_t size,
     }
     if (type == CHUNK_IDAT) {
       BR_LOG_DEBUG("Found IDAT chunk: %u bytes (total: %zu)", length,
-                   total_length);
+                   total_length + length);
       total_length += length;
     }
     current_offset += length + 4; // Data + CRC
