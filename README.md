@@ -6,10 +6,14 @@
 
 - Multithreaded logging system.
 - Compile-time log level filtering.
-- Multiplatform.
-    - Linux (Wayland).
-    - Coming soon: Windows.
-- Pluggable rendering backends.
-    - Double-buffered software renering.
-    - Coming soon: OpenGL.
+- PNG Decoding.
 
+## Supported platforms
+
+### Linux
+
+#### Window
+- Wayland.
+
+#### Rendering
+- Software rendering.

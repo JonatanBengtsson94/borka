@@ -1,5 +1,5 @@
 cc = gcc
-CFLAGS = -pthread -Wall -Wextra -std=c99 \
+CFLAGS = -Wall -Wextra -std=c99 \
 				 -Iinclude \
 				 -Isrc/engine \
 				 -Isrc/game
@@ -25,7 +25,7 @@ endif
 # Window backend flags
 ifeq ($(WINDOW_BACKEND),wayland)
 	CFLAGS += -DWINDOW_BACKEND_WAYLAND
-	LDFLAGS += -lwayland-client -lm # TODO: Remove lm
+	LDFLAGS += -lwayland-client -lz # TODO: Remove lz
 	SRC += src/engine/window/platform/wayland/*.c
 
 	ifeq ($(RENDER_BACKEND),software)

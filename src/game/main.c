@@ -17,7 +17,7 @@ int main() {
   BrVec2 t2 = {50, 150};
 
   // Ball Texture
-  BrTexture *ball_text = br_texture_load("assets/sprites/ball.png");
+  BrTexture *ball_text = br_texture_load("assets/textures/ball.png");
 
   BrEvent e;
 
