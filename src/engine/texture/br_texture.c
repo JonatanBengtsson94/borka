@@ -289,9 +289,7 @@ static uint8_t *unfilter_scanlines(const uint8_t *filtered_data, uint32_t width,
 
     switch (filter_type) {
     case FILTER_NONE:
-      for (size_t x = 0; x < row_bytes; x++) {
-        unfiltered_data[dst_start + x] = filtered_data[src_start + x];
-      }
+      memcpy(unfiltered_data + dst_start, filtered_data + src_start, row_bytes);
       break;
 
     case FILTER_SUB:
