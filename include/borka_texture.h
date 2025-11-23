@@ -1,13 +1,15 @@
 #ifndef BORKA_TEXTURE_H
 #define BORKA_TEXTURE_H
 
+#include <stdint.h>
+
 /**
  * @brief Represent a 2D texture with ARGB pixel data.
  */
 typedef struct {
-  int *pixels; /**< ARGB pixel data (0xAARRGGBB format). */
-  int width;   /**< Texture width in pixels. */
-  int height;  /**< Texture height in pixels. */
+  uint32_t *pixels; /**< ARGB pixel data (0xAARRGGBB format). */
+  int width;        /**< Texture width in pixels. */
+  int height;       /**< Texture height in pixels. */
 } BrTexture;
 
 /**

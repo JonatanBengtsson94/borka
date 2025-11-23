@@ -7,6 +7,10 @@
 #include <string.h>
 #include <zlib.h>
 
+#define PNG_COLOR_TYPE_RGBA 6
+#define PNG_BIT_DEPTH_8 8
+#define PNG_BYTES_PER_PIXEL_RGBA 4
+
 const uint8_t PNG_SIGNATURE[8] = {0x89, 0x50, 0x4E, 0x47,
                                   0x0D, 0x0A, 0x1A, 0x0A};
 
@@ -15,12 +19,6 @@ typedef enum {
   CHUNK_IDAT = 0x49444154,
   CHUNK_IEND = 0x49454E44,
 } ChunkType;
-
-typedef struct {
-  uint32_t length;
-  ChunkType type;
-  uint32_t crc;
-} Chunk;
 
 typedef struct {
   uint32_t width;
@@ -98,138 +96,133 @@ static bool validate_png_signature(const uint8_t *data, size_t file_size) {
   return true;
 }
 
-static IHDR *parse_ihdr(const uint8_t *data, size_t file_size, size_t *offset) {
+static bool parse_ihdr(const uint8_t *data, size_t file_size, size_t *offset,
+                       IHDR *out_ihdr) {
   size_t current_offset = *offset;
 
   if (current_offset + 8 > file_size) {
     BR_LOG_ERROR("PNG too small for IHDR chunk");
-    return NULL;
+    return false;
   }
 
-  Chunk ihdr_chunk;
-  ihdr_chunk.length = read_u32_be(data + current_offset);
+  uint32_t length = read_u32_be(data + current_offset);
   current_offset += 4;
-  ihdr_chunk.type = read_u32_be(data + current_offset);
+  uint32_t type = read_u32_be(data + current_offset);
   current_offset += 4;
 
-  if (ihdr_chunk.type != CHUNK_IHDR) {
+  if (type != CHUNK_IHDR) {
     BR_LOG_ERROR("First PNG chunk is not IHDR");
-    return NULL;
+    return false;
   }
 
-  if (ihdr_chunk.length != 13) {
-    BR_LOG_ERROR("IHDR must be 13 bytes (got %u)", ihdr_chunk.length);
-    return NULL;
+  if (length != 13) {
+    BR_LOG_ERROR("IHDR must be 13 bytes (got %u)", length);
+    return false;
   }
 
-  if (current_offset + ihdr_chunk.length + 4 > file_size) {
+  if (current_offset + length + 4 > file_size) {
     BR_LOG_ERROR("IHDR extends past end of file");
-    return NULL;
-  }
-
-  IHDR *ihdr = malloc(sizeof(IHDR));
-  if (!ihdr) {
-    BR_LOG_ERROR("Failed to allocate IHDR");
-    return NULL;
+    return false;
   }
 
   // Validate IHDR Chunk
-  ihdr->width = read_u32_be(data + current_offset);
-  ihdr->height = read_u32_be(data + current_offset + 4);
-  ihdr->bit_depth = data[current_offset + 8];
-  ihdr->color_type = data[current_offset + 9];
-  ihdr->compression_type = data[current_offset + 10];
-  ihdr->filter_method = data[current_offset + 11];
-  ihdr->interlace_method = data[current_offset + 12];
+  out_ihdr->width = read_u32_be(data + current_offset);
+  out_ihdr->height = read_u32_be(data + current_offset + 4);
+  out_ihdr->bit_depth = data[current_offset + 8];
+  out_ihdr->color_type = data[current_offset + 9];
+  out_ihdr->compression_type = data[current_offset + 10];
+  out_ihdr->filter_method = data[current_offset + 11];
+  out_ihdr->interlace_method = data[current_offset + 12];
 
   // Advance beyond IHDR + CRC
-  current_offset += ihdr_chunk.length + 4;
+  current_offset += length + 4;
   *offset = current_offset;
 
-  if (ihdr->width == 0 || ihdr->height == 0) {
-    BR_LOG_ERROR("Invalid PNG dimensions: %ux%u", ihdr->width, ihdr->height);
-    return NULL;
+  if (out_ihdr->width == 0 || out_ihdr->height == 0) {
+    BR_LOG_ERROR("Invalid PNG dimensions: %ux%u", out_ihdr->width,
+                 out_ihdr->height);
+    return false;
   }
 
-  if (ihdr->bit_depth != 8) {
-    BR_LOG_ERROR("Only 8-bit PNG supported (got %u-bit)", ihdr->bit_depth);
-    return NULL;
+  if (out_ihdr->bit_depth != PNG_BIT_DEPTH_8) {
+    BR_LOG_ERROR("Only 8-bit PNG supported (got %u-bit)", out_ihdr->bit_depth);
+    return false;
   }
 
-  if (ihdr->color_type != 6) {
+  if (out_ihdr->color_type != PNG_COLOR_TYPE_RGBA) {
     BR_LOG_ERROR("Only RGBA PNG supported (got color_type %u)",
-                 ihdr->color_type);
-    return NULL;
+                 out_ihdr->color_type);
+    return false;
   }
 
-  if (ihdr->interlace_method != 0) {
+  if (out_ihdr->interlace_method != 0) {
     BR_LOG_ERROR("Interlaced PNG not supported");
-    return NULL;
+    return false;
   }
 
-  if (ihdr->compression_type != 0 || ihdr->filter_method != 0) {
+  if (out_ihdr->compression_type != 0 || out_ihdr->filter_method != 0) {
     BR_LOG_ERROR("Invalid PNG format");
-    return NULL;
+    return false;
   }
 
   BR_LOG_DEBUG(
       "PNG IHDR: width: %u, height: %u, bit_depth: %u, color_type: %u, "
       "compression_type: %u, filter_method: %u, interlace_method: %u",
-      ihdr->width, ihdr->height, ihdr->bit_depth, ihdr->color_type,
-      ihdr->compression_type, ihdr->filter_method, ihdr->interlace_method);
+      out_ihdr->width, out_ihdr->height, out_ihdr->bit_depth,
+      out_ihdr->color_type, out_ihdr->compression_type, out_ihdr->filter_method,
+      out_ihdr->interlace_method);
 
-  return ihdr;
+  return true;
 }
 
 static uint8_t *collect_compressed_data(const uint8_t *data, size_t size,
-                                        size_t *offset, size_t *out_size) {
-  size_t current_offset = *offset;
-  size_t capacity = 0;
-  size_t total_bytes = 0;
-  uint8_t *buffer = NULL;
+                                        size_t offset, size_t *out_size) {
+  size_t current_offset = offset;
+  size_t total_length = 0;
 
+  // Calculate size
   while (current_offset + 8 <= size) {
-    Chunk chunk;
-    chunk.length = read_u32_be(data + current_offset);
+    uint32_t length = read_u32_be(data + current_offset);
     current_offset += 4;
-    chunk.type = (ChunkType)read_u32_be(data + current_offset);
+    uint32_t type = read_u32_be(data + current_offset);
     current_offset += 4;
 
-    if (current_offset + chunk.length + 4 > size) {
-      BR_LOG_ERROR("Invalid PNG, incomplete chunk");
-      free(buffer);
-      return NULL;
-    }
-
-    if (chunk.type == CHUNK_IEND) {
+    if (type == CHUNK_IEND) {
       BR_LOG_DEBUG("Found IEND chunk");
       break;
     }
-
-    if (chunk.type == CHUNK_IDAT) {
-      // Expand buffer if needed
-      if (total_bytes + chunk.length > capacity) {
-        capacity = total_bytes + chunk.length;
-        uint8_t *new_data = realloc(buffer, capacity);
-        if (!new_data) {
-          BR_LOG_ERROR("Failed to allocate memory for IDAT");
-          free(buffer);
-          return NULL;
-        }
-        buffer = new_data;
-      }
-
-      memcpy(buffer + total_bytes, data + current_offset, chunk.length);
-      total_bytes += chunk.length;
-
-      BR_LOG_DEBUG("Found IDAT chunk: %u bytes (total: %zu)", chunk.length,
-                   total_bytes);
+    if (type == CHUNK_IDAT) {
+      BR_LOG_DEBUG("Found IDAT chunk: %u bytes (total: %zu)", length,
+                   total_length);
+      total_length += length;
     }
-    current_offset += chunk.length + 4; // Data + CRC
+    current_offset += length + 4; // Data + CRC
   }
 
-  *offset = current_offset;
-  *out_size = total_bytes;
+  uint8_t *buffer = malloc(total_length);
+  if (!buffer) {
+    BR_LOG_ERROR("Failed to allocate buffer");
+    return NULL;
+  }
+
+  size_t write_pos = 0;
+  current_offset = offset;
+  while (current_offset + 8 <= size) {
+    uint32_t length = read_u32_be(data + current_offset);
+    current_offset += 4;
+    uint32_t type = read_u32_be(data + current_offset);
+    current_offset += 4;
+
+    if (type == CHUNK_IEND)
+      break;
+    if (type == CHUNK_IDAT) {
+      memcpy(buffer + write_pos, data + current_offset, length);
+      write_pos += length;
+    }
+    current_offset += length + 4; // Data + CRC
+  }
+
+  *out_size = total_length;
   return buffer;
 }
 
@@ -269,61 +262,118 @@ static uint8_t *decompress_data(const uint8_t *compressed_data,
   return uncompressed_data;
 }
 
-static uint8_t *unfilter_scanlines(const uint8_t *filtered_data, uint32_t width,
-                                   uint32_t height, size_t scanline_size,
-                                   size_t output_size) {
-  uint8_t *unfiltered_data = malloc(output_size);
-  if (!unfiltered_data) {
-    BR_LOG_ERROR("Failed to allocate unfiltered data");
-    return NULL;
-  }
-
-  size_t bytes_per_pixel = 4; // RGBA
-  size_t row_bytes = scanline_size - 1;
+static bool unfilter_data(const uint8_t *filtered_data, uint32_t width,
+                          uint32_t height, uint8_t *target) {
+  size_t stride = width * PNG_BYTES_PER_PIXEL_RGBA;
+  size_t src_stride = stride + 1;
 
   for (uint32_t y = 0; y < height; y++) {
-    uint8_t filter_type = filtered_data[y * scanline_size];
+    uint8_t filter_type = filtered_data[y * src_stride];
+    const uint8_t *scanline = &filtered_data[y * src_stride + 1];
+    uint8_t *dst_row = &target[y * stride];
 
-    int src_start = y * scanline_size + 1;
-    int dst_start = y * row_bytes;
+    uint8_t *prev_row = NULL;
+    if (y > 0) {
+      prev_row = &target[(y - 1) * stride];
+    }
 
     switch (filter_type) {
     case FILTER_NONE:
-      memcpy(unfiltered_data + dst_start, filtered_data + src_start, row_bytes);
+      memcpy(dst_row, scanline, stride);
       break;
 
     case FILTER_SUB:
-      for (size_t x = 0; x < row_bytes; x++) {
+      for (size_t x = 0; x < stride; x++) {
         uint8_t left = 0;
-        if (x >= bytes_per_pixel) {
-          left = unfiltered_data[dst_start + x - bytes_per_pixel];
+        if (x >= PNG_BYTES_PER_PIXEL_RGBA) {
+          left = dst_row[x - PNG_BYTES_PER_PIXEL_RGBA];
         }
-        unfiltered_data[dst_start + x] = filtered_data[src_start + x] + left;
+        dst_row[x] = scanline[x] + left;
       }
       break;
 
     case FILTER_UP:
-      for (size_t x = 0; x < row_bytes; x++) {
+      for (size_t x = 0; x < stride; x++) {
         uint8_t above = 0;
-        if (y > 0) {
-          above = unfiltered_data[dst_start + x - row_bytes];
+        if (prev_row) {
+          above = prev_row[x];
         }
-        unfiltered_data[dst_start + x] = filtered_data[src_start + x] + above;
+        dst_row[x] = scanline[x] + above;
       }
       break;
 
     case FILTER_AVERAGE:
-      BR_LOG_ERROR("Unsupported filter method average");
+      for (size_t x = 0; x < stride; x++) {
+        uint8_t left = 0;
+        if (x >= PNG_BYTES_PER_PIXEL_RGBA) {
+          left = dst_row[x - PNG_BYTES_PER_PIXEL_RGBA];
+        }
+
+        uint8_t above = 0;
+        if (prev_row) {
+          above = prev_row[x];
+        }
+
+        dst_row[x] = scanline[x] + ((left + above) >> 1);
+      }
       break;
+
     case FILTER_PAETH:
-      BR_LOG_ERROR("Unsupported filter method paeth");
+      for (size_t x = 0; x < stride; x++) {
+        uint8_t left = 0;
+        if (x >= PNG_BYTES_PER_PIXEL_RGBA) {
+          left = dst_row[x - PNG_BYTES_PER_PIXEL_RGBA];
+        }
+
+        uint8_t above = 0;
+        if (prev_row) {
+          above = prev_row[x];
+        }
+
+        uint8_t above_left = 0;
+        if (prev_row && x >= PNG_BYTES_PER_PIXEL_RGBA) {
+          above_left = prev_row[x - PNG_BYTES_PER_PIXEL_RGBA];
+        }
+
+        int p = (int)left + (int)above - (int)above_left;
+        int pa = abs(p - (int)left);
+        int pb = abs(p - (int)above);
+        int pc = abs(p - (int)above_left);
+
+        uint8_t paeth_predictor;
+        if (pa <= pb && pa <= pc) {
+          paeth_predictor = left;
+        } else if (pb <= pc) {
+          paeth_predictor = above;
+        } else {
+          paeth_predictor = above_left;
+        }
+
+        dst_row[x] = scanline[x] + paeth_predictor;
+      }
       break;
+
     default:
       BR_LOG_ERROR("Unknown filter method (got %u)", filter_type);
+      return false;
       break;
     }
   }
-  return unfiltered_data;
+  return true;
+}
+
+static void rgba_to_argb(const uint8_t *src_rgba, uint32_t *dst_argb,
+                         uint32_t width, uint32_t height) {
+  size_t total_pixels = width * height;
+  for (size_t i = 0; i < total_pixels; i++) {
+    size_t offset = i * 4;
+    uint8_t r = src_rgba[offset + 0];
+    uint8_t g = src_rgba[offset + 1];
+    uint8_t b = src_rgba[offset + 2];
+    uint8_t a = src_rgba[offset + 3];
+
+    dst_argb[i] = (a << 24) | (r << 16) | (g << 8) | b;
+  }
 }
 
 // --- PUBLIC API ---
@@ -346,8 +396,8 @@ BrTexture *br_texture_load(const char *filepath) {
 
   // Read and validate ihdr
   size_t offset = sizeof(PNG_SIGNATURE);
-  IHDR *ihdr = parse_ihdr(file_data, file_size, &offset);
-  if (!ihdr) {
+  IHDR ihdr;
+  if (!parse_ihdr(file_data, file_size, &offset, &ihdr)) {
     BR_LOG_ERROR("Failed to parse ihdr: '%s'", filepath);
     free(file_data);
     return NULL;
@@ -356,18 +406,17 @@ BrTexture *br_texture_load(const char *filepath) {
   // Read idat chunks
   size_t compressed_size = 0;
   uint8_t *compressed_data =
-      collect_compressed_data(file_data, file_size, &offset, &compressed_size);
+      collect_compressed_data(file_data, file_size, offset, &compressed_size);
   free(file_data);
   if (compressed_size == 0) {
     BR_LOG_ERROR("No IDAT chunks found: '%s'", filepath);
-    free(ihdr);
     free(compressed_data);
     return NULL;
   }
 
-  size_t bytes_per_pixel = 4;                               // RGBA
-  size_t scanline_size = ihdr->width * bytes_per_pixel + 1; // +1 filter byte
-  size_t uncompressed_size = scanline_size * ihdr->height;
+  size_t scanline_size =
+      ihdr.width * PNG_BYTES_PER_PIXEL_RGBA + 1; // +1 filter byte
+  size_t uncompressed_size = scanline_size * ihdr.height;
 
   // Decompress data
   uint8_t *uncompressed_data =
@@ -379,51 +428,43 @@ BrTexture *br_texture_load(const char *filepath) {
   }
 
   // Unfilter data
-  size_t unfiltered_size = bytes_per_pixel * ihdr->width * ihdr->height;
-  uint8_t *unfiltered_data =
-      unfilter_scanlines(uncompressed_data, ihdr->width, ihdr->height,
-                         scanline_size, unfiltered_size);
-  free(uncompressed_data);
+  size_t unfiltered_size = PNG_BYTES_PER_PIXEL_RGBA * ihdr.width * ihdr.height;
+  uint8_t *unfiltered_data = malloc(unfiltered_size);
   if (!unfiltered_data) {
-    BR_LOG_ERROR("Failed to unfilter data: '%s'", filepath);
-    free(ihdr);
+    BR_LOG_ERROR("Failed to allocate unfiltered data: '%s'", filepath);
+    free(uncompressed_data);
     return NULL;
   }
+  if (!unfilter_data(uncompressed_data, ihdr.width, ihdr.height,
+                     unfiltered_data)) {
+    BR_LOG_ERROR("Failed to unfilter data: '%s'", filepath);
+    free(uncompressed_data);
+    return NULL;
+  }
+  free(uncompressed_data);
 
   // Allocate BrTexture
   BrTexture *texture = malloc(sizeof(BrTexture));
   if (!texture) {
-    BR_LOG_ERROR("Failed to allocate texture: '%s'", filepath);
     free(unfiltered_data);
-    free(ihdr);
+    BR_LOG_ERROR("Failed to allocate texture: '%s'", filepath);
     return NULL;
   }
 
-  texture->width = ihdr->width;
-  texture->height = ihdr->height;
-  size_t num_pixels = ihdr->width * ihdr->height;
-  free(ihdr);
-  texture->pixels = malloc(num_pixels * sizeof(int));
+  texture->width = ihdr.width;
+  texture->height = ihdr.height;
+  texture->pixels = malloc(unfiltered_size);
   if (!texture->pixels) {
     BR_LOG_ERROR("Failed to allocate texture pixels: '%s'", filepath);
-    free(texture);
     free(unfiltered_data);
+    free(texture);
     return NULL;
   }
 
-  // Convert RGBA bytes to ARGB 32-bit integers
-  for (size_t i = 0; i < num_pixels; i++) {
-    uint8_t r = unfiltered_data[i * 4 + 0];
-    uint8_t g = unfiltered_data[i * 4 + 1];
-    uint8_t b = unfiltered_data[i * 4 + 2];
-    uint8_t a = unfiltered_data[i * 4 + 3];
-
-    texture->pixels[i] = (a << 24) | (r << 16) | (g << 8) | b;
-  }
-  free(unfiltered_data);
+  rgba_to_argb(unfiltered_data, texture->pixels, texture->width,
+               texture->height);
 
   BR_LOG_DEBUG("Successfully loaded texture: '%s'", filepath);
-
   return texture;
 }
 
