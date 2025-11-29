@@ -55,6 +55,7 @@ struct BrRenderer *br_renderer_create(struct BrWindow *window) {
 }
 
 void br_renderer_destroy(struct BrRenderer *renderer) {
+  BR_LOG_INFO("Software renderer destroyed");
   if (!renderer) {
     return;
   }

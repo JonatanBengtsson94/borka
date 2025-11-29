@@ -339,6 +339,7 @@ BrWindow *br_window_create(const char *title, int width, int height) {
 }
 
 void br_window_destroy(BrWindow *window) {
+  BR_LOG_INFO("Window instance destroyed");
   if (!window) {
     return;
   }

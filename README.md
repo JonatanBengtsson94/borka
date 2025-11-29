@@ -7,6 +7,7 @@
 - Multithreaded logging system.
 - Compile-time log level filtering.
 - PNG Decoding.
+- DEFLATE decompression.
 
 ## Supported platforms
 

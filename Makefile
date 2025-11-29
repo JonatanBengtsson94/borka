@@ -3,6 +3,7 @@ CFLAGS = -Wall -Wextra -std=c99 \
 				 -Iinclude \
 				 -Isrc/engine \
 				 -Isrc/game
+VGFLAGS = --leak-check=full --track-origins=yes --show-leak-kinds=all
 
 OUT_DIR = bin
 OUT = $(OUT_DIR)/breakout
@@ -17,15 +18,16 @@ RENDER_BACKEND ?= software
 
 # Build specific flags
 ifeq ($(BUILD),debug)
-	CFLAGS += -DLOG_LEVEL_MIN=0 -g
+	CFLAGS += -DBR_LOG_LEVEL_MIN=0 -g
 else ifeq ($(BUILD),release)
-	CFLAGS += -DLOG_LEVEL_MIN=2 -O2
+	CFLAGS += -DBR_LOG_LEVEL_MIN=2 -O2 -ffunction-sections -fdata-sections
+	LDFLAGS += -Wl,--gc-sections -s
 endif
 
 # Window backend flags
 ifeq ($(WINDOW_BACKEND),wayland)
 	CFLAGS += -DWINDOW_BACKEND_WAYLAND
-	LDFLAGS += -lwayland-client -lz # TODO: Remove lz
+	LDFLAGS += -lwayland-client
 	SRC += src/engine/window/platform/wayland/*.c
 
 	ifeq ($(RENDER_BACKEND),software)
@@ -35,11 +37,11 @@ ifeq ($(WINDOW_BACKEND),wayland)
 	endif
 endif
 
+all: $(OUT) copy_assets
+
 copy_assets:
 	@mkdir -p $(OUT_DIR)/assets
 	@cp -r assets/* $(OUT_DIR)/assets/
-
-all: $(OUT) copy_assets
 
 $(OUT) : $(SRC)
 	@mkdir -p $(OUT_DIR)
@@ -47,6 +49,9 @@ $(OUT) : $(SRC)
 
 run: $(OUT)
 	./$(OUT)
+
+valgrind:
+	valgrind $(VGFLAGS) ./$(OUT)
 
 clean:
 	rm -f $(OUT)

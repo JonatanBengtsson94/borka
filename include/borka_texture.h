@@ -13,14 +13,16 @@ typedef struct {
 } BrTexture;
 
 /**
- * @brief Loads a texture from a file.
+ * @brief Creates a BrTexture instances from a image file.
  *
  * @param filepath Path to the image file.
  * @return The newly created BrTexture instance, or NULL on failure.
  *
+ * @note Only supports the png image format.
+ * @note Only supports pngs with 8-bit depth and rbga color type.
  * @note Should be destroyed with br_texture_destroy() when no longer needed.
  */
-BrTexture *br_texture_load(const char *filepath);
+BrTexture *br_texture_create(const char *filepath);
 
 /**
  * @brief Destroys the texture instance and frees its memory.

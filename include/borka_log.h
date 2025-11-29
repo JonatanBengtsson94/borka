@@ -42,7 +42,7 @@ void _br_logger_message(BrLogLevel level, const char *format, ...);
 #if BR_LOG_LEVEL_DEBUG >= BR_LOG_LEVEL_MIN
 #define BR_LOG_DEBUG(...) _br_logger_message(BR_LOG_LEVEL_DEBUG, __VA_ARGS__)
 #else
-#define BR_LOG_DEBUG(msg) ((void)0)
+#define BR_LOG_DEBUG(...) ((void)0)
 #endif
 
 /**
@@ -52,7 +52,7 @@ void _br_logger_message(BrLogLevel level, const char *format, ...);
 #if BR_LOG_LEVEL_INFO >= BR_LOG_LEVEL_MIN
 #define BR_LOG_INFO(...) _br_logger_message(BR_LOG_LEVEL_INFO, __VA_ARGS__)
 #else
-#define BR_LOG_INFO(msg) ((void)0)
+#define BR_LOG_INFO(...) ((void)0)
 #endif
 
 /**
@@ -62,7 +62,7 @@ void _br_logger_message(BrLogLevel level, const char *format, ...);
 #if BR_LOG_LEVEL_WARN >= BR_LOG_LEVEL_MIN
 #define BR_LOG_WARN(...) _br_logger_message(BR_LOG_LEVEL_WARN, __VA_ARGS__)
 #else
-#define BR_LOG_WARN(msg) ((void)0)
+#define BR_LOG_WARN(...) ((void)0)
 #endif
 
 /**
@@ -72,7 +72,7 @@ void _br_logger_message(BrLogLevel level, const char *format, ...);
 #if BR_LOG_LEVEL_ERROR >= BR_LOG_LEVEL_MIN
 #define BR_LOG_ERROR(...) _br_logger_message(BR_LOG_LEVEL_ERROR, __VA_ARGS__)
 #else
-#define BR_LOG_ERROR(msg) ((void)0)
+#define BR_LOG_ERROR(...) ((void)0)
 #endif
 
 /**
@@ -82,7 +82,7 @@ void _br_logger_message(BrLogLevel level, const char *format, ...);
 #if BR_LOG_LEVEL_FATAL >= BR_LOG_LEVEL_MIN
 #define BR_LOG_FATAL(...) _br_logger_message(BR_LOG_LEVEL_FATAL, __VA_ARGS__)
 #else
-#define BR_LOG_FATAL(msg) ((void)0)
+#define BR_LOG_FATAL(...) ((void)0)
 #endif
 
 #endif // BORKA_LOG

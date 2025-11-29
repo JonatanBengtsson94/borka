@@ -1,4 +1,5 @@
 #include "borka.h"
+#include "borka_texture.h"
 #include <stdbool.h>
 
 int main() {
@@ -17,7 +18,7 @@ int main() {
   BrVec2 t2 = {50, 150};
 
   // Ball Texture
-  BrTexture *ball_text = br_texture_load("assets/textures/ball.png");
+  BrTexture *ball_text = br_texture_create("assets/textures/ball.png");
 
   BrEvent e;
 
@@ -52,6 +53,7 @@ int main() {
     br_renderer_present(app->renderer);
   }
 
+  br_texture_destroy(ball_text);
   br_app_destroy(app);
   return 0;
 }
