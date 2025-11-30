@@ -296,7 +296,7 @@ static bool build_huffman_codes(HuffmanTable *table,
       }
     }
     table->length[i] = length;
-    BR_LOG_DEBUG("Length %d: %d", i, table->length[i]);
+    BR_LOG_TRACE("Length %d: %d", i, table->length[i]);
   }
 
   if (table->max_bits == 0) {
@@ -317,7 +317,7 @@ static bool build_huffman_codes(HuffmanTable *table,
     if (length != 0) {
       table->code[i] = next_code_value[length];
       table->code[i] = reverse_bits(table->code[i], length);
-      BR_LOG_DEBUG("Code %d: %d", i, table->code[i]);
+      BR_LOG_TRACE("Code %d: %d", i, table->code[i]);
       next_code_value[length]++;
     }
   }
@@ -442,7 +442,7 @@ static bool decode_btype01(BitReader *bit_reader, uint8_t *out_data,
     }
 
     if (symbol <= 255) {
-      BR_LOG_DEBUG("Literal: %u", symbol);
+      BR_LOG_TRACE("Literal: %u", symbol);
       if (*output_position + 1 >= out_size) {
         BR_LOG_ERROR("Output buffer overflow: trying to write %u bytes at "
                      "position %zu (max: %zu)",
@@ -671,7 +671,7 @@ static bool decode_btype10(BitReader *bit_reader, uint8_t *out_data,
       uint32_t distance = 0;
       if (!decode_deflate_distance(bit_reader, distance_code, &distance))
         goto cleanup;
-      BR_LOG_DEBUG("Length: %u, Distance: %u", length, distance);
+      BR_LOG_TRACE("Length: %u, Distance: %u", length, distance);
 
       if (*output_position + length > out_size) {
         BR_LOG_ERROR("Output buffer overflow: trying to write %u bytes at "
@@ -992,12 +992,12 @@ static bool unfilter_data(const uint8_t *filtered_data, uint32_t width,
 
     switch (filter_type) {
     case FILTER_NONE:
-      BR_LOG_DEBUG("Filter method none");
+      BR_LOG_TRACE("Filter method none");
       memcpy(dst_row, scanline, stride);
       break;
 
     case FILTER_SUB:
-      BR_LOG_DEBUG("Filter method sub");
+      BR_LOG_TRACE("Filter method sub");
       for (size_t x = 0; x < stride; x++) {
         uint8_t left = 0;
         if (x >= PNG_BYTES_PER_PIXEL_RGBA) {
@@ -1008,7 +1008,7 @@ static bool unfilter_data(const uint8_t *filtered_data, uint32_t width,
       break;
 
     case FILTER_UP:
-      BR_LOG_DEBUG("Filter method up");
+      BR_LOG_TRACE("Filter method up");
       for (size_t x = 0; x < stride; x++) {
         uint8_t above = 0;
         if (prev_row) {
@@ -1019,7 +1019,7 @@ static bool unfilter_data(const uint8_t *filtered_data, uint32_t width,
       break;
 
     case FILTER_AVERAGE:
-      BR_LOG_DEBUG("Filter method average");
+      BR_LOG_TRACE("Filter method average");
       for (size_t x = 0; x < stride; x++) {
         uint8_t left = 0;
         if (x >= PNG_BYTES_PER_PIXEL_RGBA) {
@@ -1036,7 +1036,7 @@ static bool unfilter_data(const uint8_t *filtered_data, uint32_t width,
       break;
 
     case FILTER_PAETH:
-      BR_LOG_DEBUG("Filter method paeth");
+      BR_LOG_TRACE("Filter method paeth");
       for (size_t x = 0; x < stride; x++) {
         uint8_t left = 0;
         if (x >= PNG_BYTES_PER_PIXEL_RGBA) {

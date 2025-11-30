@@ -18,9 +18,11 @@ RENDER_BACKEND ?= software
 
 # Build specific flags
 ifeq ($(BUILD),debug)
+	CFLAGS += -DBR_LOG_LEVEL_MIN=1 -g
+else ifeq ($(BUILD),trace)
 	CFLAGS += -DBR_LOG_LEVEL_MIN=0 -g
 else ifeq ($(BUILD),release)
-	CFLAGS += -DBR_LOG_LEVEL_MIN=2 -O2 -ffunction-sections -fdata-sections
+	CFLAGS += -DBR_LOG_LEVEL_MIN=3 -O2 -ffunction-sections -fdata-sections
 	LDFLAGS += -Wl,--gc-sections -s
 endif
 

@@ -41,8 +41,8 @@ typedef struct {
 } MessageQueue;
 
 static FILE *log_file = NULL;
-static const char *level_strings[] = {"DEBUG", "INFO", "WARN", "ERROR",
-                                      "FATAL"};
+static const char *level_strings[] = {"TRACE", "DEBUG", "INFO",
+                                      "WARN",  "ERROR", "FATAL"};
 static char current_log_path[MAX_LOG_FILE_PATH_SIZE];
 static size_t bytes_written = 0;
 static pthread_t logger_thread;
