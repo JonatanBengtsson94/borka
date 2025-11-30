@@ -472,7 +472,7 @@ static bool decode_btype01(BitReader *bit_reader, uint8_t *out_data,
       uint32_t distance = 0;
       if (!decode_deflate_distance(bit_reader, distance_code, &distance))
         return false;
-      BR_LOG_DEBUG("Length: %u, Distance: %u", length, distance);
+      BR_LOG_TRACE("Length: %u, Distance: %u", length, distance);
 
       if (*output_position + length > out_size) {
         BR_LOG_ERROR("Output buffer overflow: trying to write %u bytes at "

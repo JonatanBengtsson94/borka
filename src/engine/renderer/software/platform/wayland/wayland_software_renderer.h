@@ -8,9 +8,12 @@ struct BrRenderer {
   struct wl_shm *wl_shm;
   struct wl_surface *wl_surface;
   struct wl_display *wl_display;
+  ShmBufferPair *buffers;
+  int *game_pixels;
   int width;
   int height;
-  ShmBufferPair *buffers;
+  int game_width;
+  int game_height;
   int front_buffer_index;
   int back_buffer_index;
 };
