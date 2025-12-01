@@ -32,6 +32,8 @@ BrApp *br_app_create(const char *title, int width, int height) {
     return NULL;
   }
 
+  app->should_shutdown = false;
+
   app->window = br_window_create(title, width, height);
   if (!app->window) {
     BR_LOG_ERROR("Failed to create window");

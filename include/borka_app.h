@@ -14,6 +14,8 @@
 typedef struct BrApp {
   BrWindow *window;     /**< The window instance used by the application. */
   BrRenderer *renderer; /**< The renderer responsible for drawing. */
+  bool should_shutdown; /**< Boolean indicating wether the app should shutdown.
+                         */
 } BrApp;
 
 /**
