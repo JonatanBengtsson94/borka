@@ -1,15 +1,24 @@
 #define _POSIX_C_SOURCE 199309L
 
 #include "borka.h"
-#include "borka_texture.h"
-#include <stdbool.h>
-#include <stdlib.h>
 #include <time.h>
 
-typedef struct {
-  float x;
-  float y;
-} Position;
+void setup(BrRegistry *registry) {
+  BrTexture *ball_text = br_texture_create("assets/textures/ball.png");
+  BrTexture *paddle_text = br_texture_create("assets/textures/paddle.png");
+
+  BrEntity ball = create_entity(registry);
+  registry->positions[ball] = (BrPosition){100, 100};
+  registry->velocities[ball] = (BrVelocity){0, 50};
+  registry->sprites[ball] = (BrSprite){ball_text};
+  registry->masks[ball] =
+      COMPONENT_POSITION | COMPONENT_VELOCITY | COMPONENT_SPRITE;
+
+  BrEntity paddle = create_entity(registry);
+  registry->positions[paddle] = (BrPosition){100, 190};
+  registry->sprites[paddle] = (BrSprite){paddle_text};
+  registry->masks[paddle] = COMPONENT_POSITION | COMPONENT_SPRITE;
+}
 
 double get_time() {
   struct timespec ts;
@@ -41,20 +50,12 @@ void input(BrApp *app) {
   }
 }
 
-void update(Position *positions, double delta_time) {
-  positions[0].y += 50 * delta_time;
-  BR_LOG_DEBUG("DT: %f", delta_time);
-  BR_LOG_DEBUG("Y: %f", positions[0].y);
+void update(BrRegistry *registry, double delta_time) {
+  system_movement(registry, delta_time);
 }
 
-void render(BrTexture *textures, Position *positions, size_t count,
-            BrApp *app) {
-  br_renderer_clear(app->renderer, 0xFF000000);
-  for (size_t i = 0; i < count; i++) {
-    br_renderer_draw_texture(app->renderer, positions[i].x, positions[i].y,
-                             &textures[i]);
-  }
-  br_renderer_present(app->renderer);
+void render(BrRegistry *registry, BrRenderer *renderer) {
+  system_render(registry, renderer);
 }
 
 void shutdown(BrApp *app) { br_app_destroy(app); }
@@ -62,13 +63,7 @@ void shutdown(BrApp *app) { br_app_destroy(app); }
 int main() {
   BrApp *app = br_app_create("Breakout", 200, 200);
 
-  BrTexture *ball_text = br_texture_create("assets/textures/ball.png");
-  BrTexture *paddle_text = br_texture_create("assets/textures/paddle.png");
-  Position ball_position = {.x = 100, .y = 100};
-  Position paddle_position = {.x = 100, .y = 190};
-
-  BrTexture textures[2] = {*ball_text, *paddle_text};
-  Position positions[2] = {ball_position, paddle_position};
+  setup(app->registry);
 
   double last = get_time();
 
@@ -78,9 +73,8 @@ int main() {
     last = now;
 
     input(app);
-    update(positions, delta_time);
-    render(textures, positions, 2, app);
+    update(app->registry, delta_time);
+    render(app->registry, app->renderer);
   }
-
   return 0;
 }
