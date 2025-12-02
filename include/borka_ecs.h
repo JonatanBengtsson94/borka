@@ -1,8 +1,10 @@
 #ifndef BR_ECS_H
 #define BR_ECS_H
 
+#include "borka_events.h"
 #include "borka_render.h"
 #include "borka_texture.h"
+#include <stdbool.h>
 #include <stdint.h>
 
 /**
@@ -20,6 +22,7 @@ typedef enum {
   COMPONENT_VELOCITY = 1 << 1,
   COMPONENT_SPRITE = 1 << 2,
   COMPONENT_PLAYER_CONTROLLER = 1 << 3,
+  COMPONENT_MOVEMENT_INPUT = 1 << 4,
 } BrComponentMask;
 
 /**
@@ -46,12 +49,18 @@ typedef struct {
 } BrSprite;
 
 /**
- * @brief Stores the data for player movement.
+ * @brief Stores the movement input data.
  */
 typedef struct {
-  float move_speed;    /**< The maximum movement speed (pixels per second). */
-  int horizontal_axis; /**< Movement across the x-axis (-1 left, 0 none, 1
-                          right). */
+  bool left_pressed;  /** True if left key is held down. */
+  bool right_pressed; /** True if right key is held down. */
+} BrMovementInput;
+
+/**
+ * @brief Stores the configuration for player-controlled movement.
+ */
+typedef struct {
+  float move_speed; /**< The maximum movement speed (pixels per second). */
 } BrPlayerController;
 
 /**
@@ -61,14 +70,11 @@ typedef struct {
   int count; /**< The number of currently active entites */
   BrComponentMask masks[MAX_ENTITES]; /** The component mask (signature) for
                                          each entity ID. */
-  BrPosition
-      positions[MAX_ENTITES]; /** Array storing all Position components. */
-  BrVelocity
-      velocities[MAX_ENTITES];   /** Array storing all Velocity components. */
-  BrSprite sprites[MAX_ENTITES]; /** Array starting all Sprite components. */
-  BrPlayerController
-      player_controllers[MAX_ENTITES]; /** Array storing all player controller
-                                          components. */
+  BrPosition positions[MAX_ENTITES];
+  BrVelocity velocities[MAX_ENTITES];
+  BrSprite sprites[MAX_ENTITES];
+  BrPlayerController player_controllers[MAX_ENTITES];
+  BrMovementInput movement_inputs[MAX_ENTITES];
 } BrRegistry;
 
 /**
@@ -86,6 +92,22 @@ typedef uint32_t BrEntity;
 BrEntity create_entity(BrRegistry *registry);
 
 /**
+ * @brief System responsible for rendering all visible Entities to the screen.
+ *
+ * @param registry The central ECS data store.
+ * @param app The main application struct.
+ */
+void system_render(BrRegistry *registry, BrRenderer *renderer);
+
+/**
+ * @brief System responsible for updating all entities based on input events.
+ *
+ * @param registry The central ECS data store.
+ * @param e The event to process.
+ */
+void system_input(BrRegistry *registry, BrEvent e);
+
+/**
  * @brief System responsible for updating Entity position based on their
  * velocity.
  *
@@ -93,14 +115,6 @@ BrEntity create_entity(BrRegistry *registry);
  * @param delta_time The time elapsed since last frame (in seconds).
  */
 void system_movement(BrRegistry *registry, double delta_time);
-
-/**
- * @brief System responsible for rendering all visible Entities to the screen.
- *
- * @param registry The central ECS data store.
- * @param app The main application struct.
- */
-void system_render(BrRegistry *registry, BrRenderer *renderer);
 
 /**
  * @brief System responsible for controlling the player entity.
