@@ -27,3 +27,16 @@ void system_render(BrRegistry *registry, BrRenderer *renderer) {
   }
   br_renderer_present(renderer);
 }
+
+void system_player_controller(BrRegistry *registry) {
+  for (int i = 0; i < registry->count; i++) {
+    if ((registry->masks[i] & (COMPONENT_POSITION | COMPONENT_VELOCITY |
+                               COMPONENT_PLAYER_CONTROLLER)) ==
+        (COMPONENT_POSITION | COMPONENT_VELOCITY |
+         COMPONENT_PLAYER_CONTROLLER)) {
+      registry->velocities[i].dx =
+          registry->player_controllers[i].horizontal_axis *
+          registry->player_controllers[i].move_speed;
+    }
+  }
+}

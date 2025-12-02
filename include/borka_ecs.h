@@ -19,6 +19,7 @@ typedef enum {
   COMPONENT_POSITION = 1 << 0,
   COMPONENT_VELOCITY = 1 << 1,
   COMPONENT_SPRITE = 1 << 2,
+  COMPONENT_PLAYER_CONTROLLER = 1 << 3,
 } BrComponentMask;
 
 /**
@@ -45,6 +46,15 @@ typedef struct {
 } BrSprite;
 
 /**
+ * @brief Stores the data for player movement.
+ */
+typedef struct {
+  float move_speed;    /**< The maximum movement speed (pixels per second). */
+  int horizontal_axis; /**< Movement across the x-axis (-1 left, 0 none, 1
+                          right). */
+} BrPlayerController;
+
+/**
  * @brief The central database for the Entity Component System.
  */
 typedef struct {
@@ -56,6 +66,9 @@ typedef struct {
   BrVelocity
       velocities[MAX_ENTITES];   /** Array storing all Velocity components. */
   BrSprite sprites[MAX_ENTITES]; /** Array starting all Sprite components. */
+  BrPlayerController
+      player_controllers[MAX_ENTITES]; /** Array storing all player controller
+                                          components. */
 } BrRegistry;
 
 /**
@@ -88,5 +101,12 @@ void system_movement(BrRegistry *registry, double delta_time);
  * @param app The main application struct.
  */
 void system_render(BrRegistry *registry, BrRenderer *renderer);
+
+/**
+ * @brief System responsible for controlling the player entity.
+ *
+ * @param registry The central ECS data store.
+ */
+void system_player_controller(BrRegistry *registry);
 
 #endif // BR_ECS_H

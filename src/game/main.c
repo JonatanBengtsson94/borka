@@ -3,9 +3,20 @@
 #include "borka.h"
 #include <time.h>
 
+static bool key_left_down;
+static bool key_right_down;
+
 void setup(BrRegistry *registry) {
   BrTexture *ball_text = br_texture_create("assets/textures/ball.png");
   BrTexture *paddle_text = br_texture_create("assets/textures/paddle.png");
+
+  BrEntity paddle = create_entity(registry);
+  registry->positions[paddle] = (BrPosition){100, 190};
+  registry->velocities[paddle] = (BrVelocity){0, 0};
+  registry->sprites[paddle] = (BrSprite){paddle_text};
+  registry->player_controllers[paddle] = (BrPlayerController){50, 0};
+  registry->masks[paddle] = COMPONENT_POSITION | COMPONENT_VELOCITY |
+                            COMPONENT_SPRITE | COMPONENT_PLAYER_CONTROLLER;
 
   BrEntity ball = create_entity(registry);
   registry->positions[ball] = (BrPosition){100, 100};
@@ -13,17 +24,40 @@ void setup(BrRegistry *registry) {
   registry->sprites[ball] = (BrSprite){ball_text};
   registry->masks[ball] =
       COMPONENT_POSITION | COMPONENT_VELOCITY | COMPONENT_SPRITE;
-
-  BrEntity paddle = create_entity(registry);
-  registry->positions[paddle] = (BrPosition){100, 190};
-  registry->sprites[paddle] = (BrSprite){paddle_text};
-  registry->masks[paddle] = COMPONENT_POSITION | COMPONENT_SPRITE;
 }
 
 double get_time() {
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
   return ts.tv_sec + ts.tv_nsec / 1e9;
+}
+
+void handle_input(BrEvent e, BrRegistry *registry) {
+  bool pressed;
+  if (e.type == BR_EVENT_KEY_PRESSED) {
+    BR_LOG_TRACE("Key %d pressed", e.data.keycode);
+    pressed = true;
+  } else if (e.type == BR_EVENT_KEY_RELEASED) {
+    BR_LOG_TRACE("Key %d released", e.data.keycode);
+    pressed = false;
+  }
+
+  switch (e.data.keycode) {
+  case 30:
+    key_left_down = pressed;
+    break;
+  case 32:
+    key_right_down = pressed;
+    break;
+  }
+
+  int x_axis = 0;
+  if (key_left_down)
+    x_axis -= 1;
+  if (key_right_down)
+    x_axis += 1;
+
+  registry->player_controllers[0].horizontal_axis = x_axis;
 }
 
 void input(BrApp *app) {
@@ -40,17 +74,15 @@ void input(BrApp *app) {
       break;
 
     case BR_EVENT_KEY_PRESSED:
-      BR_LOG_DEBUG("Key %d pressed", e.data.keycode);
-      break;
-
     case BR_EVENT_KEY_RELEASED:
-      BR_LOG_DEBUG("Key %d released", e.data.keycode);
+      handle_input(e, app->registry);
       break;
     }
   }
 }
 
 void update(BrRegistry *registry, double delta_time) {
+  system_player_controller(registry);
   system_movement(registry, delta_time);
 }
 
