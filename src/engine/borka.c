@@ -1,5 +1,6 @@
 #include "borka.h"
 #include "borka_log.h"
+#include "ecs/br_registry.h"
 #include "logger/br_logger.h"
 #include "renderer/br_renderer.h"
 #include "window/br_window.h"
@@ -10,14 +11,14 @@ static void app_cleanup(BrApp *app) {
   if (!app) {
     return;
   }
-  if (app->registry) {
-    free(app->registry);
-  }
   if (app->renderer) {
     br_renderer_destroy(app->renderer);
   }
   if (app->window) {
     br_window_destroy(app->window);
+  }
+  if (app->registry) {
+    br_registry_destroy(app->registry);
   }
   br_logger_shutdown();
   free(app);
@@ -41,9 +42,9 @@ BrApp *br_app_create(const char *title, int width, int height) {
   }
   app->should_shutdown = false;
 
-  BrRegistry *registry = calloc(1, sizeof(BrRegistry));
+  BrRegistry *registry = br_registry_create();
   if (!registry) {
-    BR_LOG_ERROR("Failed to allocate registry");
+    BR_LOG_ERROR("Failed to create registry");
     goto error;
   }
   app->registry = registry;

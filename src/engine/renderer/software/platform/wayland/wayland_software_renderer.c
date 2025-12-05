@@ -5,6 +5,7 @@
 #include "wayland_software_renderer.h"
 #include "window/platform/wayland/wayland_shm.h"
 #include "window/platform/wayland/wayland_window.h"
+#include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <wayland-client.h>
@@ -132,10 +133,7 @@ error:
 }
 
 void br_renderer_clear(struct BrRenderer *renderer, int color) {
-  if (!renderer) {
-    BR_LOG_ERROR("Could not clear: renderer is NULL");
-    return;
-  }
+  assert(renderer);
 
   software_clear(renderer->game_pixels, renderer->game_width,
                  renderer->game_height, color);
@@ -143,10 +141,7 @@ void br_renderer_clear(struct BrRenderer *renderer, int color) {
 
 void br_renderer_draw_triangle(struct BrRenderer *renderer, BrVec2 v0,
                                BrVec2 v1, BrVec2 v2, int color) {
-  if (!renderer) {
-    BR_LOG_ERROR("Could not draw: renderer is NULL");
-    return;
-  }
+  assert(renderer);
 
   software_draw_triangle(renderer->game_pixels, renderer->game_width,
                          renderer->game_height, v0, v1, v2, color);
@@ -154,10 +149,7 @@ void br_renderer_draw_triangle(struct BrRenderer *renderer, BrVec2 v0,
 
 void br_renderer_draw_quad(struct BrRenderer *renderer, BrVec2 v0, BrVec2 v1,
                            BrVec2 v2, BrVec2 v3, int color) {
-  if (!renderer) {
-    BR_LOG_ERROR("Could not draw: renderer is NULL");
-    return;
-  }
+  assert(renderer);
 
   software_draw_quad(renderer->game_pixels, renderer->game_width,
                      renderer->game_height, v0, v1, v2, v3, color);
@@ -165,8 +157,12 @@ void br_renderer_draw_quad(struct BrRenderer *renderer, BrVec2 v0, BrVec2 v1,
 
 void br_renderer_draw_texture(struct BrRenderer *renderer, int x, int y,
                               const BrTexture *texture) {
-  if (!renderer) {
-    BR_LOG_ERROR("Could not draw: renderer is NULL");
+  assert(renderer);
+  assert(renderer->game_pixels);
+  assert(texture);
+  assert(texture->pixels);
+  if (x >= renderer->game_width || y >= renderer->game_height ||
+      x + texture->width <= 0 || y + texture->height <= 0) {
     return;
   }
 
@@ -175,10 +171,7 @@ void br_renderer_draw_texture(struct BrRenderer *renderer, int x, int y,
 }
 
 void br_renderer_present(struct BrRenderer *renderer) {
-  if (!renderer) {
-    BR_LOG_ERROR("Cannot present: renderer is NULL");
-    return;
-  }
+  assert(renderer);
 
   int back = renderer->back_buffer_index;
 

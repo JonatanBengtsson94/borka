@@ -9,7 +9,7 @@ OUT_DIR = bin
 OUT = $(OUT_DIR)/breakout
 
 ENGINE_SRC = $(shell find src/engine -name '*.c' ! -path '*/platform/*')
-GAME_SRC = src/game/main.c
+GAME_SRC = $(shell find src/game -name '*.c')
 SRC = $(ENGINE_SRC) $(GAME_SRC)
 
 BUILD ?= debug
@@ -22,7 +22,7 @@ ifeq ($(BUILD),debug)
 else ifeq ($(BUILD),trace)
 	CFLAGS += -DBR_LOG_LEVEL_MIN=0 -g
 else ifeq ($(BUILD),release)
-	CFLAGS += -DBR_LOG_LEVEL_MIN=3 -O2 -ffunction-sections -fdata-sections
+	CFLAGS += -DNDEBUG -DBR_LOG_LEVEL_MIN=3 -O3 -ffunction-sections -fdata-sections
 	LDFLAGS += -Wl,--gc-sections -s
 endif
 

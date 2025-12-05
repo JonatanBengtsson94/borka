@@ -1,13 +1,8 @@
 #include "br_software_renderer.h"
-#include "borka_log.h"
 #include "borka_math.h"
 #include <stddef.h>
 
 void software_clear(int *pixels, int width, int height, int color) {
-  if (!pixels) {
-    BR_LOG_WARN("Could not clear renderer: Pixel buffer is NULL");
-    return;
-  }
   for (int i = 0; i < width * height; ++i) {
     pixels[i] = color;
   }
@@ -15,10 +10,6 @@ void software_clear(int *pixels, int width, int height, int color) {
 
 void software_draw_triangle(int *pixels, int width, int height, BrVec2 v0,
                             BrVec2 v1, BrVec2 v2, int color) {
-  if (!pixels) {
-    BR_LOG_WARN("Skipping draw: Pixel buffer is NULL");
-    return;
-  }
   int minX = clamp_int(min_int(min_int(v0.x, v1.x), v2.x), 0, width - 1);
   int maxX = clamp_int(max_int(max_int(v0.x, v1.x), v2.x), 0, width - 1);
   int minY = clamp_int(min_int(min_int(v0.y, v1.y), v2.y), 0, height - 1);
@@ -52,10 +43,6 @@ void software_draw_triangle(int *pixels, int width, int height, BrVec2 v0,
 
 void software_draw_quad(int *pixels, int width, int height, BrVec2 v0,
                         BrVec2 v1, BrVec2 v2, BrVec2 v3, int color) {
-  if (!pixels) {
-    BR_LOG_WARN("Skipping draw: Pixel buffer is NULL");
-    return;
-  }
   int minX = clamp_int(min_int(min_int(min_int(v0.x, v1.x), v2.x), v3.x), 0,
                        width - 1);
   int maxX = clamp_int(max_int(max_int(max_int(v0.x, v1.x), v2.x), v3.x), 0,
@@ -75,23 +62,6 @@ void software_draw_quad(int *pixels, int width, int height, BrVec2 v0,
 
 void software_draw_texture(int *pixels, int width, int height, int x, int y,
                            const BrTexture *texture) {
-  if (!pixels) {
-    BR_LOG_WARN("Skipping draw: Pixel buffer is NULL");
-    return;
-  }
-  if (!texture) {
-    BR_LOG_WARN("Skipping draw: Texture is NULL");
-    return;
-  }
-  if (!texture->pixels) {
-    BR_LOG_WARN("Skipping draw: Texture pixels is NULL");
-  }
-
-  if (x >= width || y >= height || x + texture->width <= 0 ||
-      y + texture->height <= 0) {
-    return;
-  }
-
   int startX = clamp_int(-x, 0, texture->width);
   int startY = clamp_int(-y, 0, texture->height);
   int endX = clamp_int(width - x, 0, texture->width);
