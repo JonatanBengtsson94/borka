@@ -8,8 +8,8 @@ void software_clear(int *pixels, int width, int height, int color) {
   }
 }
 
-void software_draw_triangle(int *pixels, int width, int height, BrVec2 v0,
-                            BrVec2 v1, BrVec2 v2, int color) {
+void software_draw_filled_triangle(int *pixels, int width, int height,
+                                   BrVec2 v0, BrVec2 v1, BrVec2 v2, int color) {
   int minX = clamp_int(min_int(min_int(v0.x, v1.x), v2.x), 0, width - 1);
   int maxX = clamp_int(max_int(max_int(v0.x, v1.x), v2.x), 0, width - 1);
   int minY = clamp_int(min_int(min_int(v0.y, v1.y), v2.y), 0, height - 1);
@@ -41,22 +41,38 @@ void software_draw_triangle(int *pixels, int width, int height, BrVec2 v0,
   }
 }
 
-void software_draw_quad(int *pixels, int width, int height, BrVec2 v0,
-                        BrVec2 v1, BrVec2 v2, BrVec2 v3, int color) {
-  int minX = clamp_int(min_int(min_int(min_int(v0.x, v1.x), v2.x), v3.x), 0,
-                       width - 1);
-  int maxX = clamp_int(max_int(max_int(max_int(v0.x, v1.x), v2.x), v3.x), 0,
-                       width - 1);
-  int minY = clamp_int(min_int(min_int(min_int(v0.y, v1.y), v2.y), v3.y), 0,
-                       height - 1);
-  int maxY = clamp_int(max_int(max_int(max_int(v0.y, v1.y), v2.y), v3.y), 0,
-                       height - 1);
+void software_draw_rectangle_filled(int *pixels, int width, int height, int x,
+                                    int y, int rect_width, int rect_height,
+                                    int color) {
+  int minX = clamp_int(x, 0, width - 1);
+  int maxX = clamp_int(x + rect_width, 0, width - 1);
+  int minY = clamp_int(y, 0, height - 1);
+  int maxY = clamp_int(y + rect_height, 0, height - 1);
 
   for (int y = minY; y <= maxY; ++y) {
     int rowOffset = y * width;
     for (int x = minX; x <= maxX; ++x) {
       pixels[rowOffset + x] = color;
     }
+  }
+}
+
+void software_draw_rectangle_outlined(int *pixels, int width, int height, int x,
+                                      int y, int rect_width, int rect_height,
+                                      int color) {
+  int minX = clamp_int(x, 0, width - 1);
+  int maxX = clamp_int(x + rect_width, 0, width - 1);
+  int minY = clamp_int(y, 0, height - 1);
+  int maxY = clamp_int(y + rect_height, 0, height - 1);
+
+  for (int x = minX; x <= maxX; ++x) {
+    pixels[minY * width + x] = color;
+    pixels[maxY * width + x] = color;
+  }
+
+  for (int y = minY; y <= maxY; ++y) {
+    pixels[y * width + minX] = color;
+    pixels[y * width + maxX] = color;
   }
 }
 

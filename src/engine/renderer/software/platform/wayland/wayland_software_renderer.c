@@ -10,6 +10,18 @@
 #include <stdlib.h>
 #include <wayland-client.h>
 
+static bool on_screen(const struct BrRenderer *renderer, int maxX, int minX,
+                      int maxY, int minY) {
+  assert(renderer);
+  assert(renderer->game_pixels);
+
+  if (minX > renderer->game_width || maxX < 0 || minY > renderer->game_height ||
+      maxY < 0)
+    return false;
+
+  return true;
+}
+
 static bool scale_render_target(const int *source_pixels, int *target_pixels,
                                 int source_width, int source_height,
                                 int target_width, int target_height) {
@@ -139,35 +151,40 @@ void br_renderer_clear(struct BrRenderer *renderer, int color) {
                  renderer->game_height, color);
 }
 
-void br_renderer_draw_triangle(struct BrRenderer *renderer, BrVec2 v0,
-                               BrVec2 v1, BrVec2 v2, int color) {
+void br_renderer_draw_filled_triangle(struct BrRenderer *renderer, BrVec2 v0,
+                                      BrVec2 v1, BrVec2 v2, int color) {
   assert(renderer);
 
-  software_draw_triangle(renderer->game_pixels, renderer->game_width,
-                         renderer->game_height, v0, v1, v2, color);
+  software_draw_filled_triangle(renderer->game_pixels, renderer->game_width,
+                                renderer->game_height, v0, v1, v2, color);
 }
 
-void br_renderer_draw_quad(struct BrRenderer *renderer, BrVec2 v0, BrVec2 v1,
-                           BrVec2 v2, BrVec2 v3, int color) {
-  assert(renderer);
+void br_renderer_draw_rectangle_filled(struct BrRenderer *renderer, int x,
+                                       int y, int width, int height,
+                                       int color) {
+  if (on_screen(renderer, x + width, x, y + height, y))
+    software_draw_rectangle_filled(renderer->game_pixels, renderer->game_width,
+                                   renderer->game_height, x, y, width, height,
+                                   color);
+}
 
-  software_draw_quad(renderer->game_pixels, renderer->game_width,
-                     renderer->game_height, v0, v1, v2, v3, color);
+void br_renderer_draw_rectangle_outlined(struct BrRenderer *renderer, int x,
+                                         int y, int width, int height,
+                                         int color) {
+  if (on_screen(renderer, x + width, x, y + height, y))
+    software_draw_rectangle_outlined(
+        renderer->game_pixels, renderer->game_width, renderer->game_height, x,
+        y, width, height, color);
 }
 
 void br_renderer_draw_texture(struct BrRenderer *renderer, int x, int y,
                               const BrTexture *texture) {
-  assert(renderer);
-  assert(renderer->game_pixels);
   assert(texture);
   assert(texture->pixels);
-  if (x >= renderer->game_width || y >= renderer->game_height ||
-      x + texture->width <= 0 || y + texture->height <= 0) {
-    return;
-  }
 
-  software_draw_texture(renderer->game_pixels, renderer->game_width,
-                        renderer->game_height, x, y, texture);
+  if (on_screen(renderer, x + texture->width, x, y + texture->height, y))
+    software_draw_texture(renderer->game_pixels, renderer->game_width,
+                          renderer->game_height, x, y, texture);
 }
 
 void br_renderer_present(struct BrRenderer *renderer) {

@@ -30,16 +30,19 @@ bool setup(BrRegistry *registry, GameResources *resources) {
   BrEntity paddle = br_entity_create(registry);
   Position paddle_pos = {100, 190};
   Velocity paddle_vel = {0, 0};
-  Sprite paddle_sprite = {resources->paddle_texture};
+  Renderable paddle_sprite = {.type = RENDERABLE_SPRITE,
+                              .sprite = {.texture = resources->paddle_texture}};
   InputControlled paddle_input_control = {false, false};
   MovementConfig paddle_movement_conf = {50};
+  Collider paddle_col = {24, 8};
   br_component_add(registry, paddle, COMPONENT_POSITION, &paddle_pos);
   br_component_add(registry, paddle, COMPONENT_VELOCITY, &paddle_vel);
-  br_component_add(registry, paddle, COMPONENT_SPRITE, &paddle_sprite);
+  br_component_add(registry, paddle, COMPONENT_RENDERABLE, &paddle_sprite);
   br_component_add(registry, paddle, COMPONENT_INPUT_CONTROLLED,
                    &paddle_input_control);
   br_component_add(registry, paddle, COMPONENT_MOVEMENT_CONFIG,
                    &paddle_movement_conf);
+  br_component_add(registry, paddle, COMPONENT_COLLIDER, &paddle_col);
 
   // Ball
   resources->ball_texture = br_texture_create("assets/textures/ball.png");
@@ -50,10 +53,33 @@ bool setup(BrRegistry *registry, GameResources *resources) {
   BrEntity ball = br_entity_create(registry);
   Position ball_pos = {100, 100};
   Velocity ball_vel = {0, 50};
-  Sprite ball_sprite = {resources->ball_texture};
+  Renderable ball_sprite = {.type = RENDERABLE_SPRITE,
+                            .sprite = {.texture = resources->ball_texture}};
+  Collider ball_col = {8, 8};
   br_component_add(registry, ball, COMPONENT_POSITION, &ball_pos);
   br_component_add(registry, ball, COMPONENT_VELOCITY, &ball_vel);
-  br_component_add(registry, ball, COMPONENT_SPRITE, &ball_sprite);
+  br_component_add(registry, ball, COMPONENT_RENDERABLE, &ball_sprite);
+  br_component_add(registry, ball, COMPONENT_COLLIDER, &ball_col);
+
+  // Debug rect
+  BrEntity rect = br_entity_create(registry);
+  Position rect_pos = {20, 20};
+  Renderable rect_ren = {
+      .type = RENDERABLE_RECTANGLE,
+      .rectangle = {
+          .width = 20, .height = 20, .color = 0xFFFF0000, .filled = true}};
+  br_component_add(registry, rect, COMPONENT_POSITION, &rect_pos);
+  br_component_add(registry, rect, COMPONENT_RENDERABLE, &rect_ren);
+
+  // Debug rect
+  BrEntity rect_frame = br_entity_create(registry);
+  Position rect_frame_pos = {60, 20};
+  Renderable rect_frame_ren = {
+      .type = RENDERABLE_RECTANGLE,
+      .rectangle = {
+          .width = 20, .height = 20, .color = 0xFFFF0000, .filled = false}};
+  br_component_add(registry, rect_frame, COMPONENT_POSITION, &rect_frame_pos);
+  br_component_add(registry, rect_frame, COMPONENT_RENDERABLE, &rect_frame_ren);
 
   return true;
 }
@@ -87,7 +113,8 @@ void input(BrApp *app) {
 
 void update(BrRegistry *registry, double delta_time) {
   system_player_movement(registry);
-  system_physics(registry, delta_time);
+  system_movement(registry, delta_time);
+  system_collision(registry);
 }
 
 void render(BrRegistry *registry, BrRenderer *renderer) {
