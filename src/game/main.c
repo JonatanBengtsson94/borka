@@ -16,6 +16,11 @@ bool setup(BrRegistry *registry, GameResources *resources) {
     return false;
   }
 
+  if (!systems_register(registry)) {
+    BR_LOG_ERROR("Failed to register systems");
+    return false;
+  }
+
   // Paddle
   resources->paddle_texture = br_texture_create("assets/textures/paddle.png");
   if (!resources->paddle_texture) {

@@ -2,6 +2,7 @@
 #define BR_ECS_H
 
 #include "borka_data_structure.h"
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -64,12 +65,28 @@ typedef struct {
   int *entity_to_index; /**< Maps entity to index in the component array. */
 } BrComponentArray;
 
+typedef struct BrRegistry BrRegistry;
+
+/**
+ * @brief Represents an active iteration over entities relevant to a system.
+ */
+typedef struct {
+  BrRegistry *registry;            /**< Central ECS data store. */
+  BrComponentArray *primary_array; /**< Primary component array to iterate over
+                                      (largest one). */
+  size_t current_index;            /**< Current index in the primary array. */
+  BrEntity current_entity;         /**< Entity ID at the current index. */
+  BrSystemId system_id;            /**< ID of the system being queried. */
+} BrQuery;
+
 /**
  * @brief Central manager for the entity component system (ECS).
  */
-typedef struct {
+struct BrRegistry {
   BrComponentArray
       *component_arrays[MAX_COMPONENT_TYPES];  /**< Array of ComponentArrays. */
+  BrQuery system_queries[MAX_SYSTEMS];         /**< Array holding all queries
+                                                  for registered systems. */
   BrSignature entity_signatures[MAX_ENTITIES]; /**< Component signature for each
                                                   entity ID. */
   BrSignature system_signatures[MAX_SYSTEMS];  /**< Component singature for each
@@ -79,7 +96,7 @@ typedef struct {
   int free_top; /**< Index of the next free slot in the free_entites. */
   BrComponentTypeId next_component_id; /**< Next available component id. */
   BrSystemId next_system_id;           /**< Next available system id. */
-} BrRegistry;
+};
 
 /**
  * @brief Creates a new Entity in the registry.
@@ -133,8 +150,8 @@ bool br_component_add(BrRegistry *registry, BrEntity entity,
  * @param component_type The type of component to fetch.
  * @param entity The entity whose component data are requested.
  */
-void *br_component_get(BrRegistry *registry, BrComponentTypeId component_type,
-                       BrEntity entity);
+void *br_component_get(const BrRegistry *registry,
+                       BrComponentTypeId component_type, BrEntity entity);
 
 /**
  * @brief Removes a component from an entity.
@@ -151,6 +168,8 @@ void br_component_remove(BrRegistry *registry, BrEntity entity,
  * @brief Registers a new system with the registry.
  *
  * @param registry Central ECS data store.
+ * @param primary_component The most unique type of the component for the
+ * system. Will be used for iteration in query.
  * @param required_components What components must be held for the system to
  * process a entity.
  * @param components_count The number of required components.
@@ -158,7 +177,90 @@ void br_component_remove(BrRegistry *registry, BrEntity entity,
  * failure.
  */
 BrSystemId br_register_system(BrRegistry *registry,
+                              BrComponentTypeId primary_component,
                               BrComponentTypeId *required_components,
                               size_t components_count);
+
+/**
+ * @brief Starts a new query for system iteration.
+ *
+ * @param registry Central ECS data store.
+ * @param system_id The ID of the system to query.
+ * @return The new BrQuery instance, or NULL on failure.
+ */
+static inline BrQuery *br_query_begin(BrRegistry *registry,
+                                      BrSystemId system_id) {
+  assert(registry);
+  assert(system_id < MAX_SYSTEMS);
+
+  BrQuery *query = &registry->system_queries[system_id];
+  assert(query);
+  assert(query->primary_array);
+
+  query->current_index = 0;
+  query->current_entity = BR_INVALID_ENTITY;
+
+  return query;
+}
+
+/**
+ * @brief Advances the iterator to the next matching entity.
+ *
+ * @param query Pointer to the query instance to advance.
+ * @return True if a new entity was found, false if iteration is complete.
+ */
+static inline bool br_query_next(BrQuery *query) {
+  assert(query);
+  assert(query->primary_array);
+
+  BrComponentArray *primary = query->primary_array;
+  BrRegistry *registry = query->registry;
+  BrSignature system_signature = registry->system_signatures[query->system_id];
+  size_t count = primary->entity_ids.length;
+
+  while (query->current_index < count) {
+    BrEntity entity =
+        ((BrEntity *)primary->entity_ids.data)[query->current_index];
+    if ((registry->entity_signatures[entity] & system_signature) ==
+        system_signature) {
+      query->current_entity = entity;
+      query->current_index++;
+      return true;
+    }
+
+    query->current_index++;
+  }
+
+  query->current_entity = BR_INVALID_ENTITY;
+  return false;
+}
+
+/**
+ * @brief Retrieves the component data for the current entity in the query.
+ *
+ * @param query Active query.
+ * @param component_type Type of component to get.
+ * @return Pointer to the component data, or NULL on failure.
+ */
+static inline void *br_query_get_component(const BrQuery *query,
+                                           BrComponentTypeId component_type) {
+  assert(query);
+  assert(query->current_entity < MAX_ENTITIES);
+  assert(component_type < MAX_COMPONENT_TYPES);
+
+  BrComponentArray *array = query->registry->component_arrays[component_type];
+  assert(array);
+  size_t component_size = array->components.element_size;
+
+  if (array == query->primary_array) {
+    size_t index = query->current_index - 1;
+    return (char *)array->components.data + index * component_size;
+  }
+
+  BrEntity entity = query->current_entity;
+  int component_index = array->entity_to_index[entity];
+
+  return (char *)array->components.data + component_index * component_size;
+}
 
 #endif // BR_ECS_H

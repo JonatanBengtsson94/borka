@@ -6,8 +6,9 @@
 
 - Multithreaded logging system.
 - Compile-time log level filtering.
-- PNG Decoding.
+- PNG decoding.
 - DEFLATE decompression.
+- Entity-Component-System (ECS).
 
 ## Supported platforms
 

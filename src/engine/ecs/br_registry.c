@@ -122,8 +122,8 @@ bool br_component_add(BrRegistry *registry, BrEntity entity,
   return true;
 }
 
-void *br_component_get(BrRegistry *registry, BrComponentTypeId component_type,
-                       BrEntity entity) {
+void *br_component_get(const BrRegistry *registry,
+                       BrComponentTypeId component_type, BrEntity entity) {
   if (!registry) {
     BR_LOG_ERROR("Could not get component, registry is NULL");
     return NULL;
@@ -180,6 +180,7 @@ void br_component_remove(BrRegistry *registry, BrEntity entity,
 }
 
 BrSystemId br_register_system(BrRegistry *registry,
+                              BrComponentTypeId primary_component,
                               BrComponentTypeId *required_components,
                               size_t components_count) {
   if (!registry) {
@@ -205,6 +206,13 @@ BrSystemId br_register_system(BrRegistry *registry,
 
   BrSystemId new_id = registry->next_system_id++;
   registry->system_signatures[new_id] = system_signature;
+
+  BrQuery *query = &registry->system_queries[new_id];
+  query->system_id = new_id;
+  query->registry = registry;
+  query->primary_array = registry->component_arrays[primary_component];
+  query->current_index = 0;
+  query->current_entity = BR_INVALID_ENTITY;
 
   return new_id;
 }
