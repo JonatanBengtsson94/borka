@@ -22,7 +22,7 @@ ifeq ($(BUILD),debug)
 else ifeq ($(BUILD),trace)
 	CFLAGS += -DBR_LOG_LEVEL_MIN=0 -g
 else ifeq ($(BUILD),release)
-	CFLAGS += -DNDEBUG -DBR_LOG_LEVEL_MIN=3 -O3 -ffunction-sections -fdata-sections
+	CFLAGS += -DNDEBUG -DBR_LOG_LEVEL_MIN=3 -O3 -flto -ffunction-sections -fdata-sections
 	LDFLAGS += -Wl,--gc-sections -s
 endif
 
