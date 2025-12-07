@@ -69,8 +69,7 @@ bool br_dynamic_array_remove(BrDynamicArray *array, size_t index) {
   assert(array);
   assert(array->data);
   assert(array->capacity > 0);
-  assert(index > 0);
-  assert(index >= array->length);
+  assert(index <= array->length);
 
   size_t last_index = array->length - 1;
 

@@ -1,88 +1,7 @@
 #define _POSIX_C_SOURCE 199309L
 
-#include "borka.h"
-#include "components/components.h"
-#include "systems/systems.h"
+#include "game.h"
 #include <time.h>
-
-typedef struct {
-  BrTexture *paddle_texture;
-  BrTexture *ball_texture;
-} GameResources;
-
-bool setup(BrRegistry *registry, GameResources *resources) {
-  if (!components_register(registry)) {
-    BR_LOG_ERROR("Failed to register components");
-    return false;
-  }
-
-  if (!systems_register(registry)) {
-    BR_LOG_ERROR("Failed to register systems");
-    return false;
-  }
-
-  // Paddle
-  resources->paddle_texture = br_texture_create("assets/textures/paddle.png");
-  if (!resources->paddle_texture) {
-    BR_LOG_ERROR("Failed to create paddle texture");
-    return false;
-  }
-  BrEntity paddle = br_entity_create(registry);
-  Position paddle_pos = {100, 190};
-  Velocity paddle_vel = {0, 0};
-  Renderable paddle_sprite = {.type = RENDERABLE_SPRITE,
-                              .sprite = {.texture = resources->paddle_texture}};
-  InputControlled paddle_input_control = {false, false};
-  MovementConfig paddle_movement_conf = {50};
-  Collider paddle_col = {24, 8};
-  br_component_add(registry, paddle, COMPONENT_POSITION, &paddle_pos);
-  br_component_add(registry, paddle, COMPONENT_VELOCITY, &paddle_vel);
-  br_component_add(registry, paddle, COMPONENT_RENDERABLE, &paddle_sprite);
-  br_component_add(registry, paddle, COMPONENT_INPUT_CONTROLLED,
-                   &paddle_input_control);
-  br_component_add(registry, paddle, COMPONENT_MOVEMENT_CONFIG,
-                   &paddle_movement_conf);
-  br_component_add(registry, paddle, COMPONENT_COLLIDER, &paddle_col);
-
-  // Ball
-  resources->ball_texture = br_texture_create("assets/textures/ball.png");
-  if (!resources->ball_texture) {
-    BR_LOG_ERROR("Failed to create ball texture");
-    return false;
-  }
-  BrEntity ball = br_entity_create(registry);
-  Position ball_pos = {100, 100};
-  Velocity ball_vel = {0, 50};
-  Renderable ball_sprite = {.type = RENDERABLE_SPRITE,
-                            .sprite = {.texture = resources->ball_texture}};
-  Collider ball_col = {8, 8};
-  br_component_add(registry, ball, COMPONENT_POSITION, &ball_pos);
-  br_component_add(registry, ball, COMPONENT_VELOCITY, &ball_vel);
-  br_component_add(registry, ball, COMPONENT_RENDERABLE, &ball_sprite);
-  br_component_add(registry, ball, COMPONENT_COLLIDER, &ball_col);
-
-  // Debug rect
-  BrEntity rect = br_entity_create(registry);
-  Position rect_pos = {20, 20};
-  Renderable rect_ren = {
-      .type = RENDERABLE_RECTANGLE,
-      .rectangle = {
-          .width = 20, .height = 20, .color = 0xFFFF0000, .filled = true}};
-  br_component_add(registry, rect, COMPONENT_POSITION, &rect_pos);
-  br_component_add(registry, rect, COMPONENT_RENDERABLE, &rect_ren);
-
-  // Debug rect
-  BrEntity rect_frame = br_entity_create(registry);
-  Position rect_frame_pos = {60, 20};
-  Renderable rect_frame_ren = {
-      .type = RENDERABLE_RECTANGLE,
-      .rectangle = {
-          .width = 20, .height = 20, .color = 0xFFFF0000, .filled = false}};
-  br_component_add(registry, rect_frame, COMPONENT_POSITION, &rect_frame_pos);
-  br_component_add(registry, rect_frame, COMPONENT_RENDERABLE, &rect_frame_ren);
-
-  return true;
-}
 
 double get_time() {
   struct timespec ts;
@@ -90,64 +9,45 @@ double get_time() {
   return ts.tv_sec + ts.tv_nsec / 1e9;
 }
 
-void input(BrApp *app) {
-  BrEvent e;
-  while (br_window_poll_events(app->window, &e)) {
-    switch (e.type) {
-    case BR_EVENT_WINDOW_CLOSE:
-      app->should_shutdown = true;
-      break;
-
-    case BR_EVENT_WINDOW_RESIZE:
-      br_renderer_resize(app->renderer, e.data.resize.width,
-                         e.data.resize.height);
-      break;
-
-    case BR_EVENT_KEY_PRESSED:
-    case BR_EVENT_KEY_RELEASED:
-      system_input(app->registry, e);
-      break;
-    }
-  }
-}
-
-void update(BrRegistry *registry, double delta_time) {
-  system_player_movement(registry);
-  system_movement(registry, delta_time);
-  system_collision(registry);
-}
-
-void render(BrRegistry *registry, BrRenderer *renderer) {
-  system_render(registry, renderer);
-}
-
 int main() {
   BrApp *app = br_app_create("Breakout", 200, 200);
-  GameResources resources = {0};
+  if (!app)
+    return -1;
+  GameState game;
+  game.app = app;
 
-  if (!setup(app->registry, &resources)) {
-    goto cleanup;
+  if (!game_init(&game)) {
+    return -1;
   }
 
   double last = get_time();
+  BrEvent e;
 
   while (!app->should_shutdown) {
     double now = get_time();
     double delta_time = now - last;
     last = now;
 
-    input(app);
-    update(app->registry, delta_time);
-    render(app->registry, app->renderer);
+    while (br_window_poll_events(app->window, &e)) {
+      switch (e.type) {
+      case BR_EVENT_WINDOW_CLOSE:
+        app->should_shutdown = true;
+        break;
+
+      case BR_EVENT_WINDOW_RESIZE:
+        br_renderer_resize(app->renderer, e.data.resize.width,
+                           e.data.resize.height);
+        break;
+
+      default:
+        game_handle_event(&game, e);
+        break;
+      }
+    }
+
+    game_update(&game, delta_time);
   }
 
-cleanup:
-  if (resources.paddle_texture) {
-    br_texture_destroy(resources.paddle_texture);
-  }
-  if (resources.ball_texture) {
-    br_texture_destroy(resources.ball_texture);
-  }
-  br_app_destroy(app);
+  game_shutdown(&game);
   return 0;
 }

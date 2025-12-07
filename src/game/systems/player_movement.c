@@ -9,10 +9,12 @@ void system_player_movement(BrRegistry *registry) {
     MovementConfig *mc =
         br_query_get_component(query, COMPONENT_MOVEMENT_CONFIG);
     Velocity *v = br_query_get_component(query, COMPONENT_VELOCITY);
+    Position *p = br_query_get_component(query, COMPONENT_POSITION);
 
     assert(ic);
     assert(mc);
     assert(v);
+    assert(p);
 
     int horizontal = 0;
     float speed = mc->move_speed;
@@ -25,5 +27,10 @@ void system_player_movement(BrRegistry *registry) {
       horizontal = 0;
 
     v->vx = horizontal * speed;
+
+    if (p->x < 0)
+      p->x = 0;
+    if (p->x > 176)
+      p->x = 176;
   }
 }

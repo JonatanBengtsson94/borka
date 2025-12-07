@@ -3,6 +3,7 @@
 
 #include "borka.h"
 #include "collider.h"
+#include "collision.h"
 #include "input_controlled.h"
 #include "movement_config.h"
 #include "position.h"
@@ -15,6 +16,7 @@ extern BrComponentTypeId COMPONENT_RENDERABLE;
 extern BrComponentTypeId COMPONENT_MOVEMENT_CONFIG;
 extern BrComponentTypeId COMPONENT_INPUT_CONTROLLED;
 extern BrComponentTypeId COMPONENT_COLLIDER;
+extern BrComponentTypeId COMPONENT_COLLISION;
 
 bool components_register(BrRegistry *registry);
 
