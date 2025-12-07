@@ -14,9 +14,9 @@ bool systems_register(BrRegistry *registry) {
                                          COMPONENT_POSITION};
   BrComponentTypeId physics_required[] = {COMPONENT_VELOCITY,
                                           COMPONENT_POSITION};
-  BrComponentTypeId player_movement_required[] = {COMPONENT_INPUT_CONTROLLED,
-                                                  COMPONENT_MOVEMENT_CONFIG,
-                                                  COMPONENT_VELOCITY};
+  BrComponentTypeId player_movement_required[] = {
+      COMPONENT_INPUT_CONTROLLED, COMPONENT_MOVEMENT_CONFIG, COMPONENT_VELOCITY,
+      COMPONENT_COLLIDER};
   BrComponentTypeId collision_detection_required[] = {COMPONENT_POSITION,
                                                       COMPONENT_COLLIDER};
   BrComponentTypeId collision_handling_required[] = {COMPONENT_COLLISION,
@@ -29,7 +29,7 @@ bool systems_register(BrRegistry *registry) {
   SYSTEM_MOVEMENT =
       br_register_system(registry, COMPONENT_VELOCITY, physics_required, 2);
   SYSTEM_PLAYER_MOVEMENT = br_register_system(
-      registry, COMPONENT_INPUT_CONTROLLED, player_movement_required, 3);
+      registry, COMPONENT_INPUT_CONTROLLED, player_movement_required, 4);
   SYSTEM_COLLISION_DETECTION = br_register_system(
       registry, COMPONENT_COLLIDER, collision_detection_required, 2);
   SYSTEM_COLLISION_HANDLING = br_register_system(

@@ -1,14 +1,15 @@
 #include "components/components.h"
+#include "constants.h"
 #include "entities.h"
 
 void create_paddle(BrRegistry *registry, BrTexture *texture) {
   BrEntity paddle = br_entity_create(registry);
-  Position paddle_pos = {100, 190};
   Velocity paddle_vel = {0, 0};
+  Position paddle_pos = {GAME_WIDTH / 2, GAME_HEIGHT - 10};
   Renderable paddle_sprite = {.type = RENDERABLE_SPRITE,
                               .sprite = {.texture = texture}};
   InputControlled paddle_input_control = {false, false};
-  MovementConfig paddle_movement_conf = {50};
+  MovementConfig paddle_movement_conf = {PADDLE_SPEED};
   Collider paddle_col = {
       .size = {24, 8}, .layer = LAYER_PADDLE, .mask = LAYER_WALL | LAYER_BALL};
   br_component_add(registry, paddle, COMPONENT_POSITION, &paddle_pos);

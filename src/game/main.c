@@ -1,16 +1,8 @@
-#define _POSIX_C_SOURCE 199309L
-
+#include "constants.h"
 #include "game.h"
-#include <time.h>
-
-double get_time() {
-  struct timespec ts;
-  clock_gettime(CLOCK_MONOTONIC, &ts);
-  return ts.tv_sec + ts.tv_nsec / 1e9;
-}
 
 int main() {
-  BrApp *app = br_app_create("Breakout", 200, 200);
+  BrApp *app = br_app_create("Breakout", GAME_WIDTH, GAME_HEIGHT);
   if (!app)
     return -1;
   GameState game;
@@ -20,11 +12,11 @@ int main() {
     return -1;
   }
 
-  double last = get_time();
+  double last = br_get_time();
   BrEvent e;
 
   while (!app->should_shutdown) {
-    double now = get_time();
+    double now = br_get_time();
     double delta_time = now - last;
     last = now;
 

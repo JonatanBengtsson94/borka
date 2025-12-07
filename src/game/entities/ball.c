@@ -1,10 +1,11 @@
 #include "components/components.h"
+#include "constants.h"
 #include "entities.h"
 
 void create_ball(BrRegistry *registry, BrTexture *texture) {
   BrEntity ball = br_entity_create(registry);
-  Position ball_pos = {100, 100};
-  Velocity ball_vel = {0, 50};
+  Velocity ball_vel = {0, BALL_SPEED};
+  Position ball_pos = {GAME_WIDTH / 2, GAME_HEIGHT / 2};
   Renderable ball_sprite = {.type = RENDERABLE_SPRITE,
                             .sprite = {.texture = texture}};
   Collider ball_col = {.size = {8, 8},

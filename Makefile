@@ -28,7 +28,7 @@ endif
 
 # Window backend flags
 ifeq ($(WINDOW_BACKEND),wayland)
-	CFLAGS += -DWINDOW_BACKEND_WAYLAND
+	CFLAGS += -DWINDOW_BACKEND_WAYLAND -D_POSIX_C_SOURCE=199309L
 	LDFLAGS += -lwayland-client
 	SRC += src/engine/window/platform/wayland/*.c
 

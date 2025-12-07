@@ -8,6 +8,7 @@
 #include "borka_math.h"
 #include "borka_render.h"
 #include "borka_texture.h"
+#include "borka_time.h"
 #include "borka_window.h"
 
 #endif // BORKA_H

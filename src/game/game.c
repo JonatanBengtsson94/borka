@@ -28,7 +28,7 @@ bool game_init(GameState *game) {
 
   create_paddle(game->app->registry, game->textures.paddle);
   create_ball(game->app->registry, game->textures.ball);
-  create_walls(game->app->registry, 200, 200);
+  create_walls(game->app->registry);
 
   return true;
 

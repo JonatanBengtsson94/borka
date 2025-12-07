@@ -1,4 +1,5 @@
 #include "components/components.h"
+#include "constants.h"
 #include "systems.h"
 
 void system_player_movement(BrRegistry *registry) {
@@ -10,11 +11,13 @@ void system_player_movement(BrRegistry *registry) {
         br_query_get_component(query, COMPONENT_MOVEMENT_CONFIG);
     Velocity *v = br_query_get_component(query, COMPONENT_VELOCITY);
     Position *p = br_query_get_component(query, COMPONENT_POSITION);
+    Collider *c = br_query_get_component(query, COMPONENT_COLLIDER);
 
     assert(ic);
     assert(mc);
     assert(v);
     assert(p);
+    assert(c);
 
     int horizontal = 0;
     float speed = mc->move_speed;
@@ -30,7 +33,7 @@ void system_player_movement(BrRegistry *registry) {
 
     if (p->x < 0)
       p->x = 0;
-    if (p->x > 176)
-      p->x = 176;
+    if (p->x > GAME_WIDTH - c->size.x)
+      p->x = GAME_WIDTH - c->size.x;
   }
 }
