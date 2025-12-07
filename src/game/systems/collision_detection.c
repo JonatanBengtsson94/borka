@@ -10,8 +10,9 @@ typedef struct {
 
 static bool check_aabb(Position *posA, Collider *colA, Position *posB,
                        Collider *colB) {
-  return (posA->x < posB->x + colB->width && posA->x + colA->width > posB->x &&
-          posA->y < posB->y + colB->height && posA->y + colA->height > posB->y);
+  return (posA->x < posB->x + colB->size.x &&
+          posA->x + colA->size.x > posB->x &&
+          posA->y < posB->y + colB->size.y && posA->y + colA->size.y > posB->y);
 }
 
 void system_collision_detection(BrRegistry *registry) {

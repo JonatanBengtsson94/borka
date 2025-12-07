@@ -1,6 +1,5 @@
 #include "renderer/software/platform/wayland/wayland_software_renderer.h"
 #include "borka_log.h"
-#include "borka_math.h"
 #include "renderer/software/br_software_renderer.h"
 #include "wayland_software_renderer.h"
 #include "window/platform/wayland/wayland_shm.h"
@@ -15,16 +14,15 @@ static bool on_screen(const struct BrRenderer *renderer, int maxX, int minX,
   assert(renderer);
   assert(renderer->game_pixels);
 
-  if (minX > renderer->game_width || maxX < 0 || minY > renderer->game_height ||
-      maxY < 0)
+  if (minX > renderer->game_dimensions.x || maxX < 0 ||
+      minY > renderer->game_dimensions.y || maxY < 0)
     return false;
 
   return true;
 }
 
 static bool scale_render_target(const int *source_pixels, int *target_pixels,
-                                int source_width, int source_height,
-                                int target_width, int target_height) {
+                                BrVec2 source_size, BrVec2 target_size) {
   if (!source_pixels) {
     BR_LOG_ERROR("Could not scale render target: source pixels was NULL");
     return false;
@@ -33,14 +31,14 @@ static bool scale_render_target(const int *source_pixels, int *target_pixels,
     BR_LOG_ERROR("Could not scale render target: target pixels was NULL");
     return false;
   }
-  if (source_width <= 0 || source_height <= 0 || target_width <= 0 ||
-      target_height <= 0) {
+  if (source_size.x <= 0 || source_size.y <= 0 || target_size.x <= 0 ||
+      target_size.y <= 0) {
     BR_LOG_ERROR("Could not scale render target, invalid dimenstions");
     return false;
   }
 
-  int scale_factor_x = target_width / source_width;
-  int scale_factor_y = target_height / source_height;
+  int scale_factor_x = target_size.x / source_size.x;
+  int scale_factor_y = target_size.y / source_size.y;
   int scale_factor = min_int(scale_factor_x, scale_factor_y);
 
   if (scale_factor < 1) {
@@ -48,21 +46,21 @@ static bool scale_render_target(const int *source_pixels, int *target_pixels,
     scale_factor = 1;
   }
 
-  int scaled_width = source_width * scale_factor;
-  int scaled_height = source_height * scale_factor;
-  int offsetX = (target_width - scaled_width) / 2;
-  int offsetY = (target_height - scaled_height) / 2;
+  int scaled_width = source_size.x * scale_factor;
+  int scaled_height = source_size.y * scale_factor;
+  int offsetX = (target_size.x - scaled_width) / 2;
+  int offsetY = (target_size.y - scaled_height) / 2;
 
-  for (int y_source = 0; y_source < source_height; ++y_source) {
-    for (int x_source = 0; x_source < source_width; ++x_source) {
-      int color = source_pixels[y_source * source_width + x_source];
+  for (int y_source = 0; y_source < source_size.y; ++y_source) {
+    for (int x_source = 0; x_source < source_size.x; ++x_source) {
+      int color = source_pixels[y_source * source_size.x + x_source];
 
       int x_target_start = offsetX + x_source * scale_factor;
       int y_target_start = offsetY + y_source * scale_factor;
 
       for (int dy = 0; dy < scale_factor; ++dy) {
         int y_target = y_target_start + dy;
-        int target_row_start = y_target * target_width;
+        int target_row_start = y_target * target_size.x;
 
         for (int dx = 0; dx < scale_factor; ++dx) {
           int x_target = x_target_start + dx;
@@ -104,10 +102,10 @@ struct BrRenderer *br_renderer_create(struct BrWindow *window) {
   renderer->wl_shm = window->wl_shm;
   renderer->wl_surface = window->wl_surface;
   renderer->wl_display = window->wl_display;
-  renderer->width = window->width;
-  renderer->height = window->height;
-  renderer->game_width = window->width;
-  renderer->game_height = window->height;
+  renderer->dimensions.x = window->width;
+  renderer->dimensions.y = window->height;
+  renderer->game_dimensions.x = window->width;
+  renderer->game_dimensions.y = window->height;
 
   if (!renderer->wl_shm) {
     BR_LOG_ERROR("shm not available for renderer");
@@ -119,15 +117,16 @@ struct BrRenderer *br_renderer_create(struct BrWindow *window) {
     goto error;
   }
 
-  renderer->game_pixels =
-      calloc(renderer->game_width * renderer->game_height, sizeof(int));
+  renderer->game_pixels = calloc(
+      renderer->game_dimensions.x * renderer->game_dimensions.y, sizeof(int));
   if (!renderer->game_pixels) {
     BR_LOG_ERROR("Failed to allocate game pixel buffer");
     goto error;
   }
 
   renderer->buffers = wayland_shm_buffer_pair_create(
-      renderer->wl_shm, renderer->width, renderer->height);
+      renderer->wl_shm, renderer->game_dimensions.x,
+      renderer->game_dimensions.y);
   renderer->front_buffer_index = 0;
   renderer->back_buffer_index = 1;
 
@@ -147,44 +146,44 @@ error:
 void br_renderer_clear(struct BrRenderer *renderer, int color) {
   assert(renderer);
 
-  software_clear(renderer->game_pixels, renderer->game_width,
-                 renderer->game_height, color);
+  software_clear(renderer->game_pixels, renderer->game_dimensions, color);
 }
 
+// TODO: Fix this
 void br_renderer_draw_filled_triangle(struct BrRenderer *renderer, BrVec2 v0,
                                       BrVec2 v1, BrVec2 v2, int color) {
   assert(renderer);
-
-  software_draw_filled_triangle(renderer->game_pixels, renderer->game_width,
-                                renderer->game_height, v0, v1, v2, color);
 }
 
-void br_renderer_draw_rectangle_filled(struct BrRenderer *renderer, int x,
-                                       int y, int width, int height,
+void br_renderer_draw_rectangle_filled(struct BrRenderer *renderer,
+                                       BrVec2 position, BrVec2 size,
                                        int color) {
-  if (on_screen(renderer, x + width, x, y + height, y))
-    software_draw_rectangle_filled(renderer->game_pixels, renderer->game_width,
-                                   renderer->game_height, x, y, width, height,
+  if (on_screen(renderer, position.x + size.x, position.x, position.y + size.y,
+                position.y))
+    software_draw_rectangle_filled(renderer->game_pixels,
+                                   renderer->game_dimensions, position, size,
                                    color);
 }
 
-void br_renderer_draw_rectangle_outlined(struct BrRenderer *renderer, int x,
-                                         int y, int width, int height,
+void br_renderer_draw_rectangle_outlined(struct BrRenderer *renderer,
+                                         BrVec2 position, BrVec2 size,
                                          int color) {
-  if (on_screen(renderer, x + width, x, y + height, y))
-    software_draw_rectangle_outlined(
-        renderer->game_pixels, renderer->game_width, renderer->game_height, x,
-        y, width, height, color);
+  if (on_screen(renderer, position.x + size.x, position.x, position.y + size.y,
+                position.y))
+    software_draw_rectangle_outlined(renderer->game_pixels,
+                                     renderer->game_dimensions, position, size,
+                                     color);
 }
 
-void br_renderer_draw_texture(struct BrRenderer *renderer, int x, int y,
+void br_renderer_draw_texture(struct BrRenderer *renderer, BrVec2 position,
                               const BrTexture *texture) {
   assert(texture);
   assert(texture->pixels);
 
-  if (on_screen(renderer, x + texture->width, x, y + texture->height, y))
-    software_draw_texture(renderer->game_pixels, renderer->game_width,
-                          renderer->game_height, x, y, texture);
+  if (on_screen(renderer, position.x + texture->width, position.x,
+                position.y + texture->height, position.y))
+    software_draw_texture(renderer->game_pixels, renderer->game_dimensions,
+                          position, texture);
 }
 
 void br_renderer_present(struct BrRenderer *renderer) {
@@ -199,14 +198,13 @@ void br_renderer_present(struct BrRenderer *renderer) {
 
   if (!scale_render_target(renderer->game_pixels,
                            renderer->buffers->buffer_data[back],
-                           renderer->game_width, renderer->game_height,
-                           renderer->width, renderer->height))
+                           renderer->game_dimensions, renderer->dimensions))
 
     renderer->buffers->buffer_busy[back] = true;
   wl_surface_attach(renderer->wl_surface, renderer->buffers->wl_buffers[back],
                     0, 0);
-  wl_surface_damage_buffer(renderer->wl_surface, 0, 0, renderer->width,
-                           renderer->height);
+  wl_surface_damage_buffer(renderer->wl_surface, 0, 0, renderer->dimensions.x,
+                           renderer->dimensions.y);
   wl_surface_commit(renderer->wl_surface);
 
   int temp = renderer->front_buffer_index;
@@ -220,22 +218,22 @@ void br_renderer_resize(struct BrRenderer *renderer, int width, int height) {
     return;
   }
 
-  if (renderer->width == width && renderer->height == height) {
+  if (renderer->dimensions.x == width && renderer->dimensions.y == height) {
     return;
   }
 
-  BR_LOG_DEBUG("Renderer resizing: %dx%d -> %dx%d", renderer->width,
-               renderer->height, width, height);
+  BR_LOG_DEBUG("Renderer resizing: %dx%d -> %dx%d", renderer->dimensions.x,
+               renderer->dimensions.y, width, height);
 
   if (renderer->buffers) {
     wayland_shm_buffer_pair_destroy(renderer->buffers);
   }
 
-  renderer->width = width;
-  renderer->height = height;
+  renderer->dimensions.x = width;
+  renderer->dimensions.y = height;
 
   renderer->buffers = wayland_shm_buffer_pair_create(
-      renderer->wl_shm, renderer->width, renderer->height);
+      renderer->wl_shm, renderer->dimensions.x, renderer->dimensions.y);
 
   if (!renderer->buffers) {
     BR_LOG_ERROR("Failed to recreate buffers during resize");

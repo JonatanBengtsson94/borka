@@ -14,9 +14,9 @@ static void bounce_ball(BrRegistry *registry, BrEntity ball,
   assert(colliding_entity_pos);
 
   if (ball_vel->vy > 0)
-    ball_pos->y = colliding_entity_pos->y - ball_col->height;
+    ball_pos->y = colliding_entity_pos->y - ball_col->size.y;
   else
-    ball_pos->y = colliding_entity_pos->y + colliding_entity_col->height;
+    ball_pos->y = colliding_entity_pos->y + colliding_entity_col->size.y;
   ball_vel->vy *= -1;
 }
 

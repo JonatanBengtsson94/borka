@@ -15,22 +15,21 @@ void system_render(BrRegistry *registry, BrRenderer *renderer) {
 
     assert(r);
     assert(p);
+    BrVec2 int_pos = {p->x, p->y};
 
     switch (r->type) {
     case RENDERABLE_SPRITE:
       assert(r->sprite.texture);
-      br_renderer_draw_texture(renderer, p->x, p->y, r->sprite.texture);
+      br_renderer_draw_texture(renderer, int_pos, r->sprite.texture);
       break;
 
     case RENDERABLE_RECTANGLE:
       if (r->rectangle.filled)
-        br_renderer_draw_rectangle_filled(
-            renderer, p->x, p->y, r->rectangle.width, r->rectangle.height,
-            r->rectangle.color);
+        br_renderer_draw_rectangle_filled(renderer, int_pos, r->rectangle.size,
+                                          r->rectangle.color);
       else
         br_renderer_draw_rectangle_outlined(
-            renderer, p->x, p->y, r->rectangle.width, r->rectangle.height,
-            r->rectangle.color);
+            renderer, int_pos, r->rectangle.size, r->rectangle.color);
       break;
 
     case RENDERABLE_FILLED_TRIANGLE:

@@ -14,8 +14,7 @@ typedef struct {
     } sprite;
 
     struct {
-      int width;
-      int height;
+      BrVec2 size;
       int color;
       bool filled;
     } rectangle;

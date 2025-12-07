@@ -19,6 +19,7 @@ typedef struct BrRenderer BrRenderer;
  */
 void br_renderer_clear(BrRenderer *renderer, int color);
 
+// TODO: Fix this.
 /**
  * @brief Draws a filled triangle.
  *
@@ -36,48 +37,46 @@ void br_renderer_clear(BrRenderer *renderer, int color);
 void br_renderer_draw_filled_triangle(BrRenderer *renderer, BrVec2 v0,
                                       BrVec2 v1, BrVec2 v2, int color);
 
+// TODO: Fix this.
 /**
  * @brief Draws a filled rectangle.
  *
- * @param Renderer to draw with. Passing NULL is safe and does nothing.
- * @param x X coordinate of the top-left corner in screen space.
- * @param y Y coordinate of the top-left corner in screen space.
- * @param size Size of rectangle.
+ * @param renderer Renderer to draw with. Passing NULL is safe and does nothing.
+ * @param position Position of upper-left corner of the rectangle.
+ * @param size Size of the rectangle in pixels.
  * @param color Fill color in 32-bit ARGB format (0xAARRGGBB).
  *
  * @note Only supports axis-aligned rectangles.
  * @note Changes are not visible until br_renderer_present() is called.
  */
-void br_renderer_draw_rectangle_filled(BrRenderer *renderer, int x, int y,
-                                       int width, int height, int color);
+void br_renderer_draw_rectangle_filled(BrRenderer *renderer, BrVec2 position,
+                                       BrVec2 size, int color);
 
 /**
  * @brief Draws a rectangle outline.
  *
- * @param Renderer to draw with. Passing NULL is safe and does nothing.
- * @param x X coordinate of the top-left corner in screen space.
- * @param y Y coordinate of the top-left corner in screen space.
- * @param size Size of rectangle.
+ * @param renderer Renderer to draw with. Passing NULL is safe and does nothing.
+ * @param position Position of upper-left corner of the rectangle.
+ * @param size Size of the rectangle in pixels.
  * @param color Fill color in 32-bit ARGB format (0xAARRGGBB).
  *
  * @note Only supports axis-aligned rectangles.
  * @note Changes are not visible until br_renderer_present() is called.
  */
-void br_renderer_draw_rectangle_outlined(BrRenderer *renderer, int x, int y,
-                                         int width, int height, int color);
+void br_renderer_draw_rectangle_outlined(BrRenderer *renderer, BrVec2 position,
+                                         BrVec2 size, int color);
 
 /*
  * @brief Draws a texture at the specified position.
  *
  * @param renderer Renderer to draw with. Passing NULL is safe and does
  * nothing.
- * @param x X coordinate of the top-left corner in screen space.
- * @param y Y coordinate of the top-left corner in screen space.
+ * @param position Position of upper-left corner of the texture.
  * @param texture The texture to draw. Passing NULL is safe and does nothing.
  *
  * @note Changes are not visible until br_renderer_present() is called.
  */
-void br_renderer_draw_texture(BrRenderer *renderer, int x, int y,
+void br_renderer_draw_texture(BrRenderer *renderer, BrVec2 position,
                               const BrTexture *texture);
 
 /**

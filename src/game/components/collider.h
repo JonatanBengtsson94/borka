@@ -10,8 +10,7 @@ typedef enum {
 } Layer;
 
 typedef struct {
-  int width;
-  int height;
+  BrVec2 size;
   uint8_t layer;
   uint8_t mask;
 } Collider;
