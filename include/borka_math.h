@@ -1,6 +1,8 @@
 #ifndef BR_MATH_H
 #define BR_MATH_H
 
+#define PI 3.141592
+
 /**
  * @brief Returns the smaller of two integers.
  *

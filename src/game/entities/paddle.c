@@ -11,7 +11,7 @@ void create_paddle(BrRegistry *registry, BrTexture *texture) {
   InputControlled paddle_input_control = {false, false};
   MovementConfig paddle_movement_conf = {PADDLE_SPEED};
   Collider paddle_col = {
-      .size = {24, 8}, .layer = LAYER_PADDLE, .mask = LAYER_WALL | LAYER_BALL};
+      .size = {24, 1}, .layer = LAYER_PADDLE, .mask = LAYER_WALL | LAYER_BALL};
   br_component_add(registry, paddle, COMPONENT_POSITION, &paddle_pos);
   br_component_add(registry, paddle, COMPONENT_VELOCITY, &paddle_vel);
   br_component_add(registry, paddle, COMPONENT_RENDERABLE, &paddle_sprite);

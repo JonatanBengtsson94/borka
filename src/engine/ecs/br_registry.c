@@ -15,6 +15,7 @@ BrRegistry *br_registry_create() {
   }
   registry->free_top = MAX_ENTITIES - 1;
 
+  BR_LOG_INFO("ECS Registry initialized");
   return registry;
 }
 

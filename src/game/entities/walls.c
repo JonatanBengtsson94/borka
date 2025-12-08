@@ -13,7 +13,7 @@ void create_walls(BrRegistry *registry) {
 
   // Right Wall
   BrEntity right_wall = br_entity_create(registry);
-  Position right_wall_pos = {200, 0};
+  Position right_wall_pos = {GAME_WIDTH, 0};
   Collider right_wall_col = {
       .size = {1, GAME_HEIGHT}, .layer = LAYER_WALL, .mask = LAYER_BALL};
   br_component_add(registry, right_wall, COMPONENT_POSITION, &right_wall_pos);

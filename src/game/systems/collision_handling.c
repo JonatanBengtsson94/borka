@@ -1,23 +1,76 @@
 #include "components/components.h"
 #include "systems.h"
+#include <math.h>
 
-static void bounce_ball(BrRegistry *registry, BrEntity ball,
-                        BrEntity colliding_entity, Collider *ball_col,
-                        Collider *colliding_entity_col) {
-  Velocity *ball_vel = br_component_get(registry, COMPONENT_VELOCITY, ball);
-  Position *ball_pos = br_component_get(registry, COMPONENT_POSITION, ball);
-  Position *colliding_entity_pos =
-      br_component_get(registry, COMPONENT_POSITION, colliding_entity);
+static void paddle_hit(BrRegistry *registry, BrEntity ball, BrEntity paddle,
+                       Collider *ball_col, Collider *paddle_col) {
+  Position *ball_p = br_component_get(registry, COMPONENT_POSITION, ball);
+  Position *paddle_p = br_component_get(registry, COMPONENT_POSITION, paddle);
+  Velocity *ball_v = br_component_get(registry, COMPONENT_VELOCITY, ball);
 
-  assert(ball_vel);
-  assert(ball_pos);
-  assert(colliding_entity_pos);
+  assert(ball_p);
+  assert(paddle_p);
+  assert(ball_v);
 
-  if (ball_vel->vy > 0)
-    ball_pos->y = colliding_entity_pos->y - ball_col->size.y;
+  float ball_cx = ball_p->x + (ball_col->size.x / 2.0);
+  float paddle_cx = paddle_p->x + (paddle_col->size.x / 2.0);
+  float dx = paddle_cx - ball_cx;
+  float max_distance = (paddle_col->size.x + ball_col->size.x) / 2.0;
+  float normalized_hit = dx / max_distance;
+  BR_LOG_TRACE("Normalized hit: %f", normalized_hit);
+
+  // Move ball back outside collider
+  if (ball_v->vy > 0)
+    ball_p->y = paddle_p->y - ball_col->size.y;
   else
-    ball_pos->y = colliding_entity_pos->y + colliding_entity_col->size.y;
-  ball_vel->vy *= -1;
+    ball_p->y = paddle_p->y + paddle_col->size.y;
+
+  float max_angle = 60.0;
+  float angle = normalized_hit * max_angle * (PI / 180.0);
+  float speed = sqrt(ball_v->vx * ball_v->vx + ball_v->vy * ball_v->vy);
+
+  ball_v->vx = -speed * sin(angle);
+  ball_v->vy = -speed * cos(angle);
+  BR_LOG_TRACE("vx: %f, vy: %f", ball_v->vx, ball_v->vy);
+}
+
+static void bounce_ball(BrRegistry *registry, BrEntity ball, BrEntity hit,
+                        Collider *ball_col, Collider *hit_col) {
+  Velocity *ball_v = br_component_get(registry, COMPONENT_VELOCITY, ball);
+  Position *ball_p = br_component_get(registry, COMPONENT_POSITION, ball);
+  Position *hit_p = br_component_get(registry, COMPONENT_POSITION, hit);
+
+  assert(ball_v);
+  assert(ball_p);
+  assert(hit_p);
+
+  float ball_cx = ball_p->x + (ball_col->size.x / 2.0);
+  float ball_cy = ball_p->y + (ball_col->size.y / 2.0);
+  float hit_cx = hit_p->x + (hit_col->size.x / 2.0);
+  float hit_cy = hit_p->y + (hit_col->size.y / 2.0);
+
+  float dx = ball_cx - hit_cx;
+  float dy = ball_cy - hit_cy;
+
+  float max_distance_x = (ball_col->size.x + hit_col->size.x) / 2.0;
+  float max_distance_y = (ball_col->size.y + hit_col->size.y) / 2.0;
+
+  float overlap_x = max_distance_x - fabsf(dx);
+  float overlap_y = max_distance_y - fabsf(dy);
+
+  if (overlap_x < overlap_y) {
+    if (dx > 0)
+      ball_p->x += overlap_x;
+    else
+      ball_p->x -= overlap_x;
+    ball_v->vx *= -1;
+  } else {
+    if (dy > 0)
+      ball_p->y += overlap_y;
+    else
+      ball_p->y -= overlap_y;
+    ball_v->vy *= -1;
+  }
 }
 
 void system_collision_handling(BrRegistry *registry) {
@@ -35,8 +88,8 @@ void system_collision_handling(BrRegistry *registry) {
 
     if (col_a->layer == LAYER_PADDLE && col_b->layer == LAYER_BALL) {
       BR_LOG_TRACE("Paddle hit ball");
-      bounce_ball(registry, collision->entityB, collision->entityA, col_b,
-                  col_a);
+      paddle_hit(registry, collision->entityB, collision->entityA, col_b,
+                 col_a);
     }
 
     if (col_a->layer == LAYER_BALL && col_b->layer == LAYER_WALL) {

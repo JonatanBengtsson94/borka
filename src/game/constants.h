@@ -1,8 +1,8 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define PADDLE_SPEED 100
-#define BALL_SPEED 120
+#define PADDLE_SPEED 120
+#define BALL_SPEED 100
 #define GAME_WIDTH 320
 #define GAME_HEIGHT 180
 
