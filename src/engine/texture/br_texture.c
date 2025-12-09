@@ -90,7 +90,7 @@ static bool parse_zlib_header(const uint8_t *data, size_t size) {
     return false;
   }
 
-  BR_LOG_DEBUG("Zlib header: compression_method: %u, compression_info: %u, "
+  BR_LOG_TRACE("Zlib header: compression_method: %u, compression_info: %u, "
                "fdict: %u, flevel: %u, fcheck: %u",
                header.compression_method, header.compression_info, header.fdict,
                header.flevel, header.fcheck);
@@ -450,7 +450,7 @@ static bool decode_btype01(BitReader *bit_reader, uint8_t *out_data,
     }
 
     if (symbol == 256) {
-      BR_LOG_DEBUG("End of Block: %u", symbol);
+      BR_LOG_TRACE("End of Block: %u", symbol);
       break;
     }
 
@@ -515,7 +515,7 @@ static bool decode_btype10(BitReader *bit_reader, uint8_t *out_data,
   if (!read_bits(bit_reader, 4, &hclen))
     goto cleanup;
   int number_code_length_symbols = hclen + 4;
-  BR_LOG_DEBUG(
+  BR_LOG_TRACE(
       "HLIT: %u (%d symbols), HDIST: %u (%d symbols), HCLEN: %u (%d symbols)",
       hlit, number_literal_length_symbols, hdist, number_distance_symbols,
       hclen, number_code_length_symbols);
@@ -542,7 +542,7 @@ static bool decode_btype10(BitReader *bit_reader, uint8_t *out_data,
   uint8_t distance_symbol_lengths[MAX_DISTANCE_SYMBOLS] = {0};
   int total_lengths_to_decode =
       number_literal_length_symbols + number_distance_symbols;
-  BR_LOG_DEBUG("Lengths to decode: %u", total_lengths_to_decode);
+  BR_LOG_TRACE("Lengths to decode: %u", total_lengths_to_decode);
 
   uint8_t *current_lengths = literal_length_symbol_lengths;
   int current_max = number_literal_length_symbols;
@@ -647,7 +647,7 @@ static bool decode_btype10(BitReader *bit_reader, uint8_t *out_data,
     }
 
     if (symbol == 256) {
-      BR_LOG_DEBUG("End of Block: %u", symbol);
+      BR_LOG_TRACE("End of Block: %u", symbol);
       break;
     }
 
@@ -731,33 +731,33 @@ static bool decompress_data(const uint8_t *compressed_data,
 
     switch (btype) {
     case 0:
-      BR_LOG_DEBUG("BTYPE00, No compression");
+      BR_LOG_TRACE("BTYPE00, No compression");
       if (!decode_btype00(&bit_reader, target, uncompressed_size,
                           &output_position)) {
         BR_LOG_ERROR("Failed to decompress BTYPE00 block");
         return false;
       }
-      BR_LOG_DEBUG("Decompressed BTYPE00 correctly");
+      BR_LOG_TRACE("Decompressed BTYPE00 correctly");
       break;
 
     case 1:
-      BR_LOG_DEBUG("BTYPE 01, Fixed huffman codes");
+      BR_LOG_TRACE("BTYPE 01, Fixed huffman codes");
       if (!decode_btype01(&bit_reader, target, uncompressed_size,
                           &output_position)) {
         BR_LOG_ERROR("Failed to decompress BTYPE01 block");
         return false;
       }
-      BR_LOG_DEBUG("Decompressed BTYPE01 correctly");
+      BR_LOG_TRACE("Decompressed BTYPE01 correctly");
       break;
 
     case 2:
-      BR_LOG_DEBUG("BTYPE 10, Dynamic huffman codes");
+      BR_LOG_TRACE("BTYPE 10, Dynamic huffman codes");
       if (!decode_btype10(&bit_reader, target, uncompressed_size,
                           &output_position)) {
         BR_LOG_ERROR("Failed to decompress BTYPE10 block");
         return false;
       }
-      BR_LOG_DEBUG("Decompressed BTYPE10 correctly");
+      BR_LOG_TRACE("Decompressed BTYPE10 correctly");
       break;
 
     default:
@@ -902,7 +902,7 @@ static bool parse_ihdr(const uint8_t *data, size_t file_size, size_t *offset,
     return false;
   }
 
-  BR_LOG_DEBUG(
+  BR_LOG_TRACE(
       "PNG IHDR: width: %u, height: %u, bit_depth: %u, color_type: %u, "
       "compression_type: %u, filter_method: %u, interlace_method: %u",
       out_ihdr->width, out_ihdr->height, out_ihdr->bit_depth,
@@ -925,11 +925,11 @@ static uint8_t *collect_compressed_data(const uint8_t *data, size_t size,
     current_offset += 4;
 
     if (type == CHUNK_IEND) {
-      BR_LOG_DEBUG("Found IEND chunk");
+      BR_LOG_TRACE("Found IEND chunk");
       break;
     }
     if (type == CHUNK_IDAT) {
-      BR_LOG_DEBUG("Found IDAT chunk: %u bytes (total: %zu)", length,
+      BR_LOG_TRACE("Found IDAT chunk: %u bytes (total: %zu)", length,
                    total_length + length);
       total_length += length;
     }
@@ -1126,7 +1126,7 @@ BrTexture *br_texture_create(const char *filepath) {
     free(compressed_data);
     return NULL;
   }
-  BR_LOG_DEBUG("Successfully collected compressed data: '%s'", filepath);
+  BR_LOG_TRACE("Successfully collected compressed data: '%s'", filepath);
 
   size_t scanline_size =
       ihdr.width * PNG_BYTES_PER_PIXEL_RGBA + 1; // +1 filter byte
@@ -1148,7 +1148,7 @@ BrTexture *br_texture_create(const char *filepath) {
     return NULL;
   }
   free(compressed_data);
-  BR_LOG_DEBUG("Successfully decompressed data: '%s'", filepath);
+  BR_LOG_TRACE("Successfully decompressed data: '%s'", filepath);
 
   // Unfilter data
   size_t unfiltered_size = PNG_BYTES_PER_PIXEL_RGBA * ihdr.width * ihdr.height;
@@ -1166,7 +1166,7 @@ BrTexture *br_texture_create(const char *filepath) {
     return NULL;
   }
   free(uncompressed_data);
-  BR_LOG_DEBUG("Successfully unfiltered data: '%s'", filepath);
+  BR_LOG_TRACE("Successfully unfiltered data: '%s'", filepath);
 
   // Allocate BrTexture
   BrTexture *texture = malloc(sizeof(BrTexture));

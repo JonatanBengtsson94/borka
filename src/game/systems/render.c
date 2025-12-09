@@ -35,6 +35,6 @@ void system_render(BrRegistry *registry, BrRenderer *renderer) {
     case RENDERABLE_FILLED_TRIANGLE:
       break;
     }
-    br_renderer_present(renderer);
   }
+  br_renderer_present(renderer);
 }

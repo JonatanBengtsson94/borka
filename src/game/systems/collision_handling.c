@@ -20,7 +20,6 @@ static void paddle_hit(BrRegistry *registry, BrEntity ball, BrEntity paddle,
   float normalized_hit = dx / max_distance;
   BR_LOG_TRACE("Normalized hit: %f", normalized_hit);
 
-  // Move ball back outside collider
   if (ball_v->vy > 0)
     ball_p->y = paddle_p->y - ball_col->size.y;
   else
@@ -33,6 +32,10 @@ static void paddle_hit(BrRegistry *registry, BrEntity ball, BrEntity paddle,
   ball_v->vx = -speed * sin(angle);
   ball_v->vy = -speed * cos(angle);
   BR_LOG_TRACE("vx: %f, vy: %f", ball_v->vx, ball_v->vy);
+}
+
+static void brick_hit(BrRegistry *registry, BrEntity brick) {
+  br_entity_destroy(registry, brick);
 }
 
 static void bounce_ball(BrRegistry *registry, BrEntity ball, BrEntity hit,
@@ -97,6 +100,13 @@ void system_collision_handling(BrRegistry *registry) {
       BR_LOG_TRACE("Ball hit wall");
       bounce_ball(registry, collision->entityA, collision->entityB, col_a,
                   col_b);
+    }
+
+    if (col_a->layer == LAYER_BALL && col_b->layer == LAYER_BRICK) {
+      BR_LOG_TRACE("Ball hit brick");
+      bounce_ball(registry, collision->entityA, collision->entityB, col_a,
+                  col_b);
+      brick_hit(registry, collision->entityB);
     }
 
     br_component_remove(registry, query->current_entity, COMPONENT_COLLISION);

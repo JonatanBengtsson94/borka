@@ -275,7 +275,7 @@ BrWindow *br_window_create(const char *title, int width, int height) {
     window_cleanup(window);
     return NULL;
   }
-  BR_LOG_DEBUG("Retrieved Wayland registry");
+  BR_LOG_TRACE("Retrieved Wayland registry");
 
   wl_registry_add_listener(window->wl_registry, &registry_listener, window);
   wl_display_roundtrip(window->wl_display);
@@ -285,14 +285,14 @@ BrWindow *br_window_create(const char *title, int width, int height) {
     window_cleanup(window);
     return NULL;
   }
-  BR_LOG_DEBUG("Bound to Wayland compositor");
+  BR_LOG_TRACE("Bound to Wayland compositor");
 
   if (!window->xdg_wm_base) {
     BR_LOG_ERROR("Failed to bind to xdg_base");
     window_cleanup(window);
     return NULL;
   }
-  BR_LOG_DEBUG("Bound to xdg");
+  BR_LOG_TRACE("Bound to xdg");
 
   xdg_wm_base_add_listener(window->xdg_wm_base, &xdg_wm_base_listener, window);
   wl_seat_add_listener(window->wl_seat, &seat_listener, window);
@@ -303,7 +303,7 @@ BrWindow *br_window_create(const char *title, int width, int height) {
     window_cleanup(window);
     return NULL;
   }
-  BR_LOG_DEBUG("Created Wayland surface");
+  BR_LOG_TRACE("Created Wayland surface");
 
   window->xdg_surface =
       xdg_wm_base_get_xdg_surface(window->xdg_wm_base, window->wl_surface);
@@ -312,7 +312,7 @@ BrWindow *br_window_create(const char *title, int width, int height) {
     window_cleanup(window);
     return NULL;
   }
-  BR_LOG_DEBUG("Retrieved xdg surface");
+  BR_LOG_TRACE("Retrieved xdg surface");
 
   xdg_surface_add_listener(window->xdg_surface, &xdg_surface_listener, window);
 
@@ -322,7 +322,7 @@ BrWindow *br_window_create(const char *title, int width, int height) {
     window_cleanup(window);
     return NULL;
   }
-  BR_LOG_DEBUG("Retrieved xdg top level");
+  BR_LOG_TRACE("Retrieved xdg top level");
 
   xdg_toplevel_add_listener(window->xdg_toplevel, &xdg_toplevel_listener,
                             window);

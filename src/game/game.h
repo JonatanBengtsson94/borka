@@ -6,6 +6,7 @@ typedef struct {
   struct {
     BrTexture *paddle;
     BrTexture *ball;
+    BrTexture *brick;
   } textures;
 
 } GameState;
