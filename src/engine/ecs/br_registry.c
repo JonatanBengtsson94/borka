@@ -1,7 +1,6 @@
 #include "br_registry.h"
 #include "borka_log.h"
 #include "br_component_array.h"
-#include <stdbool.h>
 
 BrRegistry *br_registry_create() {
   BrRegistry *registry = calloc(1, sizeof(BrRegistry));

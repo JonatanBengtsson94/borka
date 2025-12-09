@@ -1,12 +1,7 @@
 #include "borka.h"
 #include "borka_log.h"
 #include "borka_texture.h"
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <zlib.h>
+#include "pch.h"
 
 #define ZLIB_COMPRESSION_METHOD_DEFLATE 8
 

@@ -1,12 +1,10 @@
 #include "renderer/software/platform/wayland/wayland_software_renderer.h"
 #include "borka_log.h"
+#include "pch.h"
 #include "renderer/software/br_software_renderer.h"
 #include "wayland_software_renderer.h"
 #include "window/platform/wayland/wayland_shm.h"
 #include "window/platform/wayland/wayland_window.h"
-#include <assert.h>
-#include <stddef.h>
-#include <stdlib.h>
 #include <wayland-client.h>
 
 static bool on_screen(const struct BrRenderer *renderer, int maxX, int minX,

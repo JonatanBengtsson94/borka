@@ -1,7 +1,6 @@
 #include "br_component_array.h"
 #include "borka_data_structure.h"
 #include "borka_log.h"
-#include <assert.h>
 
 static void cleanup(BrComponentArray *array) {
   if (array) {

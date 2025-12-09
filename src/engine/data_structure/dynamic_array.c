@@ -1,8 +1,6 @@
 #include "borka_data_structure.h"
 #include "borka_log.h"
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include "pch.h"
 
 static bool br_dynamic_array_grow(BrDynamicArray *array) {
   size_t new_capacity = array->capacity * 2;

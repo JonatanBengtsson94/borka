@@ -1,21 +1,12 @@
 #include "borka_log.h"
+#include "pch.h"
 #include <pthread.h>
 #include <stdarg.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
-#include <time.h>
-
-#ifdef __linux__
 #include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
 #define mkdir_p(path) mkdir(path, 0755)
-#define PATH_SEP '/'
-#else
-#error "Unsupported platform."
-#endif
 
 #define MAX_MESSAGE_LENGTH 512
 #define MESSAGE_QUEUE_SIZE 256
@@ -71,15 +62,15 @@ static int create_dir_r(const char *path) {
   snprintf(tmp, sizeof(tmp), "%s", path);
   len = strlen(tmp);
 
-  if (len > 0 && tmp[len - 1] == PATH_SEP) {
+  if (len > 0 && tmp[len - 1] == '/') {
     tmp[len - 1] = '\0';
   }
 
   for (p = tmp + 1; *p; p++) {
-    if (*p == PATH_SEP) {
+    if (*p == '/') {
       *p = '\0';
       mkdir_p(tmp);
-      *p = PATH_SEP;
+      *p = '/';
     }
   }
 
@@ -241,7 +232,7 @@ bool br_logger_init(const char *game_name) {
   create_dir_r(log_dir);
 
   int ret = snprintf(current_log_path, sizeof(current_log_path), "%s%c%s.log",
-                     log_dir, PATH_SEP, game_name);
+                     log_dir, '/', game_name);
   if (ret < 0 || (size_t)ret >= sizeof(current_log_path)) {
     fprintf(stderr, "Failed to format log path correctly\n");
     return false;

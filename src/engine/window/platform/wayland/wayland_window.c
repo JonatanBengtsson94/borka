@@ -2,12 +2,10 @@
 #include "borka_events.h"
 #include "borka_log.h"
 #include "event/br_event.h"
+#include "pch.h"
 #include "window/br_window.h"
 #include "xdg-shell-client-protocol.h"
 #include <poll.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
 #include <wayland-client-protocol.h>
 #include <wayland-client.h>
 

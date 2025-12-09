@@ -1,6 +1,8 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#define PI 3.141592
+
 #define PADDLE_SPEED 120
 #define BALL_SPEED 100
 #define GAME_WIDTH 320

@@ -1,6 +1,5 @@
 #include "br_software_renderer.h"
 #include "borka_math.h"
-#include <stddef.h>
 
 void software_clear(int *pixels, BrVec2 canvas_dimensions, int color) {
   for (int i = 0; i < canvas_dimensions.x * canvas_dimensions.y; ++i) {

@@ -1,11 +1,9 @@
-#include "borka.h"
+#include "borka_app.h"
 #include "borka_log.h"
 #include "ecs/br_registry.h"
 #include "logger/br_logger.h"
 #include "renderer/br_renderer.h"
 #include "window/br_window.h"
-#include <stddef.h>
-#include <stdlib.h>
 
 static void app_cleanup(BrApp *app) {
   if (!app) {

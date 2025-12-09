@@ -1,10 +1,7 @@
-#define _POSIX_C_SOURCE 200809L
-
 #include "wayland_shm.h"
 #include "borka_log.h"
 #include <fcntl.h>
-#include <stddef.h>
-#include <stdlib.h>
+#include <pch.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>

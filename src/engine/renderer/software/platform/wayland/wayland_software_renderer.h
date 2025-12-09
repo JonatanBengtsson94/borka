@@ -3,7 +3,6 @@
 
 #include "borka_math.h"
 #include "window/platform/wayland/wayland_shm.h"
-#include <stdint.h>
 
 struct BrRenderer {
   struct wl_shm *wl_shm;

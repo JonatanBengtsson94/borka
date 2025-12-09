@@ -1,20 +1,29 @@
-cc = gcc
+CC = gcc
 CFLAGS = -Wall -Wextra -std=c99 \
 				 -Iinclude \
 				 -Isrc/engine \
 				 -Isrc/game
+LDFLAGS =
 VGFLAGS = --leak-check=full --track-origins=yes --show-leak-kinds=all
 
-OUT_DIR = bin
-OUT = $(OUT_DIR)/breakout
-
-ENGINE_SRC = $(shell find src/engine -name '*.c' ! -path '*/platform/*')
-GAME_SRC = $(shell find src/game -name '*.c')
-SRC = $(ENGINE_SRC) $(GAME_SRC)
-
+# Configuration
 BUILD ?= debug
 WINDOW_BACKEND ?= wayland
 RENDER_BACKEND ?= software
+PLATFORM ?= linux
+
+# Output dirs
+OUT_DIR = bin/$(BUILD)
+OUT = $(OUT_DIR)/breakout
+
+# Precompiled header
+PCH = include/pch.h
+PCH_GCH = $(PCH).gch
+
+# Source files
+ENGINE_SRC = $(shell find src/engine -name '*.c' ! -path '*/platform/*')
+GAME_SRC = $(shell find src/game -name '*.c')
+SRC = $(ENGINE_SRC) $(GAME_SRC)
 
 # Build specific flags
 ifeq ($(BUILD),debug)
@@ -26,34 +35,59 @@ else ifeq ($(BUILD),release)
 	LDFLAGS += -Wl,--gc-sections -s
 endif
 
-# Window backend flags
+# Platform configuration
+ifeq ($(PLATFORM),linux)
+	SRC += $(wildcard src/engine/logger/platform/linux/*.c)
+endif
+
+# Window backend configuration 
 ifeq ($(WINDOW_BACKEND),wayland)
-	CFLAGS += -DWINDOW_BACKEND_WAYLAND -D_POSIX_C_SOURCE=199309L -lm
+	CFLAGS += -DWINDOW_BACKEND_WAYLAND -D_POSIX_C_SOURCE=199309L
 	LDFLAGS += -lwayland-client
-	SRC += src/engine/window/platform/wayland/*.c
+	SRC += $(wildcard src/engine/window/platform/wayland/*.c)
 
 	ifeq ($(RENDER_BACKEND),software)
 		CFLAGS += -DRENDER_BACKEND_SOFTWARE
 		SRC += src/engine/renderer/software/br_software_renderer.c
-		SRC += src/engine/renderer/software/platform/wayland/*.c
+		SRC += $(wildcard src/engine/renderer/software/platform/wayland/*.c)
 	endif
 endif
 
+# Game-specific libs
+LDFLAGS += -lm
+
+# Object files
+OBJ_DIR = $(OUT_DIR)/obj
+OBJ = $(patsubst %.c, $(OBJ_DIR)/%.o,$(SRC))
+
+.PHONY: all run valgrind clean clean-all copy_assets
+
+
 all: $(OUT) copy_assets
+
+$(PCH_GCH): $(PCH)
+	$(CC) $(CFLAGS) -x c-header $< -o $@
+
+$(OBJ_DIR)/%.o: %.c $(PCH_GCH)
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OUT): $(OBJ)
+	@mkdir -p $(OUT_DIR)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 copy_assets:
 	@mkdir -p $(OUT_DIR)/assets
 	@cp -r assets/* $(OUT_DIR)/assets/
 
-$(OUT) : $(SRC)
-	@mkdir -p $(OUT_DIR)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-
 run: $(OUT)
 	./$(OUT)
 
-valgrind:
+valgrind: $(OUT)
 	valgrind $(VGFLAGS) ./$(OUT)
 
 clean:
-	rm -f $(OUT)
+	rm -rf $(OUT_DIR) $(PCH_GCH)
+
+clean-all:
+	rm -rf bin/ $(PCH_GCH)

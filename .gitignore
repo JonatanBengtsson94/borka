@@ -2,4 +2,5 @@ bin/
 .cache/
 
 compile_commands.json
+include/pch.h.gch
 
