@@ -1,10 +1,7 @@
 #ifndef BORKA_TIME_H
 #define BORKA_TIME_H
 
-#ifdef __unix__
-#define _POSIX_C_SOURCE 199309L
 #include <time.h>
-#endif
 
 /**
  * @brief Retrieves the current high-resolution time in seconds.
