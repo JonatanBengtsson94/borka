@@ -32,11 +32,14 @@ bool game_init(GameState *game) {
     goto error;
   }
 
+  game->is_paused = false;
+  game->enemies_alive = 0;
+  game->game_over = false;
+
   create_paddle(game->app->registry, game->textures.paddle);
   create_ball(game->app->registry, game->textures.ball);
   create_walls(game->app->registry);
-  create_bricks(game->app->registry, game->textures.brick);
-  game->is_paused = false;
+  create_bricks(game);
 
   return true;
 
@@ -65,6 +68,6 @@ void game_update(GameState *game, double delta_time) {
   system_player_movement(game->app->registry);
   system_movement(game->app->registry, delta_time);
   system_collision_detection(game->app->registry);
-  system_collision_handling(game->app->registry);
+  system_collision_handling(game);
   system_render(game->app->registry, game->app->renderer);
 }

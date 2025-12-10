@@ -13,8 +13,9 @@ typedef struct {
     BrTexture *brick;
   } textures;
 
+  int enemies_alive;
   bool is_paused;
-
+  bool game_over;
 } GameState;
 
 bool game_init(GameState *game);

@@ -9,7 +9,7 @@ void system_player_movement(BrRegistry *registry);
 void system_render(BrRegistry *registry, BrRenderer *renderer);
 void system_movement(BrRegistry *registry, double delta_time);
 void system_collision_detection(BrRegistry *registry);
-void system_collision_handling(BrRegistry *registry);
+void system_collision_handling(GameState *game);
 
 extern BrSystemId SYSTEM_INPUT;
 extern BrSystemId SYSTEM_PLAYER_MOVEMENT;

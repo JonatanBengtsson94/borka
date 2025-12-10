@@ -1,7 +1,15 @@
 #include "borka.h"
 #include "components/components.h"
+#include "entities.h"
 
-void create_bricks(BrRegistry *registry, BrTexture *texture) {
+void create_bricks(GameState *game) {
+  assert(game);
+  assert(game->app->registry);
+  assert(game->textures.brick);
+
+  BrTexture *texture = game->textures.brick;
+  BrRegistry *registry = game->app->registry;
+
   const int bricks_per_row = 10;
   const int rows = 2;
   const int padding = 16;
@@ -19,6 +27,7 @@ void create_bricks(BrRegistry *registry, BrTexture *texture) {
       br_component_add(registry, brick, COMPONENT_POSITION, &brick_pos);
       br_component_add(registry, brick, COMPONENT_RENDERABLE, &brick_sprite);
       br_component_add(registry, brick, COMPONENT_COLLIDER, &brick_collider);
+      game->enemies_alive++;
     }
   }
 }

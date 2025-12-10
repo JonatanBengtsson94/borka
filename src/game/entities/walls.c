@@ -26,4 +26,12 @@ void create_walls(BrRegistry *registry) {
       .size = {GAME_WIDTH, 1}, .layer = LAYER_WALL, .mask = LAYER_BALL};
   br_component_add(registry, top_wall, COMPONENT_POSITION, &top_wall_pos);
   br_component_add(registry, top_wall, COMPONENT_COLLIDER, &top_wall_col);
+
+  // Floor
+  BrEntity floor = br_entity_create(registry);
+  Position floor_pos = {0, GAME_HEIGHT};
+  Collider floor_col = {
+      .size = {GAME_WIDTH, 1}, .layer = LAYER_FLOOR, .mask = LAYER_BALL};
+  br_component_add(registry, floor, COMPONENT_POSITION, &floor_pos);
+  br_component_add(registry, floor, COMPONENT_COLLIDER, &floor_col);
 }

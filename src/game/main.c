@@ -40,6 +40,11 @@ int main() {
       continue;
 
     game_update(&game, delta_time);
+
+    // TODO: What should happen
+    if (game.game_over) {
+      break;
+    }
   }
 
   game_shutdown(&game);

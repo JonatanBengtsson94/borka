@@ -34,8 +34,19 @@ static void paddle_hit(BrRegistry *registry, BrEntity ball, BrEntity paddle,
   BR_LOG_TRACE("vx: %f, vy: %f", ball_v->vx, ball_v->vy);
 }
 
-static void brick_hit(BrRegistry *registry, BrEntity brick) {
-  br_entity_destroy(registry, brick);
+static void brick_hit(GameState *game, BrEntity brick) {
+  br_entity_destroy(game->app->registry, brick);
+  game->enemies_alive--;
+  BR_LOG_TRACE("Enemies alive: %d", game->enemies_alive);
+  if (game->enemies_alive == 0) {
+    BR_LOG_INFO("Game is won");
+    game->game_over = true;
+  }
+}
+
+static void floor_hit(GameState *game) {
+  BR_LOG_INFO("Game is lost");
+  game->game_over = true;
 }
 
 static void bounce_ball(BrRegistry *registry, BrEntity ball, BrEntity hit,
@@ -77,7 +88,8 @@ static void bounce_ball(BrRegistry *registry, BrEntity ball, BrEntity hit,
   }
 }
 
-void system_collision_handling(BrRegistry *registry) {
+void system_collision_handling(GameState *game) {
+  BrRegistry *registry = game->app->registry;
   BrQuery *query = br_query_begin(registry, SYSTEM_COLLISION_HANDLING);
   while (br_query_next(query)) {
     Collision *collision =
@@ -106,7 +118,11 @@ void system_collision_handling(BrRegistry *registry) {
       BR_LOG_TRACE("Ball hit brick");
       bounce_ball(registry, collision->entityA, collision->entityB, col_a,
                   col_b);
-      brick_hit(registry, collision->entityB);
+      brick_hit(game, collision->entityB);
+    }
+
+    if (col_a->layer == LAYER_BALL && col_b->layer == LAYER_FLOOR) {
+      floor_hit(game);
     }
 
     br_component_remove(registry, query->current_entity, COMPONENT_COLLISION);
