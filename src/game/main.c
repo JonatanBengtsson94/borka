@@ -36,6 +36,8 @@ int main() {
         break;
       }
     }
+    if (game.is_paused)
+      continue;
 
     game_update(&game, delta_time);
   }

@@ -2,8 +2,9 @@
 #define SYSTEMS_H
 
 #include "borka.h"
+#include "game.h"
 
-void system_input(BrRegistry *registry, BrEvent e);
+void system_input(GameState *game, BrEvent e);
 void system_player_movement(BrRegistry *registry);
 void system_render(BrRegistry *registry, BrRenderer *renderer);
 void system_movement(BrRegistry *registry, double delta_time);

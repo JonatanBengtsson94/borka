@@ -1,8 +1,11 @@
 #include "components/components.h"
 #include "systems.h"
 
-void system_input(BrRegistry *registry, BrEvent e) {
-  assert(registry);
+void system_input(GameState *game, BrEvent e) {
+  assert(game);
+  assert(game->app);
+  assert(game->app->registry);
+  BrRegistry *registry = game->app->registry;
 
   bool pressed;
   if (e.type == BR_EVENT_KEY_PRESSED) {
@@ -27,6 +30,11 @@ void system_input(BrRegistry *registry, BrEvent e) {
 
     case 32:
       ic->right_pressed = pressed;
+      break;
+
+    case 57:
+      if (pressed)
+        game->is_paused = !game->is_paused;
       break;
     }
   }

@@ -36,6 +36,7 @@ bool game_init(GameState *game) {
   create_ball(game->app->registry, game->textures.ball);
   create_walls(game->app->registry);
   create_bricks(game->app->registry, game->textures.brick);
+  game->is_paused = false;
 
   return true;
 
@@ -57,7 +58,7 @@ void game_shutdown(GameState *game) {
 
 void game_handle_event(GameState *game, BrEvent event) {
   if (event.type == BR_EVENT_KEY_PRESSED || event.type == BR_EVENT_KEY_RELEASED)
-    system_input(game->app->registry, event);
+    system_input(game, event);
 }
 
 void game_update(GameState *game, double delta_time) {
