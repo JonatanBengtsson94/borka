@@ -8,4 +8,6 @@
 #define GAME_WIDTH 320
 #define GAME_HEIGHT 180
 
+#define MAX_FPS 500
+
 #endif // CONSTANTS_H

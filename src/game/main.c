@@ -12,6 +12,7 @@ int main() {
     return -1;
   }
 
+  const double target_frame = 1.0 / MAX_FPS;
   double last = br_get_time();
   BrEvent e;
 
@@ -36,6 +37,7 @@ int main() {
         break;
       }
     }
+
     if (game.is_paused)
       continue;
 
@@ -44,6 +46,13 @@ int main() {
     // TODO: What should happen
     if (game.game_over) {
       break;
+    }
+
+    // Frame cap
+    double frame_time = br_get_time() - now;
+    if (frame_time < target_frame) {
+      int ns = (target_frame - frame_time) * 1e9;
+      sleep(ns);
     }
   }
 

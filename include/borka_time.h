@@ -16,4 +16,13 @@ static inline double br_get_time() {
 #endif
 }
 
+static inline void sleep(int time) {
+#ifdef __unix__
+  struct timespec ts;
+  ts.tv_sec = 0;
+  ts.tv_nsec = time;
+  nanosleep(&ts, NULL);
+#endif
+}
+
 #endif // BORKA_TIME_H
