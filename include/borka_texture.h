@@ -1,6 +1,7 @@
 #ifndef BORKA_TEXTURE_H
 #define BORKA_TEXTURE_H
 
+#include "borka_math.h"
 #include <stdint.h>
 
 /**
@@ -8,8 +9,7 @@
  */
 typedef struct {
   uint32_t *pixels; /**< ARGB pixel data (0xAARRGGBB format). */
-  int width;        /**< Texture width in pixels. */
-  int height;       /**< Texture height in pixels. */
+  BrVec2 size;      /** The size of the texture in pixels. */
 } BrTexture;
 
 /**

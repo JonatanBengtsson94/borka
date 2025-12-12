@@ -178,8 +178,8 @@ void br_renderer_draw_texture(struct BrRenderer *renderer, BrVec2 position,
   assert(texture);
   assert(texture->pixels);
 
-  if (on_screen(renderer, position.x + texture->width, position.x,
-                position.y + texture->height, position.y))
+  if (on_screen(renderer, position.x + texture->size.x, position.x,
+                position.y + texture->size.y, position.y))
     software_draw_texture(renderer->game_pixels, renderer->game_dimensions,
                           position, texture);
 }

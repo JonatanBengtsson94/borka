@@ -1076,8 +1076,8 @@ static bool unfilter_data(const uint8_t *filtered_data, uint32_t width,
 }
 
 static void rgba_to_argb(const uint8_t *src_rgba, uint32_t *dst_argb,
-                         uint32_t width, uint32_t height) {
-  size_t total_pixels = width * height;
+                         BrVec2 size) {
+  size_t total_pixels = size.x * size.y;
   for (size_t i = 0; i < total_pixels; i++) {
     size_t offset = i * 4;
     uint8_t r = src_rgba[offset + 0];
@@ -1176,8 +1176,8 @@ BrTexture *br_texture_create(const char *filepath) {
     return NULL;
   }
 
-  texture->width = ihdr.width;
-  texture->height = ihdr.height;
+  texture->size.x = ihdr.width;
+  texture->size.y = ihdr.height;
   texture->pixels = malloc(unfiltered_size);
   if (!texture->pixels) {
     BR_LOG_ERROR("Failed to allocate texture pixels: '%s'", filepath);
@@ -1186,8 +1186,7 @@ BrTexture *br_texture_create(const char *filepath) {
     return NULL;
   }
 
-  rgba_to_argb(unfiltered_data, texture->pixels, texture->width,
-               texture->height);
+  rgba_to_argb(unfiltered_data, texture->pixels, texture->size);
   free(unfiltered_data);
 
   BR_LOG_DEBUG("Successfully loaded texture: '%s'", filepath);

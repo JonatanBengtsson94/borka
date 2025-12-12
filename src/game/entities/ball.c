@@ -8,7 +8,8 @@ void create_ball(BrRegistry *registry, BrTexture *texture) {
   Position ball_pos = {GAME_WIDTH / 2, GAME_HEIGHT / 2};
   Renderable ball_sprite = {.type = RENDERABLE_SPRITE,
                             .sprite = {.texture = texture}};
-  Collider ball_col = {.size = {8, 8},
+  Collider ball_col = {.size = {ball_sprite.sprite.texture->size.x,
+                                ball_sprite.sprite.texture->size.y},
                        .layer = LAYER_BALL,
                        .mask = LAYER_WALL | LAYER_PADDLE | LAYER_BRICK |
                                LAYER_FLOOR};

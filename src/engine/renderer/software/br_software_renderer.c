@@ -78,27 +78,36 @@ void software_draw_rectangle_outlined(int *pixels, BrVec2 canvas_dimensions,
 
 void software_draw_texture(int *pixels, BrVec2 canvas_dimensions,
                            BrVec2 position, const BrTexture *texture) {
-  int startX = clamp_int(-position.x, 0, texture->width);
-  int startY = clamp_int(-position.y, 0, texture->height);
-  int endX = clamp_int(canvas_dimensions.x - position.x, 0, texture->width);
-  int endY = clamp_int(canvas_dimensions.y - position.y, 0, texture->height);
+  int texture_width = texture->size.x;
+  int texture_height = texture->size.y;
+
+  int startX = clamp_int(-position.x, 0, texture_width);
+  int startY = clamp_int(-position.y, 0, texture_height);
+  int endX = clamp_int(canvas_dimensions.x - position.x, 0, texture_width);
+  int endY = clamp_int(canvas_dimensions.y - position.y, 0, texture_height);
 
   for (int textureY = startY; textureY < endY; ++textureY) {
+    int screenY = position.y + textureY;
+    int screen_row_offset = screenY * canvas_dimensions.x;
+    int texture_row_offset = textureY * texture_width;
+
+    if (screenY < 0 || screenY >= canvas_dimensions.y)
+      continue;
+
     for (int textureX = startX; textureX < endX; ++textureX) {
       int screenX = position.x + textureX;
-      int screenY = position.y + textureY;
 
       if (screenX < 0 || screenX >= canvas_dimensions.x || screenY < 0 ||
           screenY >= canvas_dimensions.y)
         continue;
 
-      int texture_color = texture->pixels[textureY * texture->width + textureX];
+      int texture_color = texture->pixels[texture_row_offset + textureX];
 
       int alpha = (texture_color >> 24) & 0xFF;
       if (alpha == 0)
         continue;
 
-      pixels[screenY * canvas_dimensions.x + screenX] = texture_color;
+      pixels[screen_row_offset + screenX] = texture_color;
     }
   }
 }

@@ -18,8 +18,10 @@ void create_bricks(GameState *game) {
     for (int j = 0; j < bricks_per_row; j++) {
       Renderable brick_sprite = {.type = RENDERABLE_SPRITE,
                                  .sprite.texture = texture};
-      Collider brick_collider = {
-          .size.x = 16, .size.y = 16, .layer = LAYER_BRICK, .mask = LAYER_BALL};
+      Collider brick_collider = {.size.x = brick_sprite.sprite.texture->size.x,
+                                 .size.y = brick_sprite.sprite.texture->size.y,
+                                 .layer = LAYER_BRICK,
+                                 .mask = LAYER_BALL};
       int x = padding - 8 + j * (brick_collider.size.x + padding);
       int y = i * (brick_collider.size.y + padding);
       BrEntity brick = br_entity_create(registry);
