@@ -33,8 +33,9 @@ void system_input(GameState *game, BrEvent e) {
       break;
 
     case 57:
-      if (pressed)
+      if (pressed) {
         game->is_paused = !game->is_paused;
+      }
       break;
     }
   }

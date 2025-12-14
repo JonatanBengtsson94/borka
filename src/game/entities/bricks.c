@@ -22,8 +22,8 @@ void create_bricks(GameState *game) {
                                  .size.y = brick_sprite.sprite.texture->size.y,
                                  .layer = LAYER_BRICK,
                                  .mask = LAYER_BALL};
-      int x = padding - 8 + j * (brick_collider.size.x + padding);
-      int y = i * (brick_collider.size.y + padding);
+      int x = 8 + j * (brick_collider.size.x + padding);
+      int y = 8 + i * (brick_collider.size.y + padding);
       BrEntity brick = br_entity_create(registry);
       Position brick_pos = {.x = x, .y = y};
       br_component_add(registry, brick, COMPONENT_POSITION, &brick_pos);

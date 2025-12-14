@@ -34,18 +34,31 @@ bool game_init(GameState *game) {
 
   game->is_paused = false;
   game->enemies_alive = 0;
-  game->game_over = false;
-
-  create_paddle(game->app->registry, game->textures.paddle);
-  create_ball(game->app->registry, game->textures.ball);
-  create_walls(game->app->registry);
-  create_bricks(game);
+  game->game_over = true;
 
   return true;
 
 error:
   game_shutdown(game);
   return false;
+}
+
+void game_start(GameState *game) {
+  BR_LOG_TRACE("Game started");
+  create_paddle(game->app->registry, game->textures.paddle);
+  create_ball(game->app->registry, game->textures.ball);
+  create_walls(game->app->registry);
+  create_bricks(game);
+  game->game_over = false;
+  game->level_loaded = true;
+}
+
+void game_stop(GameState *game) {
+  BR_LOG_TRACE("Game stopped");
+  for (int i = 0; i < MAX_ENTITIES; i++) {
+    br_entity_destroy(game->app->registry, i);
+  }
+  game->level_loaded = false;
 }
 
 void game_shutdown(GameState *game) {
@@ -60,11 +73,27 @@ void game_shutdown(GameState *game) {
 }
 
 void game_handle_event(GameState *game, BrEvent event) {
-  if (event.type == BR_EVENT_KEY_PRESSED || event.type == BR_EVENT_KEY_RELEASED)
-    system_input(game, event);
+  if (event.type == BR_EVENT_KEY_PRESSED ||
+      event.type == BR_EVENT_KEY_RELEASED) {
+    if (game->game_over) {
+      game_start(game);
+    } else {
+      system_input(game, event);
+    }
+  }
 }
 
 void game_update(GameState *game, double delta_time) {
+  if (game->is_paused)
+    return;
+  if (game->game_over) {
+    if (game->level_loaded)
+      game_stop(game);
+    // TODO: Render menu
+    system_render(game->app->registry, game->app->renderer);
+    BR_LOG_TRACE("Game is stopped, press any key to start");
+    return;
+  }
   system_player_movement(game->app->registry);
   system_movement(game->app->registry, delta_time);
   system_collision_detection(game->app->registry);

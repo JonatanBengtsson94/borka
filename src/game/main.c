@@ -38,15 +38,7 @@ int main() {
       }
     }
 
-    if (game.is_paused)
-      continue;
-
     game_update(&game, delta_time);
-
-    // TODO: What should happen
-    if (game.game_over) {
-      break;
-    }
 
     // Frame cap
     double frame_time = br_get_time() - now;
