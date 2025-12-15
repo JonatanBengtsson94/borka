@@ -1,46 +1,36 @@
 #include "br_software_renderer.h"
+#include "borka_log.h"
 #include "borka_math.h"
+
+static void blit(int *pixels, BrVec2 canvas_dim, BrVec2 dst_pos,
+                 const BrTexture *src, BrVec2 src_rect_pos,
+                 BrVec2 src_rect_size) {
+  int tex_stride = src->size.x;
+
+  int startX = clamp_int(-dst_pos.x, 0, src_rect_size.x);
+  int startY = clamp_int(-dst_pos.y, 0, src_rect_size.y);
+  int endX = clamp_int(canvas_dim.x - dst_pos.x, 0, src_rect_size.x);
+  int endY = clamp_int(canvas_dim.y - dst_pos.y, 0, src_rect_size.y);
+
+  for (int y = startY; y < endY; ++y) {
+    int screenY = dst_pos.y + y;
+    int dst_offset = screenY * canvas_dim.x + dst_pos.x;
+    int src_offset = (src_rect_pos.y + y) * tex_stride + src_rect_pos.x;
+
+    for (int x = startX; x < endX; ++x) {
+      int color = src->pixels[src_offset + x];
+      if (((color >> 24) & 0xFF) == 0)
+        continue;
+
+      pixels[dst_offset + x] = color;
+    }
+  }
+}
 
 void software_clear(int *pixels, BrVec2 canvas_dimensions, int color) {
   for (int i = 0; i < canvas_dimensions.x * canvas_dimensions.y; ++i) {
     pixels[i] = color;
   }
-}
-
-// TODO: Fix this
-void software_draw_filled_triangle(int *pixels, BrVec2 canvas_dimensions,
-                                   BrVec2 v0, BrVec2 v1, BrVec2 v2, int color) {
-  /*
-  int minX = clamp_int(min_int(min_int(v0.x, v1.x), v2.x), 0, width - 1);
-  int maxX = clamp_int(max_int(max_int(v0.x, v1.x), v2.x), 0, width - 1);
-  int minY = clamp_int(min_int(min_int(v0.y, v1.y), v2.y), 0, height - 1);
-  int maxY = clamp_int(max_int(max_int(v0.y, v1.y), v2.y), 0, height - 1);
-
-  // Edge vectors (CCW)
-  BrVec2 e0 = br_vec2_sub(v1, v0);
-  BrVec2 e1 = br_vec2_sub(v2, v1);
-  BrVec2 e2 = br_vec2_sub(v0, v2);
-
-  for (int y = minY; y <= maxY; ++y) {
-    for (int x = minX; x <= maxX; ++x) {
-      BrVec2 p = {x, y};
-
-      int c0 = br_vec2_cross(e0, br_vec2_sub(p, v0));
-      if (c0 < 0)
-        continue;
-
-      int c1 = br_vec2_cross(e1, br_vec2_sub(p, v1));
-      if (c1 < 0)
-        continue;
-
-      int c2 = br_vec2_cross(e2, br_vec2_sub(p, v2));
-      if (c2 < 0)
-        continue;
-
-      pixels[y * width + x] = color;
-    }
-  }
-  */
 }
 
 void software_draw_rectangle_filled(int *pixels, BrVec2 canvas_dimensions,
@@ -78,36 +68,35 @@ void software_draw_rectangle_outlined(int *pixels, BrVec2 canvas_dimensions,
 
 void software_draw_texture(int *pixels, BrVec2 canvas_dimensions,
                            BrVec2 position, const BrTexture *texture) {
-  int texture_width = texture->size.x;
-  int texture_height = texture->size.y;
+  BrVec2 src_pos = {0, 0};
+  blit(pixels, canvas_dimensions, position, texture, src_pos, texture->size);
+}
 
-  int startX = clamp_int(-position.x, 0, texture_width);
-  int startY = clamp_int(-position.y, 0, texture_height);
-  int endX = clamp_int(canvas_dimensions.x - position.x, 0, texture_width);
-  int endY = clamp_int(canvas_dimensions.y - position.y, 0, texture_height);
+void software_draw_text(int *pixels, BrVec2 canvas_dimensions, BrVec2 position,
+                        const BrFont *font, const char *text) {
+  int atlas_w = font->font_atlas->size.x;
+  int glyph_w = font->glyph_size.x;
+  int glyph_h = font->glyph_size.y;
+  int cols = atlas_w / glyph_w;
 
-  for (int textureY = startY; textureY < endY; ++textureY) {
-    int screenY = position.y + textureY;
-    int screen_row_offset = screenY * canvas_dimensions.x;
-    int texture_row_offset = textureY * texture_width;
+  BrVec2 cursor = position;
 
-    if (screenY < 0 || screenY >= canvas_dimensions.y)
+  for (int i = 0; text[i]; i++) {
+    char c = text[i];
+    if (c == ' ') {
+      cursor.x += glyph_w;
       continue;
-
-    for (int textureX = startX; textureX < endX; ++textureX) {
-      int screenX = position.x + textureX;
-
-      if (screenX < 0 || screenX >= canvas_dimensions.x || screenY < 0 ||
-          screenY >= canvas_dimensions.y)
-        continue;
-
-      int texture_color = texture->pixels[texture_row_offset + textureX];
-
-      int alpha = (texture_color >> 24) & 0xFF;
-      if (alpha == 0)
-        continue;
-
-      pixels[screen_row_offset + screenX] = texture_color;
     }
+
+    int index = (int)c - (int)'A';
+    BrVec2 src_pos;
+    src_pos.x = (index % cols) * glyph_w;
+    src_pos.y = (index / cols) * glyph_h;
+
+    blit(pixels, canvas_dimensions, cursor, font->font_atlas, src_pos,
+         font->glyph_size);
+    cursor.x += glyph_w;
+    cursor.x += font->spacing.x;
   }
+  return;
 }

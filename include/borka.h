@@ -4,6 +4,7 @@
 #include "borka_app.h"
 #include "borka_ecs.h"
 #include "borka_events.h"
+#include "borka_font.h"
 #include "borka_log.h"
 #include "borka_math.h"
 #include "borka_render.h"

@@ -147,12 +147,6 @@ void br_renderer_clear(struct BrRenderer *renderer, int color) {
   software_clear(renderer->game_pixels, renderer->game_dimensions, color);
 }
 
-// TODO: Fix this
-void br_renderer_draw_filled_triangle(struct BrRenderer *renderer, BrVec2 v0,
-                                      BrVec2 v1, BrVec2 v2, int color) {
-  assert(renderer);
-}
-
 void br_renderer_draw_rectangle_filled(struct BrRenderer *renderer,
                                        BrVec2 position, BrVec2 size,
                                        int color) {
@@ -182,6 +176,14 @@ void br_renderer_draw_texture(struct BrRenderer *renderer, BrVec2 position,
                 position.y + texture->size.y, position.y))
     software_draw_texture(renderer->game_pixels, renderer->game_dimensions,
                           position, texture);
+}
+
+void br_renderer_draw_text(struct BrRenderer *renderer, const BrFont *font,
+                           const char *text, BrVec2 position) {
+  if (on_screen(renderer, position.x + font->font_atlas->size.x, position.x,
+                position.y + font->font_atlas->size.y, position.y))
+    software_draw_text(renderer->game_pixels, renderer->game_dimensions,
+                       position, font, text);
 }
 
 void br_renderer_present(struct BrRenderer *renderer) {

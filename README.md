@@ -1,21 +1,18 @@
 # Borka
 
-**Borka** is a game engine built in c with minimal external dependencies beyond standard C and platform libraries.
+**Borka** is a game engine written in C, with minimal external dependencies beyond the standard C library and platform APIs.
 
 ## Features
 
-- Multithreaded logging system.
-- Compile-time log level filtering.
-- PNG decoding.
+- Multithreaded logging system with compile-time log level filtering.
+- PNG image decoding.
 - DEFLATE decompression.
-- Entity-Component-System (ECS).
+- Entity-Component-System (ECS) architecture.
+- Bitmap font rendering.
 
-## Supported platforms
+## Supported Platforms
 
 ### Linux
 
-#### Window
-- Wayland.
-
-#### Rendering
-- Software rendering.
+- **Windowing** Wayland
+- **Rendering** Software renderer

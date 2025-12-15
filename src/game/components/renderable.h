@@ -4,6 +4,7 @@ typedef enum {
   RENDERABLE_SPRITE,
   RENDERABLE_RECTANGLE,
   RENDERABLE_FILLED_TRIANGLE,
+  RENDERABLE_TEXT,
 } RenderType;
 
 typedef struct {
@@ -12,6 +13,11 @@ typedef struct {
     struct {
       BrTexture *texture;
     } sprite;
+
+    struct {
+      BrFont *font;
+      char *text;
+    } text;
 
     struct {
       BrVec2 size;

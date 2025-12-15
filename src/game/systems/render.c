@@ -32,6 +32,11 @@ void system_render(BrRegistry *registry, BrRenderer *renderer) {
             renderer, int_pos, r->rectangle.size, r->rectangle.color);
       break;
 
+    case RENDERABLE_TEXT:
+      assert(r->text.font && r->text.text);
+      br_renderer_draw_text(renderer, r->text.font, r->text.text, int_pos);
+      break;
+
     case RENDERABLE_FILLED_TRIANGLE:
       break;
     }

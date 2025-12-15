@@ -1,6 +1,7 @@
 #include "game.h"
 #include "components/components.h"
 #include "entities/entities.h"
+#include "scenes/scenes.h"
 #include "systems/systems.h"
 
 bool game_init(GameState *game) {
@@ -13,6 +14,15 @@ bool game_init(GameState *game) {
     BR_LOG_ERROR("Failed to register systems");
     goto error;
   }
+
+  BrTexture *font_atlas = br_texture_create("assets/fonts/font_atlas.png");
+  if (!font_atlas) {
+    BR_LOG_ERROR("Failed to load font atlas");
+    goto error;
+  }
+  BrFont font = {
+      .glyph_size = {8, 8}, .font_atlas = font_atlas, .spacing = {2, 2}};
+  game->font = font;
 
   game->textures.paddle = br_texture_create("assets/textures/paddle.png");
   if (!game->textures.paddle) {
@@ -34,31 +44,14 @@ bool game_init(GameState *game) {
 
   game->is_paused = false;
   game->enemies_alive = 0;
-  game->game_over = true;
+
+  create_start_scene(game);
 
   return true;
 
 error:
   game_shutdown(game);
   return false;
-}
-
-void game_start(GameState *game) {
-  BR_LOG_TRACE("Game started");
-  create_paddle(game->app->registry, game->textures.paddle);
-  create_ball(game->app->registry, game->textures.ball);
-  create_walls(game->app->registry);
-  create_bricks(game);
-  game->game_over = false;
-  game->level_loaded = true;
-}
-
-void game_stop(GameState *game) {
-  BR_LOG_TRACE("Game stopped");
-  for (int i = 0; i < MAX_ENTITIES; i++) {
-    br_entity_destroy(game->app->registry, i);
-  }
-  game->level_loaded = false;
 }
 
 void game_shutdown(GameState *game) {
@@ -75,23 +68,18 @@ void game_shutdown(GameState *game) {
 void game_handle_event(GameState *game, BrEvent event) {
   if (event.type == BR_EVENT_KEY_PRESSED ||
       event.type == BR_EVENT_KEY_RELEASED) {
-    if (game->game_over) {
-      game_start(game);
-    } else {
-      system_input(game, event);
+    if (game->level == 0) {
+      create_level_01_scene(game);
     }
+    system_input(game, event);
   }
 }
 
 void game_update(GameState *game, double delta_time) {
   if (game->is_paused)
     return;
-  if (game->game_over) {
-    if (game->level_loaded)
-      game_stop(game);
-    // TODO: Render menu
-    system_render(game->app->registry, game->app->renderer);
-    BR_LOG_TRACE("Game is stopped, press any key to start");
+  if (game->game_over && game->level != 0) {
+    create_start_scene(game);
     return;
   }
   system_player_movement(game->app->registry);

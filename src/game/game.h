@@ -6,6 +6,7 @@
 
 typedef struct {
   BrApp *app;
+  BrFont font;
 
   struct {
     BrTexture *paddle;
@@ -14,14 +15,12 @@ typedef struct {
   } textures;
 
   int enemies_alive;
+  int level;
   bool is_paused;
   bool game_over;
-  bool level_loaded;
 } GameState;
 
 bool game_init(GameState *game);
-void game_start(GameState *game);
-void game_stop(GameState *game);
 void game_update(GameState *game, double delta_time);
 void game_handle_event(GameState *game, BrEvent event);
 void game_shutdown(GameState *game);
