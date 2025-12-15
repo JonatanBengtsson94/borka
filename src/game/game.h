@@ -11,7 +11,9 @@ typedef struct {
   struct {
     BrTexture *paddle;
     BrTexture *ball;
-    BrTexture *brick;
+    BrTexture *brick_blue;
+    BrTexture *brick_red;
+    BrTexture *brick_green;
   } textures;
 
   int enemies_alive;

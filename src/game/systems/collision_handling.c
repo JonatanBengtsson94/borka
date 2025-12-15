@@ -86,6 +86,12 @@ static void bounce_ball(BrRegistry *registry, BrEntity ball, BrEntity hit,
       ball_p->y -= overlap_y;
     ball_v->vy *= -1;
   }
+
+  // Increase ball speed
+  if (ball_v->vy < 0)
+    ball_v->vy -= 5;
+  else
+    ball_v->vy += 5;
 }
 
 void system_collision_handling(GameState *game) {

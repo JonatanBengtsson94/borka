@@ -36,8 +36,22 @@ bool game_init(GameState *game) {
     goto error;
   }
 
-  game->textures.brick = br_texture_create("assets/textures/brick.png");
-  if (!game->textures.brick) {
+  game->textures.brick_green =
+      br_texture_create("assets/textures/brick_green.png");
+  if (!game->textures.brick_green) {
+    BR_LOG_ERROR("Failed to load ball texture");
+    goto error;
+  }
+
+  game->textures.brick_blue =
+      br_texture_create("assets/textures/brick_blue.png");
+  if (!game->textures.brick_blue) {
+    BR_LOG_ERROR("Failed to load ball texture");
+    goto error;
+  }
+
+  game->textures.brick_red = br_texture_create("assets/textures/brick_red.png");
+  if (!game->textures.brick_red) {
     BR_LOG_ERROR("Failed to load ball texture");
     goto error;
   }
@@ -59,8 +73,12 @@ void game_shutdown(GameState *game) {
     br_texture_destroy(game->textures.paddle);
   if (game->textures.ball)
     br_texture_destroy(game->textures.ball);
-  if (game->textures.brick)
-    br_texture_destroy(game->textures.brick);
+  if (game->textures.brick_green)
+    br_texture_destroy(game->textures.brick_green);
+  if (game->textures.brick_blue)
+    br_texture_destroy(game->textures.brick_blue);
+  if (game->textures.brick_red)
+    br_texture_destroy(game->textures.brick_red);
   if (game->app)
     br_app_destroy(game->app);
 }

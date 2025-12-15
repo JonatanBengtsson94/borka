@@ -3,8 +3,8 @@
 
 #define PI 3.141592
 
-#define PADDLE_SPEED 120
-#define BALL_SPEED 100
+#define PADDLE_SPEED 220
+#define BALL_SPEED 60
 #define GAME_WIDTH 320
 #define GAME_HEIGHT 180
 
