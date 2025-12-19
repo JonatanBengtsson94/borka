@@ -1,4 +1,5 @@
 #include "borka_app.h"
+#include "audio/br_audio.h"
 #include "borka_log.h"
 #include "ecs/br_registry.h"
 #include "logger/br_logger.h"
@@ -18,6 +19,7 @@ static void app_cleanup(BrApp *app) {
   if (app->registry) {
     br_registry_destroy(app->registry);
   }
+  br_audio_shutdown();
   br_logger_shutdown();
   free(app);
 }
@@ -30,6 +32,11 @@ BrApp *br_app_create(const char *title, int width, int height) {
 
   if (!br_logger_init(title)) {
     BR_LOG_ERROR("Failed to initialize logging system");
+    return NULL;
+  }
+
+  if (!br_audio_init()) {
+    BR_LOG_ERROR("Failed to initialize audio system");
     return NULL;
   }
 

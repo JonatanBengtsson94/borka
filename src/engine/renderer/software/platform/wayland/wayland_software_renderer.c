@@ -1,7 +1,8 @@
-#include "renderer/software/platform/wayland/wayland_software_renderer.h"
-#include "borka_log.h"
 #include "pch.h"
+
+#include "borka_log.h"
 #include "renderer/software/br_software_renderer.h"
+#include "renderer/software/platform/wayland/wayland_software_renderer.h"
 #include "wayland_software_renderer.h"
 #include "window/platform/wayland/wayland_shm.h"
 #include "window/platform/wayland/wayland_window.h"

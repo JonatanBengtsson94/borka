@@ -1,4 +1,5 @@
 #include "game.h"
+#include "borka_audio.h"
 #include "components/components.h"
 #include "entities/entities.h"
 #include "scenes/scenes.h"
@@ -20,6 +21,7 @@ bool game_init(GameState *game) {
     BR_LOG_ERROR("Failed to load font atlas");
     goto error;
   }
+
   BrFont font = {
       .glyph_size = {8, 8}, .font_atlas = font_atlas, .spacing = {2, 2}};
   game->font = font;
@@ -56,6 +58,12 @@ bool game_init(GameState *game) {
     goto error;
   }
 
+  game->sfx.bounce_sound = br_sound_create("assets/sfx/bounce.wav");
+  if (!game->sfx.bounce_sound) {
+    BR_LOG_ERROR("Failed to load bounce sfx");
+    goto error;
+  }
+
   game->is_paused = false;
   game->enemies_alive = 0;
 
@@ -79,6 +87,8 @@ void game_shutdown(GameState *game) {
     br_texture_destroy(game->textures.brick_blue);
   if (game->textures.brick_red)
     br_texture_destroy(game->textures.brick_red);
+  if (game->sfx.bounce_sound)
+    br_sound_destroy(game->sfx.bounce_sound);
   if (game->app)
     br_app_destroy(game->app);
 }

@@ -9,6 +9,7 @@
 - DEFLATE decompression.
 - Entity-Component-System (ECS) architecture.
 - Bitmap font rendering.
+- Asynchronous audio playback.
 
 ## Supported Platforms
 

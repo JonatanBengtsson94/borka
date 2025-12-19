@@ -38,6 +38,8 @@ endif
 # Platform configuration
 ifeq ($(PLATFORM),linux)
 	SRC += $(wildcard src/engine/logger/platform/linux/*.c)
+	SRC += $(wildcard src/engine/audio/platform/linux/*.c)
+	LDFLAGS += -lm -lasound
 endif
 
 # Window backend configuration 

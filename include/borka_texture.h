@@ -13,7 +13,7 @@ typedef struct {
 } BrTexture;
 
 /**
- * @brief Creates a BrTexture instances from a image file.
+ * @brief Creates a BrTexture instances from an image file.
  *
  * @param filepath Path to the image file.
  * @return The newly created BrTexture instance, or NULL on failure.

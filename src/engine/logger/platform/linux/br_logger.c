@@ -1,5 +1,6 @@
-#include "borka_log.h"
 #include "pch.h"
+
+#include "borka_log.h"
 #include <pthread.h>
 #include <stdarg.h>
 #include <sys/stat.h>
@@ -42,16 +43,12 @@ static MessageQueue msg_queue;
 // --- FILE HANDLING ---
 
 static void get_log_dir(char *buffer, size_t size, const char *game_name) {
-#ifdef __linux__
   const char *home = getenv("HOME");
   if (home) {
     snprintf(buffer, size, "%s/.local/share/%s/logs", home, game_name);
   } else {
     snprintf(buffer, size, ".logs");
   }
-#else
-#error "Unsupported platform"
-#endif
 }
 
 static int create_dir_r(const char *path) {

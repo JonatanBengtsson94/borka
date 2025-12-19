@@ -16,6 +16,10 @@ typedef struct {
     BrTexture *brick_green;
   } textures;
 
+  struct {
+    BrSound *bounce_sound;
+  } sfx;
+
   int enemies_alive;
   int level;
   bool is_paused;

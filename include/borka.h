@@ -2,6 +2,7 @@
 #define BORKA_H
 
 #include "borka_app.h"
+#include "borka_audio.h"
 #include "borka_ecs.h"
 #include "borka_events.h"
 #include "borka_font.h"
