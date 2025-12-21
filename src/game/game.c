@@ -66,6 +66,8 @@ bool game_init(GameState *game) {
 
   game->is_paused = false;
   game->enemies_alive = 0;
+  game->game_over = true;
+  game->level = 99;
 
   create_start_scene(game);
 

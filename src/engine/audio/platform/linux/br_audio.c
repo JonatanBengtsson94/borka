@@ -95,46 +95,54 @@ bool br_audio_init() {
     return false;
   }
 
-  snd_pcm_hw_params_malloc(&params);
+  if (snd_pcm_hw_params_malloc(&params) < 0) {
+    BR_LOG_ERROR("Failed to allocate hw params");
+    goto error;
+  }
+
   snd_pcm_hw_params_any(audio_thread.pcm, params);
 
   if (snd_pcm_hw_params_set_access(audio_thread.pcm, params,
                                    SND_PCM_ACCESS_RW_INTERLEAVED) < 0) {
     BR_LOG_ERROR("Failed to set interleaved mode");
-    return false;
+    goto error;
   }
 
   if (snd_pcm_hw_params_set_format(audio_thread.pcm, params,
                                    SND_PCM_FORMAT_U8) < 0) {
     BR_LOG_ERROR("Failed to set format");
-    return false;
+    goto error;
   }
 
   if (snd_pcm_hw_params_set_channels(audio_thread.pcm, params, CHANNELS) < 0) {
     BR_LOG_ERROR("Failed to set channels number");
-    return false;
+    goto error;
   }
 
   if (snd_pcm_hw_params_set_rate(audio_thread.pcm, params, SAMPLE_RATE, 0) <
       0) {
     BR_LOG_ERROR("Failed to set rate");
-    return false;
+    goto error;
   }
 
   if (snd_pcm_hw_params(audio_thread.pcm, params) < 0) {
     BR_LOG_ERROR("Failed to install hw params");
-    return false;
+    goto error;
   }
-  snd_pcm_hw_params_free(params);
 
   if (pthread_create(&audio_thread.thread, NULL, audio_thread_func, NULL) !=
       0) {
     BR_LOG_ERROR("Failed to create audio thread");
-    return false;
+    goto error;
   }
 
   BR_LOG_INFO("Initialized audio system");
+  snd_pcm_hw_params_free(params);
   return true;
+
+error:
+  snd_pcm_hw_params_free(params);
+  return false;
 }
 
 void br_audio_shutdown() {
@@ -148,8 +156,11 @@ void br_audio_shutdown() {
   pthread_cond_destroy(&audio_thread.cond);
 
   if (audio_thread.pcm) {
+    snd_pcm_drain(audio_thread.pcm);
     snd_pcm_close(audio_thread.pcm);
   }
+
+  snd_config_update_free_global();
 }
 
 void br_play_sound(BrSound *sound) {
