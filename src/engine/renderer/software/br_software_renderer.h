@@ -12,6 +12,8 @@ void software_draw_rectangle_outlined(int *pixels, BrVec2 canvas_dimensions,
                                       BrVec2 position, BrVec2 size, int color);
 void software_draw_texture(int *pixels, BrVec2 canvas_dimensions,
                            BrVec2 position, const BrTexture *texture);
+void software_draw_texture_region(int *pixels, BrVec2 canvas_dimensions,
+                                  BrVec2 position, BrTextureRegion region);
 void software_draw_text(int *pixels, BrVec2 canvas_dimensions, BrVec2 position,
                         const BrFont *font, const char *text);
 

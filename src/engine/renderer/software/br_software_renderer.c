@@ -1,6 +1,8 @@
 #include "br_software_renderer.h"
 #include "borka_log.h"
 #include "borka_math.h"
+#include "borka_texture.h"
+#include <assert.h>
 
 static void blit(int *pixels, BrVec2 canvas_dim, BrVec2 dst_pos,
                  const BrTexture *src, BrVec2 src_rect_pos,
@@ -28,6 +30,8 @@ static void blit(int *pixels, BrVec2 canvas_dim, BrVec2 dst_pos,
 }
 
 void software_clear(int *pixels, BrVec2 canvas_dimensions, int color) {
+  assert(pixels);
+
   for (int i = 0; i < canvas_dimensions.x * canvas_dimensions.y; ++i) {
     pixels[i] = color;
   }
@@ -35,6 +39,8 @@ void software_clear(int *pixels, BrVec2 canvas_dimensions, int color) {
 
 void software_draw_rectangle_filled(int *pixels, BrVec2 canvas_dimensions,
                                     BrVec2 position, BrVec2 size, int color) {
+  assert(pixels);
+
   int minX = clamp_int(position.x, 0, canvas_dimensions.x - 1);
   int maxX = clamp_int(position.x + size.x, 0, canvas_dimensions.x - 1);
   int minY = clamp_int(position.y, 0, canvas_dimensions.y - 1);
@@ -50,6 +56,8 @@ void software_draw_rectangle_filled(int *pixels, BrVec2 canvas_dimensions,
 
 void software_draw_rectangle_outlined(int *pixels, BrVec2 canvas_dimensions,
                                       BrVec2 position, BrVec2 size, int color) {
+  assert(pixels);
+
   int minX = clamp_int(position.x, 0, canvas_dimensions.x - 1);
   int maxX = clamp_int(position.x + size.x, 0, canvas_dimensions.x - 1);
   int minY = clamp_int(position.y, 0, canvas_dimensions.y - 1);
@@ -68,12 +76,23 @@ void software_draw_rectangle_outlined(int *pixels, BrVec2 canvas_dimensions,
 
 void software_draw_texture(int *pixels, BrVec2 canvas_dimensions,
                            BrVec2 position, const BrTexture *texture) {
+  assert(pixels && texture && texture->pixels);
+
   BrVec2 src_pos = {0, 0};
   blit(pixels, canvas_dimensions, position, texture, src_pos, texture->size);
 }
 
+void software_draw_texture_region(int *pixels, BrVec2 canvas_dimensions,
+                                  BrVec2 position, BrTextureRegion region) {
+  assert(pixels && region.texture && region.texture->pixels);
+  blit(pixels, canvas_dimensions, position, region.texture, region.position,
+       region.size);
+}
+
 void software_draw_text(int *pixels, BrVec2 canvas_dimensions, BrVec2 position,
                         const BrFont *font, const char *text) {
+  assert(pixels && font && text && font->font_atlas);
+
   int atlas_w = font->font_atlas->size.x;
   int glyph_w = font->glyph_size.x;
   int glyph_h = font->glyph_size.y;

@@ -16,16 +16,6 @@ bool game_init(GameState *game) {
     goto error;
   }
 
-  BrTexture *font_atlas = br_texture_create("assets/fonts/font_atlas.png");
-  if (!font_atlas) {
-    BR_LOG_ERROR("Failed to load font atlas");
-    goto error;
-  }
-
-  BrFont font = {
-      .glyph_size = {8, 8}, .font_atlas = font_atlas, .spacing = {2, 2}};
-  game->font = font;
-
   game->textures.paddle = br_texture_create("assets/textures/paddle.png");
   if (!game->textures.paddle) {
     BR_LOG_ERROR("Failed to load paddle texture");
@@ -38,25 +28,57 @@ bool game_init(GameState *game) {
     goto error;
   }
 
-  game->textures.brick_green =
-      br_texture_create("assets/textures/brick_green.png");
-  if (!game->textures.brick_green) {
-    BR_LOG_ERROR("Failed to load ball texture");
+  BrTexture *font_atlas = br_texture_create("assets/fonts/font_atlas.png");
+  if (!font_atlas) {
+    BR_LOG_ERROR("Failed to load font atlas");
     goto error;
   }
 
-  game->textures.brick_blue =
-      br_texture_create("assets/textures/brick_blue.png");
-  if (!game->textures.brick_blue) {
-    BR_LOG_ERROR("Failed to load ball texture");
+  BrFont font = {
+      .glyph_size = {8, 8}, .font_atlas = font_atlas, .spacing = {2, 2}};
+  game->font = font;
+
+  BrTexture *brick_atlas = br_texture_create("assets/textures/bricks.png");
+  if (!brick_atlas) {
+    BR_LOG_ERROR("Failed to load brick atlas");
     goto error;
   }
 
-  game->textures.brick_red = br_texture_create("assets/textures/brick_red.png");
-  if (!game->textures.brick_red) {
-    BR_LOG_ERROR("Failed to load ball texture");
-    goto error;
-  }
+  game->textures.brick_green = (BrTextureRegion){
+      .texture = brick_atlas, .position = {0, 0}, .size = {16, 8}};
+
+  game->textures.brick_red = (BrTextureRegion){
+      .texture = brick_atlas, .position = {0, 8}, .size = {16, 8}};
+
+  game->textures.brick_blue = (BrTextureRegion){
+      .texture = brick_atlas, .position = {0, 16}, .size = {16, 8}};
+
+  game->animations.brick_green_break[0] = (BrTextureRegion){
+      .texture = brick_atlas, .position = {0, 0}, .size = {16, 8}};
+
+  game->animations.brick_green_break[1] = (BrTextureRegion){
+      .texture = brick_atlas, .position = {16, 0}, .size = {16, 8}};
+
+  game->animations.brick_green_break[2] = (BrTextureRegion){
+      .texture = brick_atlas, .position = {32, 0}, .size = {16, 8}};
+
+  game->animations.brick_red_break[0] = (BrTextureRegion){
+      .texture = brick_atlas, .position = {0, 8}, .size = {16, 8}};
+
+  game->animations.brick_red_break[1] = (BrTextureRegion){
+      .texture = brick_atlas, .position = {16, 8}, .size = {16, 8}};
+
+  game->animations.brick_red_break[2] = (BrTextureRegion){
+      .texture = brick_atlas, .position = {32, 8}, .size = {16, 8}};
+
+  game->animations.brick_blue_break[0] = (BrTextureRegion){
+      .texture = brick_atlas, .position = {0, 16}, .size = {16, 8}};
+
+  game->animations.brick_blue_break[1] = (BrTextureRegion){
+      .texture = brick_atlas, .position = {16, 16}, .size = {16, 8}};
+
+  game->animations.brick_blue_break[2] = (BrTextureRegion){
+      .texture = brick_atlas, .position = {32, 16}, .size = {16, 8}};
 
   game->sfx.bounce_sound = br_sound_create("assets/sfx/bounce.wav");
   if (!game->sfx.bounce_sound) {
@@ -83,12 +105,12 @@ void game_shutdown(GameState *game) {
     br_texture_destroy(game->textures.paddle);
   if (game->textures.ball)
     br_texture_destroy(game->textures.ball);
-  if (game->textures.brick_green)
-    br_texture_destroy(game->textures.brick_green);
-  if (game->textures.brick_blue)
-    br_texture_destroy(game->textures.brick_blue);
-  if (game->textures.brick_red)
-    br_texture_destroy(game->textures.brick_red);
+  if (game->font.font_atlas) {
+    br_texture_destroy(game->font.font_atlas);
+  }
+  if (game->textures.brick_green.texture) {
+    br_texture_destroy(game->textures.brick_green.texture);
+  }
   if (game->sfx.bounce_sound)
     br_sound_destroy(game->sfx.bounce_sound);
   if (game->app)
@@ -116,5 +138,6 @@ void game_update(GameState *game, double delta_time) {
   system_movement(game->app->registry, delta_time);
   system_collision_detection(game->app->registry);
   system_collision_handling(game);
+  system_animation(game->app->registry, delta_time);
   system_render(game->app->registry, game->app->renderer);
 }

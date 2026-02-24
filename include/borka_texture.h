@@ -13,6 +13,15 @@ typedef struct {
 } BrTexture;
 
 /**
+ * @brief Represents a region of a 2D texture.
+ */
+typedef struct {
+  BrTexture *texture; /**< Source texture. */
+  BrVec2 position;    /**< Top left corner of the region. */
+  BrVec2 size;        /**< size of the region. */
+} BrTextureRegion;
+
+/**
  * @brief Creates a BrTexture instances from an image file.
  *
  * @param filepath Path to the image file.

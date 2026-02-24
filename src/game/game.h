@@ -11,10 +11,16 @@ typedef struct {
   struct {
     BrTexture *paddle;
     BrTexture *ball;
-    BrTexture *brick_blue;
-    BrTexture *brick_red;
-    BrTexture *brick_green;
+    BrTextureRegion brick_blue;
+    BrTextureRegion brick_red;
+    BrTextureRegion brick_green;
   } textures;
+
+  struct {
+    BrTextureRegion brick_blue_break[3];
+    BrTextureRegion brick_red_break[3];
+    BrTextureRegion brick_green_break[3];
+  } animations;
 
   struct {
     BrSound *bounce_sound;

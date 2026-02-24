@@ -6,11 +6,11 @@ void create_paddle(BrRegistry *registry, BrTexture *texture) {
   BrEntity paddle = br_entity_create(registry);
   Velocity paddle_vel = {0, 0};
   Position paddle_pos = {GAME_WIDTH / 2, GAME_HEIGHT - 10};
-  Renderable paddle_sprite = {.type = RENDERABLE_SPRITE,
-                              .sprite = {.texture = texture}};
+  Renderable paddle_sprite = {.type = RENDERABLE_TEXTURE,
+                              .texture = {.texture = texture}};
   InputControlled paddle_input_control = {false, false};
   MovementConfig paddle_movement_conf = {PADDLE_SPEED};
-  Collider paddle_col = {.size = {paddle_sprite.sprite.texture->size.x, 1},
+  Collider paddle_col = {.size = {paddle_sprite.texture.texture->size.x, 1},
                          .layer = LAYER_PADDLE,
                          .mask = LAYER_WALL | LAYER_BALL};
   br_component_add(registry, paddle, COMPONENT_POSITION, &paddle_pos);

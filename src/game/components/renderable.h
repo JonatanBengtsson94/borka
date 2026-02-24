@@ -1,7 +1,8 @@
 #include "borka.h"
 
 typedef enum {
-  RENDERABLE_SPRITE,
+  RENDERABLE_TEXTURE,
+  RENDERABLE_TEXTURE_REGION,
   RENDERABLE_RECTANGLE,
   RENDERABLE_FILLED_TRIANGLE,
   RENDERABLE_TEXT,
@@ -10,9 +11,14 @@ typedef enum {
 typedef struct {
   RenderType type;
   union {
+
     struct {
       BrTexture *texture;
-    } sprite;
+    } texture;
+
+    struct {
+      BrTextureRegion region;
+    } region;
 
     struct {
       BrFont *font;

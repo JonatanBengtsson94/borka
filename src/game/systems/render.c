@@ -18,9 +18,12 @@ void system_render(BrRegistry *registry, BrRenderer *renderer) {
     BrVec2 int_pos = {p->x, p->y};
 
     switch (r->type) {
-    case RENDERABLE_SPRITE:
-      assert(r->sprite.texture);
-      br_renderer_draw_texture(renderer, int_pos, r->sprite.texture);
+    case RENDERABLE_TEXTURE:
+      br_renderer_draw_texture(renderer, int_pos, r->texture.texture);
+      break;
+
+    case RENDERABLE_TEXTURE_REGION:
+      br_renderer_draw_texture_region(renderer, int_pos, r->region.region);
       break;
 
     case RENDERABLE_RECTANGLE:

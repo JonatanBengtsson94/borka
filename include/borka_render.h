@@ -61,6 +61,18 @@ void br_renderer_draw_texture(BrRenderer *renderer, BrVec2 position,
                               const BrTexture *texture);
 
 /*
+ * @brief Draws a region of a texture at the specified position.
+ *
+ * @param renderer Renderer to draw with. Must not be NULL.
+ * @param position Position of upper-left corner of the region.
+ * @param texture texture region to draw. Must not be NULL.
+ *
+ * @note Changes are not visible until br_renderer_present() is called.
+ */
+void br_renderer_draw_texture_region(BrRenderer *renderer, BrVec2 position,
+                                     BrTextureRegion region);
+
+/*
  * @brief Draws a text at the specific position.
  *
  * @param renderer Renderer to draw with. Must not be NULL.

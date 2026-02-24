@@ -35,6 +35,43 @@ static void paddle_hit(BrRegistry *registry, BrEntity ball, BrEntity paddle,
 }
 
 static void brick_hit(GameState *game, BrEntity brick) {
+  Position *pos =
+      br_component_get(game->app->registry, COMPONENT_POSITION, brick);
+  Brick *brick_data =
+      br_component_get(game->app->registry, COMPONENT_BRICK, brick);
+  assert(brick_data);
+  assert(pos);
+
+  BrTextureRegion *frames = NULL;
+  switch (brick_data->type) {
+  case BRICK_GREEN:
+    frames = game->animations.brick_green_break;
+    break;
+  case BRICK_RED:
+    frames = game->animations.brick_red_break;
+    break;
+  case BRICK_BLUE:
+    frames = game->animations.brick_blue_break;
+    break;
+  }
+
+  BrEntity anim = br_entity_create(game->app->registry);
+  Animator animator = {
+      .frames = frames,
+      .number_of_frames = 3,
+      .current_frame = 0,
+      .frame_time = 0.05f,
+      .elapsed_time = 0.0f,
+      .loop = false,
+      .finished = false,
+  };
+  Position anim_pos = {.x = pos->x, .y = pos->y};
+  Renderable anim_ren = {.type = RENDERABLE_TEXTURE_REGION,
+                         .region.region = animator.frames[0]};
+  br_component_add(game->app->registry, anim, COMPONENT_POSITION, &anim_pos);
+  br_component_add(game->app->registry, anim, COMPONENT_ANIMATOR, &animator);
+  br_component_add(game->app->registry, anim, COMPONENT_RENDERABLE, &anim_ren);
+
   br_entity_destroy(game->app->registry, brick);
   game->enemies_alive--;
   BR_LOG_TRACE("Enemies alive: %d", game->enemies_alive);

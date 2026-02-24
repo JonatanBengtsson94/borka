@@ -73,7 +73,7 @@
 
 ### Rendering
 - [x] Start screen
-- [ ] Animations
+- [x] Animations
 - [ ] VFX
 - [ ] Background
 
