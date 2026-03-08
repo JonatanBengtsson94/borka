@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -std=c99 \
 				 -Iinclude \
 				 -Isrc/engine \
-				 -Isrc/game
+				 -Isrc/games/$(GAME)
 LDFLAGS =
 VGFLAGS = --leak-check=full --track-origins=yes --show-leak-kinds=all
 
@@ -11,10 +11,14 @@ BUILD ?= debug
 WINDOW_BACKEND ?= wayland
 RENDER_BACKEND ?= software
 PLATFORM ?= linux
+GAME ?= breakout
+
+# Include game-specific config
+include src/games/$(GAME).mk
 
 # Output dirs
 OUT_DIR = bin/$(BUILD)
-OUT = $(OUT_DIR)/breakout
+OUT = $(OUT_DIR)/$(GAME_OUT)
 
 # Precompiled header
 PCH = include/pch.h
@@ -22,7 +26,6 @@ PCH_GCH = $(PCH).gch
 
 # Source files
 ENGINE_SRC = $(shell find src/engine -name '*.c' ! -path '*/platform/*')
-GAME_SRC = $(shell find src/game -name '*.c')
 SRC = $(ENGINE_SRC) $(GAME_SRC)
 
 # Build specific flags
