@@ -83,10 +83,10 @@ $(OUT): $(OBJ)
 
 copy_assets:
 	@mkdir -p $(OUT_DIR)/assets
-	@cp -r assets/* $(OUT_DIR)/assets/
+	@cp -r assets/$(GAME)/* $(OUT_DIR)/assets/
 
 run: $(OUT)
-	./$(OUT)
+	cd $(OUT_DIR) && ./$(GAME_OUT)
 
 valgrind: $(OUT)
 	valgrind $(VGFLAGS) ./$(OUT)
