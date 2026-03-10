@@ -12,7 +12,6 @@ WINDOW_BACKEND ?= wayland
 RENDER_BACKEND ?= software
 PLATFORM ?= linux
 GAME ?= breakout
-COMPILING_PLATFORM ?= linux
 
 # Include game-specific config
 include src/games/$(GAME).mk
@@ -26,11 +25,7 @@ PCH = include/pch.h
 PCH_GCH = $(PCH).gch
 
 # Source files
-ifeq ($(COMPILING_PLATFORM),linux)
-	ENGINE_SRC = $(shell find src/engine -name '*.c' ! -path '*/platform/*')
-else ifeq ($(COMPILING_PLATFORM),windows)
-	ENGINE_SRC = $(wildcard src/engine/**/*.c)
-endif
+ENGINE_SRC = $(shell find src/engine -name '*.c' ! -path '*/platform/*')
 SRC = $(ENGINE_SRC) $(GAME_SRC)
 
 # Build specific flags
@@ -48,6 +43,9 @@ ifeq ($(PLATFORM),linux)
 	SRC += $(wildcard src/engine/logger/platform/linux/*.c)
 	SRC += $(wildcard src/engine/audio/platform/linux/*.c)
 	LDFLAGS += -lm -lasound
+else ifeq ($(PLATFORM),windows)
+	SRC += $(wildcard src/engine/logger/platform/windows/*.c)
+	SRC += $(wildcard src/engine/audio/platform/windows/*.c)
 endif
 
 # Window backend configuration 
@@ -79,19 +77,11 @@ $(PCH_GCH): $(PCH)
 	$(CC) $(CFLAGS) -x c-header $< -o $@
 
 $(OBJ_DIR)/%.o: %.c $(PCH_GCH)
-ifeq ($(COMPILING_PLATFORM),windows)
-	@mkdir $(subst /,\,$(dir $@)) 2>nul & exit 0
-else
 	@mkdir -p $(dir $@)
-endif
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OUT): $(OBJ)
-ifeq ($(COMPILING_PLATFORM),windows)
-	@mkdir $(subst /,\,$(OUT_DIR)) 2>nul & exit 0
-else
 	@mkdir -p $(OUT_DIR)
-endif
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 copy_assets:
