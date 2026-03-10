@@ -12,6 +12,7 @@ WINDOW_BACKEND ?= wayland
 RENDER_BACKEND ?= software
 PLATFORM ?= linux
 GAME ?= breakout
+COMPILING_PLATFORM ?= linux
 
 # Include game-specific config
 include src/games/$(GAME).mk
@@ -25,7 +26,11 @@ PCH = include/pch.h
 PCH_GCH = $(PCH).gch
 
 # Source files
-ENGINE_SRC = $(shell find src/engine -name '*.c' ! -path '*/platform/*')
+ifeq ($(COMPILING_PLATFORM),linux)
+	ENGINE_SRC = $(shell find src/engine -name '*.c' ! -path '*/platform/*')
+else ifeq ($(COMPILING_PLATFORM),windows)
+	ENGINE_SRC = $(wildcard src/engine/**/*.c)
+endif
 SRC = $(ENGINE_SRC) $(GAME_SRC)
 
 # Build specific flags
@@ -74,11 +79,19 @@ $(PCH_GCH): $(PCH)
 	$(CC) $(CFLAGS) -x c-header $< -o $@
 
 $(OBJ_DIR)/%.o: %.c $(PCH_GCH)
+ifeq ($(COMPILING_PLATFORM),windows)
+	@mkdir $(subst /,\,$(dir $@)) 2>nul & exit 0
+else
 	@mkdir -p $(dir $@)
+endif
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OUT): $(OBJ)
+ifeq ($(COMPILING_PLATFORM),windows)
+	@mkdir $(subst /,\,$(OUT_DIR)) 2>nul & exit 0
+else
 	@mkdir -p $(OUT_DIR)
+endif
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 copy_assets:
