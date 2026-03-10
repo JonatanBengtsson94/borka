@@ -59,6 +59,14 @@ ifeq ($(WINDOW_BACKEND),wayland)
 		SRC += src/engine/renderer/software/br_software_renderer.c
 		SRC += $(wildcard src/engine/renderer/software/platform/wayland/*.c)
 	endif
+
+else ifeq ($(WINDOW_BACKEND),win32)
+	SRC += $(wildcard src/engine/window/platform/win32/*.c)
+
+	ifeq ($(RENDER_BACKEND), software)
+		SRC += src/engine/renderer/software/br_software_renderer.c
+		SRC += $(wildcard src/engine/renderer/software/platform/windows/*.c)
+	endif
 endif
 
 # Game-specific libs
