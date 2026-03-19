@@ -1,10 +1,12 @@
 #include "borka.h"
 
 int main() {
-  BrApp *app = br_app_create("test_app", 100, 100);
-  if (!app)
-    printf("test");
+  printf("Hello_World\n");
+  BrApp *app = br_app_create("hello_world", 100, 100);
+  if (!app) {
+    printf("could not create app\n");
     return 1;
+  }
   BR_LOG_TRACE("TEST: Trace log");
   BR_LOG_DEBUG("TEST: Debug log");
   BR_LOG_INFO("TEST: Info log");
