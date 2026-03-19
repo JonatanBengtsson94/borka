@@ -43,6 +43,9 @@ ifeq ($(PLATFORM),linux)
 	SRC += $(wildcard src/engine/logger/platform/linux/*.c)
 	SRC += $(wildcard src/engine/audio/platform/linux/*.c)
 	LDFLAGS += -lm -lasound
+else ifeq ($(PLATFORM),windows)
+	SRC += $(wildcard src/engine/logger/platform/windows/*.c)
+	SRC += $(wildcard src/engine/audio/platform/windows/*.c)
 endif
 
 # Window backend configuration 
@@ -55,6 +58,14 @@ ifeq ($(WINDOW_BACKEND),wayland)
 		CFLAGS += -DRENDER_BACKEND_SOFTWARE
 		SRC += src/engine/renderer/software/br_software_renderer.c
 		SRC += $(wildcard src/engine/renderer/software/platform/wayland/*.c)
+	endif
+
+else ifeq ($(WINDOW_BACKEND),win32)
+	SRC += $(wildcard src/engine/window/platform/win32/*.c)
+
+	ifeq ($(RENDER_BACKEND), software)
+		SRC += src/engine/renderer/software/br_software_renderer.c
+		SRC += $(wildcard src/engine/renderer/software/platform/windows/*.c)
 	endif
 endif
 

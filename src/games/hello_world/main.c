@@ -3,7 +3,8 @@
 int main() {
   BrApp *app = br_app_create("test_app", 100, 100);
   if (!app)
-    return -1;
+    printf("test");
+    return 1;
   BR_LOG_TRACE("TEST: Trace log");
   BR_LOG_DEBUG("TEST: Debug log");
   BR_LOG_INFO("TEST: Info log");

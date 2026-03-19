@@ -1,25 +1,13 @@
 #include "pch.h"
 
-#include "borka_log.h"
+
+#include "br_logger.h"
 #include <pthread.h>
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <time.h>
 #include <unistd.h>
 #define mkdir_p(path) mkdir(path, 0755)
-
-#define MAX_MESSAGE_LENGTH 512
-#define MESSAGE_QUEUE_SIZE 256
-#define MAX_LOG_SIZE (10 * 1024 * 1024)
-#define MAX_LOG_FILES 5
-#define MAX_LOG_FILE_PATH_SIZE 512
-
-typedef struct {
-  BrLogLevel level;
-  char message[MAX_MESSAGE_LENGTH];
-  time_t timestamp;
-} LogMessage;
 
 typedef struct {
   LogMessage message[MESSAGE_QUEUE_SIZE];
