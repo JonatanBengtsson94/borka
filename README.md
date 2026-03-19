@@ -38,8 +38,8 @@ Two example games are included to verify your build environment:
 |---|---|---|
 | `GAME` | `breakout`, `hello_world` | `breakout` |
 | `BUILD` | `debug`, `trace`, `release` | `debug` |
-| `PLATFORM` | `linux` | `linux` |
-| `WINDOW_BACKEND` | `wayland` | `wayland` |
+| `PLATFORM` | `linux`, `windows` | `linux` |
+| `WINDOW_BACKEND` | `wayland`, `win32` | `wayland` |
 | `RENDER_BACKEND` | `software` | `software` |
 
 ### Adding a new game
