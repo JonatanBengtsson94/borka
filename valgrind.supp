@@ -1,0 +1,544 @@
+# Suppressions for leaks inside PipeWire's ALSA-compat PCM plugin
+# (libasound_module_pcm_pipewire / libpipewire) during snd_pcm_open()
+# for the "pipewire" device and its later snd_pcm_close(). Verified in
+# isolation: a program that does nothing but br_audio_init()+br_audio_shutdown()
+# reproduces the exact same leak totals as the full game, so these are not
+# bugs in borka's own code.
+
+{
+   pipewire-alsa-open-close-leak-01
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:strdup
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-02
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:strdup
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-03
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:strdup
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-04
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-05
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-06
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:calloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-07
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-08
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-09
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:strdup
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-10
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:calloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-11
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-12
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:calloc
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-13
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:realloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-14
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:calloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-15
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:realloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-16
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:realloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-17
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:realloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:flush_all_queues
+   fun:source_event_func
+   fun:loop_iterate
+   obj:*
+   fun:start_thread
+   fun:clone
+}
+{
+   pipewire-alsa-open-close-leak-18
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-19
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:realloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:flush_all_queues
+   fun:source_event_func
+   fun:loop_iterate
+   obj:*
+   fun:start_thread
+   fun:clone
+}
+{
+   pipewire-alsa-open-close-leak-20
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-21
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-22
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-23
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-24
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}
+{
+   pipewire-alsa-open-close-leak-25
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:snd_pcm_open_conf
+   fun:snd_pcm_open_noupdate
+   fun:snd_pcm_open
+   fun:open_pcm
+   fun:br_audio_init
+}

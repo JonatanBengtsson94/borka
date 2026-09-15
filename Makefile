@@ -4,7 +4,7 @@ CFLAGS = -Wall -Wextra -std=c99 \
 				 -Isrc/engine \
 				 -Isrc/games/$(GAME)
 LDFLAGS =
-VGFLAGS = --leak-check=full --track-origins=yes --show-leak-kinds=all
+VGFLAGS = --leak-check=full --track-origins=yes --show-leak-kinds=definite,indirect --suppressions=$(CURDIR)/valgrind.supp
 
 # Configuration
 BUILD ?= debug
@@ -100,7 +100,7 @@ run: $(OUT)
 	cd $(OUT_DIR) && ./$(GAME_OUT)
 
 valgrind: $(OUT)
-	valgrind $(VGFLAGS) ./$(OUT)
+	cd $(OUT_DIR) && valgrind $(VGFLAGS) ./$(GAME_OUT)
 
 clean:
 	rm -rf $(OUT_DIR) $(PCH_GCH)

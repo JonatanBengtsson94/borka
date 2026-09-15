@@ -5,7 +5,7 @@ int main() {
   BrApp *app = br_app_create("Breakout", GAME_WIDTH, GAME_HEIGHT);
   if (!app)
     return -1;
-  GameState game;
+  GameState game = {0};
   game.app = app;
 
   if (!game_init(&game)) {
