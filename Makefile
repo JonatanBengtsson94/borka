@@ -43,7 +43,7 @@ ifeq ($(PLATFORM),linux)
 	CFLAGS += -D_POSIX_C_SOURCE=199309L
 	SRC += $(wildcard src/engine/logger/platform/linux/*.c)
 	SRC += $(wildcard src/engine/audio/platform/linux/*.c)
-	LDFLAGS += -lm -lasound
+	LDFLAGS += -lasound
 else ifeq ($(PLATFORM),windows)
 	SRC += $(wildcard src/engine/logger/platform/windows/*.c)
 	SRC += $(wildcard src/engine/audio/platform/windows/*.c)
