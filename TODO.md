@@ -10,7 +10,7 @@
 - [x] Log to file
 
 #### Windows
-- [ ] Log to file
+- [x] Log to file
 
 ### Window
 

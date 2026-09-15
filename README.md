@@ -27,8 +27,9 @@
 
 ### Example Games
 
-Two example games are included to verify your build environment:
+A few example games are included to verify your build environment:
 
+- `logging` - only exercises the logging system, no window/audio/renderer required
 - `hello_world` - creates a window and does basic logging, good first sanity check
 - `breakout` - a full game, test the renderer, audio and input systems
 
@@ -36,7 +37,7 @@ Two example games are included to verify your build environment:
 
 | Variable | Values | Default |
 |---|---|---|
-| `GAME` | `breakout`, `hello_world` | `breakout` |
+| `GAME` | `breakout`, `hello_world`, `logging` | `breakout` |
 | `BUILD` | `debug`, `trace`, `release` | `debug` |
 | `PLATFORM` | `linux`, `windows` | `linux` |
 | `WINDOW_BACKEND` | `wayland`, `win32` | `wayland` |

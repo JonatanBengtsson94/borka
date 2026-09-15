@@ -45,6 +45,7 @@ ifeq ($(PLATFORM),linux)
 	SRC += $(wildcard src/engine/audio/platform/linux/*.c)
 	LDFLAGS += -lasound
 else ifeq ($(PLATFORM),windows)
+	CFLAGS += -D_WIN32_WINNT=0x0600
 	SRC += $(wildcard src/engine/logger/platform/windows/*.c)
 	SRC += $(wildcard src/engine/audio/platform/windows/*.c)
 endif
