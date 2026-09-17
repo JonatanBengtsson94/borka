@@ -111,24 +111,30 @@ static void bounce_ball(BrRegistry *registry, BrEntity ball, BrEntity hit,
   float overlap_y = max_distance_y - fabsf(dy);
 
   if (overlap_x < overlap_y) {
-    if (dx > 0)
+    if (dx > 0) {
       ball_p->x += overlap_x;
-    else
+      if (ball_v->vx < 0)
+        ball_v->vx *= -1;
+    } else {
       ball_p->x -= overlap_x;
-    ball_v->vx *= -1;
+      if (ball_v->vx > 0)
+        ball_v->vx *= -1;
+    }
   } else {
-    if (dy > 0)
+    if (dy > 0) {
       ball_p->y += overlap_y;
-    else
+      if (ball_v->vy < 0) {
+        ball_v->vy *= -1;
+        ball_v->vy += 5;
+      }
+    } else {
       ball_p->y -= overlap_y;
-    ball_v->vy *= -1;
+      if (ball_v->vy > 0) {
+        ball_v->vy *= -1;
+        ball_v->vy -= 5;
+      }
+    }
   }
-
-  // Increase ball speed
-  if (ball_v->vy < 0)
-    ball_v->vy -= 5;
-  else
-    ball_v->vy += 5;
 }
 
 void system_collision_handling(GameState *game) {
