@@ -1,4 +1,5 @@
 #include "br_registry.h"
+#include "borka_ecs.h"
 #include "borka_log.h"
 #include "br_component_array.h"
 
@@ -41,12 +42,16 @@ BrEntity br_entity_create(BrRegistry *registry) {
 
   BrEntity entity = registry->free_entities[--registry->free_top];
   registry->entity_signatures[entity] = 0;
+  registry->alive[entity] = true;
 
   return entity;
 }
 
 void br_entity_destroy(BrRegistry *registry, BrEntity entity) {
   if (entity >= MAX_ENTITIES)
+    return;
+
+  if (!registry->alive[entity])
     return;
 
   BrSignature signature = registry->entity_signatures[entity];
@@ -57,6 +62,7 @@ void br_entity_destroy(BrRegistry *registry, BrEntity entity) {
   }
 
   registry->entity_signatures[entity] = 0;
+  registry->alive[entity] = false;
   registry->free_entities[registry->free_top++] = entity;
 }
 
@@ -173,10 +179,32 @@ void br_component_remove(BrRegistry *registry, BrEntity entity,
     return;
   }
 
-  if (!br_component_array_remove(component_array, entity))
+  if (!br_component_array_remove(component_array, entity)) {
     BR_LOG_ERROR("Failed to remove component");
+    return;
+  }
 
-  return;
+  registry->entity_signatures[entity] &= ~(1 << component_type);
+}
+
+bool br_component_exists(BrRegistry *registry, BrEntity entity,
+                         BrComponentTypeId component_type) {
+  if (!registry) {
+    BR_LOG_ERROR("Could not check component, registry is NULL");
+    return false;
+  }
+
+  if (entity >= MAX_ENTITIES) {
+    BR_LOG_ERROR("Could not check component, invalid entity");
+    return false;
+  }
+
+  if (component_type >= MAX_COMPONENT_TYPES) {
+    BR_LOG_ERROR("Could not check component, invalid component id");
+    return false;
+  }
+
+  return (registry->entity_signatures[entity] & (1 << component_type)) != 0;
 }
 
 BrSystemId br_register_system(BrRegistry *registry,

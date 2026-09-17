@@ -1,4 +1,5 @@
 #include "borka.h"
+#include "borka_ecs.h"
 #include "components/components.h"
 #include "systems.h"
 
@@ -42,9 +43,23 @@ void system_collision_detection(BrRegistry *registry) {
       if ((b.col->mask & a.col->layer) == 0)
         continue;
       if (check_aabb(a.pos, a.col, b.pos, b.col)) {
-        Collision col = {a.entity, b.entity};
-        br_component_add(registry, a.entity, COMPONENT_COLLISION, &col);
-        BR_LOG_TRACE("%u has collided with %u", col.entityA, col.entityB);
+        if (!br_component_exists(registry, a.entity, COMPONENT_COLLISION)) {
+          Collision new_collision = {0};
+          new_collision.colliding_entities[0] = b.entity;
+          new_collision.count++;
+          br_component_add(registry, a.entity, COMPONENT_COLLISION,
+                           &new_collision);
+        } else {
+          Collision *collision =
+              br_component_get(registry, COMPONENT_COLLISION, a.entity);
+          if (collision->count < MAX_COLLISIONS_PER_ENTITY) {
+            collision->colliding_entities[collision->count++] = b.entity;
+          } else {
+            BR_LOG_WARN(
+                "Maximum number of collision reached, dropping collision");
+          }
+        }
+        BR_LOG_TRACE("%u has collided with %u", a.entity, b.entity);
       }
     }
   }

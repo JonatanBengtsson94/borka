@@ -94,6 +94,7 @@ struct BrRegistry {
   int free_entities[MAX_ENTITIES]; /**< Array holding entites that are not in
                                       use. */
   int free_top; /**< Index of the next free slot in the free_entites. */
+  bool alive[MAX_ENTITIES]; /**< Whether each entity id is currently in use. */
   BrComponentTypeId next_component_id; /**< Next available component id. */
   BrSystemId next_system_id;           /**< Next available system id. */
 };
@@ -162,6 +163,17 @@ void *br_component_get(const BrRegistry *registry,
  * removed.
  */
 void br_component_remove(BrRegistry *registry, BrEntity entity,
+                         BrComponentTypeId component_type);
+/**
+ * @brief Check if a component type exists on the entity.
+ *
+ * @param registry Central ECS data store.
+ * @param entity Entity that should have its component checked.
+ * @param component_type Component type ID of the component that should be
+ * checked.
+ * @return True if the component exists, false otherwise
+ */
+bool br_component_exists(BrRegistry *registry, BrEntity entity,
                          BrComponentTypeId component_type);
 
 /**

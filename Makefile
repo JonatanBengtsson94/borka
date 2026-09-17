@@ -2,7 +2,8 @@ CC = gcc
 CFLAGS = -Wall -Wextra -std=c99 \
 				 -Iinclude \
 				 -Isrc/engine \
-				 -Isrc/games/$(GAME)
+				 -Isrc/games/$(GAME) \
+				 -MMD -MP
 LDFLAGS =
 VGFLAGS = --leak-check=full --track-origins=yes --show-leak-kinds=definite,indirect --suppressions=$(CURDIR)/valgrind.supp
 
@@ -72,6 +73,7 @@ endif
 # Object files
 OBJ_DIR = $(OUT_DIR)/obj
 OBJ = $(patsubst %.c, $(OBJ_DIR)/%.o,$(SRC))
+DEPS = $(OBJ:.o=.d)
 
 .PHONY: all run valgrind clean clean-all copy_assets
 
@@ -104,3 +106,5 @@ clean:
 
 clean-all:
 	rm -rf bin/ $(PCH_GCH)
+
+-include $(DEPS)

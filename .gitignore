@@ -3,4 +3,5 @@ bin/
 
 compile_commands.json
 include/pch.h.gch
+include/pch.h.d
 .vscode

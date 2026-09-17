@@ -138,39 +138,41 @@ void system_collision_handling(GameState *game) {
     Collision *collision =
         (Collision *)br_query_get_component(query, COMPONENT_COLLISION);
     Collider *col_a = br_query_get_component(query, COMPONENT_COLLIDER);
-    Collider *col_b =
-        br_component_get(registry, COMPONENT_COLLIDER, collision->entityB);
+    BrEntity entity_a = query->current_entity;
 
     assert(collision);
     assert(col_a);
-    assert(col_b);
 
-    if (col_a->layer == LAYER_PADDLE && col_b->layer == LAYER_BALL) {
-      BR_LOG_TRACE("Paddle hit ball");
-      paddle_hit(registry, collision->entityB, collision->entityA, col_b,
-                 col_a);
-      br_play_sound(game->sfx.bounce_sound);
+    for (uint8_t i = 0; i < collision->count; i++) {
+      BrEntity entity_b = collision->colliding_entities[i];
+      Collider *col_b = br_component_get(registry, COMPONENT_COLLIDER, entity_b);
+
+      assert(col_b);
+
+      if (col_a->layer == LAYER_PADDLE && col_b->layer == LAYER_BALL) {
+        BR_LOG_TRACE("Paddle hit ball");
+        paddle_hit(registry, entity_b, entity_a, col_b, col_a);
+        br_play_sound(game->sfx.bounce_sound);
+      }
+
+      if (col_a->layer == LAYER_BALL && col_b->layer == LAYER_WALL) {
+        BR_LOG_TRACE("Ball hit wall");
+        bounce_ball(registry, entity_a, entity_b, col_a, col_b);
+        br_play_sound(game->sfx.bounce_sound);
+      }
+
+      if (col_a->layer == LAYER_BALL && col_b->layer == LAYER_BRICK) {
+        BR_LOG_TRACE("Ball hit brick");
+        bounce_ball(registry, entity_a, entity_b, col_a, col_b);
+        brick_hit(game, entity_b);
+        br_play_sound(game->sfx.bounce_sound);
+      }
+
+      if (col_a->layer == LAYER_BALL && col_b->layer == LAYER_FLOOR) {
+        floor_hit(game);
+      }
     }
 
-    if (col_a->layer == LAYER_BALL && col_b->layer == LAYER_WALL) {
-      BR_LOG_TRACE("Ball hit wall");
-      bounce_ball(registry, collision->entityA, collision->entityB, col_a,
-                  col_b);
-      br_play_sound(game->sfx.bounce_sound);
-    }
-
-    if (col_a->layer == LAYER_BALL && col_b->layer == LAYER_BRICK) {
-      BR_LOG_TRACE("Ball hit brick");
-      bounce_ball(registry, collision->entityA, collision->entityB, col_a,
-                  col_b);
-      brick_hit(game, collision->entityB);
-      br_play_sound(game->sfx.bounce_sound);
-    }
-
-    if (col_a->layer == LAYER_BALL && col_b->layer == LAYER_FLOOR) {
-      floor_hit(game);
-    }
-
-    br_component_remove(registry, query->current_entity, COMPONENT_COLLISION);
+    br_component_remove(registry, entity_a, COMPONENT_COLLISION);
   }
 }
