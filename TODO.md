@@ -50,6 +50,7 @@
 
 ### Sound
 - [x] Decode wav
+- [ ] Decode flac
 
 #### ALSA
 - [x] Play sound

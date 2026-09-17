@@ -47,7 +47,7 @@ void software_draw_rectangle_filled(int *pixels, BrVec2 canvas_dimensions,
   int maxY = clamp_int(position.y + size.y, 0, canvas_dimensions.y - 1);
 
   for (int y = minY; y <= maxY; ++y) {
-    int rowOffset = y * canvas_dimensions.y;
+    int rowOffset = y * canvas_dimensions.x;
     for (int x = minX; x <= maxX; ++x) {
       pixels[rowOffset + x] = color;
     }
@@ -64,13 +64,13 @@ void software_draw_rectangle_outlined(int *pixels, BrVec2 canvas_dimensions,
   int maxY = clamp_int(position.y + size.y, 0, canvas_dimensions.y - 1);
 
   for (int x = minX; x <= maxX; ++x) {
-    pixels[minY * canvas_dimensions.y + x] = color;
-    pixels[maxY * canvas_dimensions.y + x] = color;
+    pixels[minY * canvas_dimensions.x + x] = color;
+    pixels[maxY * canvas_dimensions.x + x] = color;
   }
 
   for (int y = minY; y <= maxY; ++y) {
-    pixels[y * canvas_dimensions.y + minX] = color;
-    pixels[y * canvas_dimensions.y + maxX] = color;
+    pixels[y * canvas_dimensions.x + minX] = color;
+    pixels[y * canvas_dimensions.x + maxX] = color;
   }
 }
 
