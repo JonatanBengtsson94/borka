@@ -119,6 +119,15 @@ BrEntity br_entity_create(BrRegistry *registry);
 void br_entity_destroy(BrRegistry *registry, BrEntity entity);
 
 /**
+ * @brief Checks whether an entity id is currently in use.
+ *
+ * @param registry Central ECS data store.
+ * @param entity Entity to check.
+ * @return True if the entity is alive, false otherwise.
+ */
+bool br_entity_is_alive(const BrRegistry *registry, BrEntity entity);
+
+/**
  * @brief Registers a new component type with the registry.
  *
  * @param registry Central ECS data store.

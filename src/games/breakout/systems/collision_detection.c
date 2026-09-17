@@ -52,6 +52,7 @@ void system_collision_detection(BrRegistry *registry) {
         } else {
           Collision *collision =
               br_component_get(registry, COMPONENT_COLLISION, a.entity);
+          assert(collision);
           if (collision->count < MAX_COLLISIONS_PER_ENTITY) {
             collision->colliding_entities[collision->count++] = b.entity;
           } else {

@@ -48,11 +48,15 @@ BrEntity br_entity_create(BrRegistry *registry) {
 }
 
 void br_entity_destroy(BrRegistry *registry, BrEntity entity) {
-  if (entity >= MAX_ENTITIES)
+  if (entity >= MAX_ENTITIES) {
+    BR_LOG_ERROR("Could not destroy entity, invalid entity");
     return;
+  }
 
-  if (!registry->alive[entity])
+  if (!registry->alive[entity]) {
+    BR_LOG_WARN("Could not destroy entity, entity is not alive");
     return;
+  }
 
   BrSignature signature = registry->entity_signatures[entity];
   for (int i = 0; i < MAX_COMPONENT_TYPES; i++) {
@@ -64,6 +68,20 @@ void br_entity_destroy(BrRegistry *registry, BrEntity entity) {
   registry->entity_signatures[entity] = 0;
   registry->alive[entity] = false;
   registry->free_entities[registry->free_top++] = entity;
+}
+
+bool br_entity_is_alive(const BrRegistry *registry, BrEntity entity) {
+  if (!registry) {
+    BR_LOG_ERROR("Could not check entity, registry is NULL");
+    return false;
+  }
+
+  if (entity >= MAX_ENTITIES) {
+    BR_LOG_ERROR("Could not check entity, invalid entity");
+    return false;
+  }
+
+  return registry->alive[entity];
 }
 
 BrComponentTypeId br_register_component(BrRegistry *registry,

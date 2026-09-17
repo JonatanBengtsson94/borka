@@ -4,7 +4,8 @@
 static void destroy_scene(BrRegistry *reg) {
   assert(reg);
   for (int i = 0; i < MAX_ENTITIES; i++) {
-    br_entity_destroy(reg, i);
+    if (br_entity_is_alive(reg, i))
+      br_entity_destroy(reg, i);
   }
 }
 
