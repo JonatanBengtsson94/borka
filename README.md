@@ -33,7 +33,7 @@ A few example games are included to verify your build environment:
 - `window` - opens a window and pumps events until closed, no renderer/audio/ECS
 - `render` - opens a window and exercises every renderer primitive (filled/outlined rectangles, textures, texture regions, text), no audio/ECS
 - `audio` - loads and plays a sound, no window/renderer/ECS
-- `input` - opens a window and logs key press/release events, no renderer/audio/ECS
+- `input` - opens a window and logs key press/release events, no audio/ECS
 - `breakout` - a full game, test the renderer, audio and input systems
 
 ### Build Options
