@@ -80,7 +80,7 @@ bool game_init(GameState *game) {
   game->animations.brick_blue_break[2] = (BrTextureRegion){
       .texture = brick_atlas, .position = {32, 16}, .size = {16, 8}};
 
-  game->sfx.bounce_sound = br_sound_create("assets/sfx/bounce.wav");
+  game->sfx.bounce_sound = br_sound_create("assets/sfx/bounce.flac");
   if (!game->sfx.bounce_sound) {
     BR_LOG_ERROR("Failed to load bounce sfx");
     goto error;

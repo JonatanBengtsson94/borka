@@ -5,10 +5,6 @@
 #include <alsa/asoundlib.h>
 #include <pthread.h>
 
-#define SAMPLE_RATE 22050
-#define CHANNELS 1
-#define BIT_DEPTH 8
-
 typedef struct {
   pthread_t thread;
   pthread_mutex_t mutex;
@@ -114,13 +110,14 @@ bool br_audio_init() {
     goto error;
   }
 
-  if (snd_pcm_hw_params_set_channels(audio_thread.pcm, params, CHANNELS) < 0) {
+  if (snd_pcm_hw_params_set_channels(audio_thread.pcm, params,
+                                     BR_AUDIO_CHANNELS) < 0) {
     BR_LOG_ERROR("Failed to set channels number");
     goto error;
   }
 
-  if (snd_pcm_hw_params_set_rate(audio_thread.pcm, params, SAMPLE_RATE, 0) <
-      0) {
+  if (snd_pcm_hw_params_set_rate(audio_thread.pcm, params,
+                                 BR_AUDIO_SAMPLE_RATE, 0) < 0) {
     BR_LOG_ERROR("Failed to set rate");
     goto error;
   }

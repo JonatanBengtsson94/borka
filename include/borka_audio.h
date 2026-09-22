@@ -4,6 +4,14 @@
 #include <stdint.h>
 
 /**
+ * Audio format the engine plays back. Sounds are handed to the backend
+ * as-is, so every loaded file has to already match these.
+ */
+#define BR_AUDIO_SAMPLE_RATE 22050
+#define BR_AUDIO_CHANNELS 1
+#define BR_AUDIO_BITS_PER_SAMPLE 8
+
+/**
  * @brief Represents a sound.
  */
 typedef struct {
@@ -17,8 +25,10 @@ typedef struct {
  * @param filepath Path to the audio file.
  * @return The newly created BrSound instance, or NULL on failure.
  *
- * @note Only supports wav audio file format.
- * @note Only supports 8bit mono audio with 22050 sample rate.
+ * @note Which file formats are recognised depends on the AUDIO_FORMATS
+ *       build option (wav, flac).
+ * @note Audio must match BR_AUDIO_SAMPLE_RATE, BR_AUDIO_CHANNELS and
+ *       BR_AUDIO_BITS_PER_SAMPLE.
  * @note Should be destroyed with br_sound_destroy() when no longer needed.
  */
 BrSound *br_sound_create(const char *filepath);

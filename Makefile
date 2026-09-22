@@ -13,6 +13,7 @@ WINDOW_BACKEND ?= wayland
 RENDER_BACKEND ?= software
 PLATFORM ?= linux
 GAME ?= breakout
+AUDIO_FORMATS ?= flac
 
 # Include game-specific config
 include src/games/$(GAME).mk
@@ -26,7 +27,7 @@ PCH = include/pch.h
 PCH_GCH = $(PCH).gch
 
 # Source files
-ENGINE_SRC = $(shell find src/engine -name '*.c' ! -path '*/platform/*')
+ENGINE_SRC = $(shell find src/engine -name '*.c' ! -path '*/platform/*' ! -path '*/audio/formats/*')
 SRC = $(ENGINE_SRC) $(GAME_SRC)
 
 # Build specific flags
@@ -51,7 +52,18 @@ else ifeq ($(PLATFORM),windows)
 	SRC += $(wildcard src/engine/audio/platform/windows/*.c)
 endif
 
-# Window backend configuration 
+# Audio format configuration (AUDIO_FORMATS is a space-separated list, e.g. "wav flac")
+ifneq (,$(filter flac,$(AUDIO_FORMATS)))
+	SRC += src/engine/audio/formats/br_flac.c
+	CFLAGS += -DBR_AUDIO_SUPPORT_FLAC
+endif
+
+ifneq (,$(filter wav,$(AUDIO_FORMATS)))
+	SRC += src/engine/audio/formats/br_wav.c
+	CFLAGS += -DBR_AUDIO_SUPPORT_WAV
+endif
+
+# Window backend configuration
 ifeq ($(WINDOW_BACKEND),wayland)
 	LDFLAGS += -lwayland-client
 	SRC += $(wildcard src/engine/window/platform/wayland/*.c)
@@ -95,10 +107,10 @@ copy_assets:
 	@mkdir -p $(OUT_DIR)/assets
 	@cp -r assets/$(GAME)/* $(OUT_DIR)/assets/
 
-run: $(OUT)
+run: $(OUT) copy_assets
 	cd $(OUT_DIR) && ./$(GAME_OUT)
 
-valgrind: $(OUT)
+valgrind: $(OUT) copy_assets
 	cd $(OUT_DIR) && valgrind $(VGFLAGS) ./$(GAME_OUT)
 
 clean:
