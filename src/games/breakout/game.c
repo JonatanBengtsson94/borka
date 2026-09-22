@@ -93,6 +93,18 @@ bool game_init(GameState *game) {
     goto error;
   }
 
+  game->music.menu = br_sound_create("assets/music/background.flac");
+  if (!game->music.menu) {
+    BR_LOG_ERROR("Failed to load menu music");
+    goto error;
+  }
+
+  game->music.gameplay = br_sound_create("assets/music/gameplay.flac");
+  if (!game->music.gameplay) {
+    BR_LOG_ERROR("Failed to load gameplay music");
+    goto error;
+  }
+
   game->is_paused = false;
   game->enemies_alive = 0;
   game->game_over = true;
@@ -122,6 +134,10 @@ void game_shutdown(GameState *game) {
   }
   if (game->sfx.bounce_sound)
     br_sound_destroy(game->sfx.bounce_sound);
+  if (game->music.menu)
+    br_sound_destroy(game->music.menu);
+  if (game->music.gameplay)
+    br_sound_destroy(game->music.gameplay);
   if (game->app)
     br_app_destroy(game->app);
 }

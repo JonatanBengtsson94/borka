@@ -4,6 +4,11 @@
 #include "borka.h"
 #include <stdbool.h>
 
+// Both audio assets are normalised to the same peak, so these only set the
+// balance: the music sits well back, leaving room for bounces on top of it.
+#define MUSIC_VOLUME 0.3f
+#define BOUNCE_VOLUME 0.7f
+
 typedef struct {
   BrApp *app;
   BrFont font;
@@ -26,6 +31,11 @@ typedef struct {
   struct {
     BrSound *bounce_sound;
   } sfx;
+
+  struct {
+    BrSound *menu;
+    BrSound *gameplay;
+  } music;
 
   int enemies_alive;
   int level;

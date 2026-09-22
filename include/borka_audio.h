@@ -62,4 +62,27 @@ void br_play_sound(BrSound *sound);
  */
 void br_play_sound_at_volume(BrSound *sound, float volume);
 
+/**
+ * @brief Signal the audio thread to play a sound on repeat.
+ *
+ * Suits anything that should run continuously, such as background music or
+ * an ambience bed. This function is non-blocking. The sound keeps looping
+ * until it is destroyed or the audio system shuts down, so it has to stay
+ * alive for as long as it should be heard.
+ *
+ * @param sound Sound to loop. Must not be NULL.
+ * @param volume Scales the sound, as for br_play_sound_at_volume().
+ */
+void br_play_sound_looping(BrSound *sound, float volume);
+
+/**
+ * @brief Stops every voice currently playing the given sound.
+ *
+ * Mainly for looping sounds, which otherwise play until they are destroyed.
+ * Stopping a sound that is not playing does nothing.
+ *
+ * @param sound Sound to stop.
+ */
+void br_stop_sound(BrSound *sound);
+
 #endif // BORKA_AUDIO_H

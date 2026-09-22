@@ -19,6 +19,7 @@ typedef struct {
   BrSound *sound;
   uint32_t position; // Next sample of the sound to mix.
   float volume;
+  bool looping;
   bool active;
 } Voice;
 
@@ -62,18 +63,32 @@ static void mix_period(uint8_t *out, uint32_t frames) {
     if (!voice->active)
       continue;
 
-    uint32_t remaining = voice->sound->size - voice->position;
-    uint32_t count = remaining < frames ? remaining : frames;
+    // Looping voices wrap and carry on filling the same period, so the
+    // seam does not leave a gap of silence behind.
+    uint32_t filled = 0;
+    while (filled < frames) {
+      uint32_t remaining = voice->sound->size - voice->position;
+      uint32_t count = frames - filled;
+      if (count > remaining)
+        count = remaining;
 
-    for (uint32_t frame = 0; frame < count; frame++) {
-      int32_t sample =
-          (int32_t)voice->sound->data[voice->position + frame] - 128;
-      mixed[frame] += (int32_t)(sample * voice->volume);
+      for (uint32_t frame = 0; frame < count; frame++) {
+        int32_t sample =
+            (int32_t)voice->sound->data[voice->position + frame] - 128;
+        mixed[filled + frame] += (int32_t)(sample * voice->volume);
+      }
+
+      voice->position += count;
+      filled += count;
+
+      if (voice->position >= voice->sound->size) {
+        if (!voice->looping) {
+          voice->active = false;
+          break;
+        }
+        voice->position = 0;
+      }
     }
-
-    voice->position += count;
-    if (voice->position >= voice->sound->size)
-      voice->active = false;
   }
 
   for (uint32_t frame = 0; frame < frames; frame++) {
@@ -227,13 +242,17 @@ void br_audio_shutdown() {
   audio_thread.initialized = false;
 }
 
-void br_play_sound(BrSound *sound) { br_play_sound_at_volume(sound, 1.0f); }
-
-void br_play_sound_at_volume(BrSound *sound, float volume) {
+static void start_voice(BrSound *sound, float volume, bool looping) {
   assert(sound && sound->data);
 
   if (!audio_thread.initialized) {
     BR_LOG_ERROR("Cannot play a sound before the audio system is initialized");
+    return;
+  }
+
+  // A looping voice would never advance through an empty sound.
+  if (sound->size == 0) {
+    BR_LOG_ERROR("Refusing to play a sound with no samples");
     return;
   }
 
@@ -259,14 +278,25 @@ void br_play_sound_at_volume(BrSound *sound, float volume) {
   free_voice->sound = sound;
   free_voice->position = 0;
   free_voice->volume = volume;
+  free_voice->looping = looping;
   free_voice->active = true;
 
   pthread_mutex_unlock(&audio_thread.mutex);
-  BR_LOG_TRACE("Playing sound of %u samples at volume %.2f", sound->size,
-               (double)volume);
+  BR_LOG_TRACE("Playing %s of %u samples at volume %.2f",
+               looping ? "loop" : "sound", sound->size, (double)volume);
 }
 
-void br_audio_stop_sound(BrSound *sound) {
+void br_play_sound(BrSound *sound) { start_voice(sound, 1.0f, false); }
+
+void br_play_sound_at_volume(BrSound *sound, float volume) {
+  start_voice(sound, volume, false);
+}
+
+void br_play_sound_looping(BrSound *sound, float volume) {
+  start_voice(sound, volume, true);
+}
+
+void br_stop_sound(BrSound *sound) {
   if (!audio_thread.initialized)
     return;
 

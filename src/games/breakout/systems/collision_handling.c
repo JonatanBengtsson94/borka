@@ -158,20 +158,20 @@ void system_collision_handling(GameState *game) {
       if (col_a->layer == LAYER_PADDLE && col_b->layer == LAYER_BALL) {
         BR_LOG_TRACE("Paddle hit ball");
         paddle_hit(registry, entity_b, entity_a, col_b, col_a);
-        br_play_sound(game->sfx.bounce_sound);
+        br_play_sound_at_volume(game->sfx.bounce_sound, BOUNCE_VOLUME);
       }
 
       if (col_a->layer == LAYER_BALL && col_b->layer == LAYER_WALL) {
         BR_LOG_TRACE("Ball hit wall");
         bounce_ball(registry, entity_a, entity_b, col_a, col_b);
-        br_play_sound(game->sfx.bounce_sound);
+        br_play_sound_at_volume(game->sfx.bounce_sound, BOUNCE_VOLUME);
       }
 
       if (col_a->layer == LAYER_BALL && col_b->layer == LAYER_BRICK) {
         BR_LOG_TRACE("Ball hit brick");
         bounce_ball(registry, entity_a, entity_b, col_a, col_b);
         brick_hit(game, entity_b);
-        br_play_sound(game->sfx.bounce_sound);
+        br_play_sound_at_volume(game->sfx.bounce_sound, BOUNCE_VOLUME);
       }
 
       if (col_a->layer == LAYER_BALL && col_b->layer == LAYER_FLOOR) {
