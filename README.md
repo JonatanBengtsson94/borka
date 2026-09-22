@@ -61,6 +61,11 @@ A few example games are included to verify your build environment:
 | `PLATFORM` | `linux`, `windows` | `linux` |
 | `WINDOW_BACKEND` | `wayland`, `win32` | `wayland` |
 | `RENDER_BACKEND` | `software` | `software` |
+| `AUDIO_FORMATS` | space separated list of `wav`, `flac` | `flac` |
+
+Only the audio formats listed in `AUDIO_FORMATS` are compiled in, so a game
+that ships `.flac` assets links no `.wav` decoding code and vice versa. Set it
+per game in `src/games/<game>.mk` to override the default.
 
 ### Other Makefile Targets
 
@@ -71,6 +76,39 @@ A few example games are included to verify your build environment:
 | `make valgrind` | Build and run under Valgrind with leak-check enabled, using the suppressions in `valgrind.supp` |
 | `make clean` | Remove build output for the current `BUILD` type |
 | `make clean-all` | Remove all build output |
+
+### Audio Assets
+
+Audio has to be 8bit mono at 22050 Hz, matching `BR_AUDIO_BITS_PER_SAMPLE`,
+`BR_AUDIO_CHANNELS` and `BR_AUDIO_SAMPLE_RATE` in `include/borka_audio.h`.
+Anything else is rejected when the sound is loaded.
+
+Author sounds as `.wav`, then encode them to `.flac` for shipping:
+
+```sh
+flac --best --no-padding --no-seektable -o sound.flac sound.wav
+metaflac --remove --block-type=VORBIS_COMMENT --dont-use-padding sound.flac
+```
+
+### Texture Assets
+
+Textures have to be 8bit RGBA PNGs without interlacing. The decoder checks the
+IHDR and refuses anything else:
+
+| IHDR field | Required | Rejected with |
+|---|---|---|
+| `bit_depth` | 8 | `Only 8-bit PNG supported` |
+| `color_type` | 6 (RGBA) | `Only RGBA PNG supported` |
+| `interlace_method` | 0 (none) | `Interlaced PNG not supported` |
+
+RGBA is required even when the image is fully opaque, which is the easy one to
+get wrong: editors commonly save small sprites as palette or plain RGB, and
+those fail to load rather than being converted.
+
+Only `IHDR`, `IDAT` and `IEND` are read and every other chunk is skipped, so
+colour profiles, text and timestamps that an exporter adds are dead weight in
+the shipped asset. Strip metadata on export, or afterwards with a tool such as
+`optipng -strip all texture.png`.
 
 ### Adding a new game
 
