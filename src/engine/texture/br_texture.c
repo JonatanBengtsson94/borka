@@ -46,7 +46,7 @@ typedef struct {
   uint16_t *lookup_table;
 } HuffmanTable;
 
-// --- PNG DEFLATE DECOMPRESSION ---
+// --- ZLIB HEADER ---
 
 static bool parse_zlib_header(const uint8_t *data, size_t size) {
   struct {
@@ -97,6 +97,8 @@ static bool parse_zlib_header(const uint8_t *data, size_t size) {
                header.flevel, header.fcheck);
   return true;
 }
+
+// --- BITSTREAM READER ---
 
 static bool has_bits(BitReader *bit_reader, int number_of_bits) {
   if (number_of_bits <= 0 || number_of_bits > 32) {
@@ -176,6 +178,8 @@ static bool peek_bits(BitReader *bit_reader, int bits_to_peek,
   *out_value = value;
   return true;
 }
+
+// --- DEFLATE LZ77 TABLES ---
 
 static bool decode_deflate_length(BitReader *bit_reader, uint32_t length_code,
                                   uint32_t *out_length) {
@@ -263,6 +267,8 @@ static bool decode_deflate_distance(BitReader *bit_reader,
   *out_distance = base_distance + extra_value;
   return true;
 }
+
+// --- HUFFMAN CODING ---
 
 static uint32_t reverse_bits(uint32_t value, int number_of_bits) {
   uint32_t result = 0;
@@ -363,6 +369,8 @@ static uint32_t decode_symbol(BitReader *bit_reader,
 
   return symbol;
 }
+
+// --- DEFLATE BLOCK DECODING ---
 
 static bool decode_btype00(BitReader *bit_reader, uint8_t *out_data,
                            size_t out_size, size_t *output_position) {
