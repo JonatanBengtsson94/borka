@@ -52,12 +52,10 @@
 
 ### ALSA
 - [x] Play sound
-- [x] Play wav
 - [ ] Mixer
 - [ ] Play music
 
 ### Windows
 - [ ] Play sound
-- [ ] Play wav
 - [ ] Mixer
 - [ ] Play music

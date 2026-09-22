@@ -5,6 +5,8 @@
 - [x] Collisions
 - [x] Win conditions
 - [x] Start screen
+- [ ] Scoring system
+- [ ] FPS Counter
 
 ## Rendering
 - [x] Start screen
