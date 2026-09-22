@@ -5,12 +5,29 @@
 #include <alsa/asoundlib.h>
 #include <pthread.h>
 
+// How many sounds can play at the same time.
+#define MAX_VOICES 16
+
+// Frames mixed and handed to the device per iteration. Also the period size,
+// so writing blocks until the device has consumed roughly this much.
+#define PERIOD_FRAMES 512
+
+// Periods the device buffers ahead, to survive scheduling jitter.
+#define BUFFER_PERIODS 4
+
+typedef struct {
+  BrSound *sound;
+  uint32_t position; // Next sample of the sound to mix.
+  float volume;
+  bool active;
+} Voice;
+
 typedef struct {
   pthread_t thread;
   pthread_mutex_t mutex;
-  pthread_cond_t cond;
+  bool initialized;
   bool shutdown;
-  BrSound *pending_sound;
+  Voice voices[MAX_VOICES];
   snd_pcm_t *pcm;
 } AudioThread;
 
@@ -34,55 +51,80 @@ static bool open_pcm() {
   return false;
 }
 
-static void play_sound_internal(BrSound *sound) {
-  assert(sound && sound->data);
+// Sums every active voice into out and advances them. Samples are unsigned
+// with 128 as silence, so they are mixed around that midpoint and clamped
+// back into range. Must be called with the mutex held.
+static void mix_period(uint8_t *out, uint32_t frames) {
+  int32_t mixed[PERIOD_FRAMES] = {0};
 
-  snd_pcm_prepare(audio_thread.pcm);
+  for (int i = 0; i < MAX_VOICES; i++) {
+    Voice *voice = &audio_thread.voices[i];
+    if (!voice->active)
+      continue;
 
-  snd_pcm_sframes_t frames =
-      snd_pcm_writei(audio_thread.pcm, sound->data, sound->size);
-  if (frames < 0) {
-    frames = snd_pcm_recover(audio_thread.pcm, frames, 0);
-    if (frames < 0) {
-      BR_LOG_ERROR("Failed to write to PCM: %s", snd_strerror(frames));
-      return;
+    uint32_t remaining = voice->sound->size - voice->position;
+    uint32_t count = remaining < frames ? remaining : frames;
+
+    for (uint32_t frame = 0; frame < count; frame++) {
+      int32_t sample =
+          (int32_t)voice->sound->data[voice->position + frame] - 128;
+      mixed[frame] += (int32_t)(sample * voice->volume);
     }
+
+    voice->position += count;
+    if (voice->position >= voice->sound->size)
+      voice->active = false;
   }
-  BR_LOG_TRACE("Playing sound, Wrote %ld frames", frames);
+
+  for (uint32_t frame = 0; frame < frames; frame++) {
+    int32_t sample = mixed[frame] + 128;
+    if (sample < 0)
+      sample = 0;
+    else if (sample > 255)
+      sample = 255;
+    out[frame] = (uint8_t)sample;
+  }
 }
 
 // --- AUDIO THREAD ---
 
+// The stream runs for as long as the audio system is up, carrying silence
+// when nothing is playing. Keeping it running avoids stopping and restarting
+// the device around every sound.
 static void *audio_thread_func(void *arg) {
   (void)arg;
-  pthread_mutex_lock(&audio_thread.mutex);
+  uint8_t period[PERIOD_FRAMES];
 
-  while (!audio_thread.shutdown) {
-    pthread_cond_wait(&audio_thread.cond, &audio_thread.mutex);
-
-    if (audio_thread.shutdown)
-      break;
-
-    BrSound *sound_to_play = audio_thread.pending_sound;
-    audio_thread.pending_sound = NULL;
-
-    pthread_mutex_unlock(&audio_thread.mutex);
-    play_sound_internal(sound_to_play);
+  while (true) {
     pthread_mutex_lock(&audio_thread.mutex);
+    if (audio_thread.shutdown) {
+      pthread_mutex_unlock(&audio_thread.mutex);
+      break;
+    }
+    mix_period(period, PERIOD_FRAMES);
+    pthread_mutex_unlock(&audio_thread.mutex);
+
+    snd_pcm_sframes_t written =
+        snd_pcm_writei(audio_thread.pcm, period, PERIOD_FRAMES);
+    if (written < 0) {
+      written = snd_pcm_recover(audio_thread.pcm, (int)written, 1);
+      if (written < 0) {
+        BR_LOG_ERROR("Failed to write to PCM: %s",
+                     snd_strerror((int)written));
+        break;
+      }
+    }
   }
 
-  pthread_mutex_unlock(&audio_thread.mutex);
   return NULL;
 }
 
 // --- PUBLIC API ---
 
 bool br_audio_init() {
-
   pthread_mutex_init(&audio_thread.mutex, NULL);
-  pthread_cond_init(&audio_thread.cond, NULL);
   audio_thread.shutdown = false;
-  audio_thread.pending_sound = NULL;
+  memset(audio_thread.voices, 0, sizeof(audio_thread.voices));
 
   snd_pcm_hw_params_t *params;
 
@@ -122,8 +164,30 @@ bool br_audio_init() {
     goto error;
   }
 
+  snd_pcm_uframes_t period_size = PERIOD_FRAMES;
+  if (snd_pcm_hw_params_set_period_size_near(audio_thread.pcm, params,
+                                             &period_size, 0) < 0) {
+    BR_LOG_ERROR("Failed to set period size");
+    goto error;
+  }
+
+  snd_pcm_uframes_t buffer_size = PERIOD_FRAMES * BUFFER_PERIODS;
+  if (snd_pcm_hw_params_set_buffer_size_near(audio_thread.pcm, params,
+                                             &buffer_size) < 0) {
+    BR_LOG_ERROR("Failed to set buffer size");
+    goto error;
+  }
+
   if (snd_pcm_hw_params(audio_thread.pcm, params) < 0) {
     BR_LOG_ERROR("Failed to install hw params");
+    goto error;
+  }
+
+  BR_LOG_DEBUG("Audio buffer: %lu frames in periods of %lu",
+               (unsigned long)buffer_size, (unsigned long)period_size);
+
+  if (snd_pcm_prepare(audio_thread.pcm) < 0) {
+    BR_LOG_ERROR("Failed to prepare pcm");
     goto error;
   }
 
@@ -133,6 +197,7 @@ bool br_audio_init() {
     goto error;
   }
 
+  audio_thread.initialized = true;
   BR_LOG_INFO("Initialized audio system");
   snd_pcm_hw_params_free(params);
   return true;
@@ -143,26 +208,72 @@ error:
 }
 
 void br_audio_shutdown() {
+  if (!audio_thread.initialized)
+    return;
+
   pthread_mutex_lock(&audio_thread.mutex);
   audio_thread.shutdown = true;
-  pthread_cond_signal(&audio_thread.cond);
   pthread_mutex_unlock(&audio_thread.mutex);
 
   pthread_join(audio_thread.thread, NULL);
   pthread_mutex_destroy(&audio_thread.mutex);
-  pthread_cond_destroy(&audio_thread.cond);
 
   if (audio_thread.pcm) {
-    snd_pcm_drain(audio_thread.pcm);
+    snd_pcm_drop(audio_thread.pcm);
     snd_pcm_close(audio_thread.pcm);
   }
 
   snd_config_update_free_global();
+  audio_thread.initialized = false;
 }
 
-void br_play_sound(BrSound *sound) {
+void br_play_sound(BrSound *sound) { br_play_sound_at_volume(sound, 1.0f); }
+
+void br_play_sound_at_volume(BrSound *sound, float volume) {
+  assert(sound && sound->data);
+
+  if (!audio_thread.initialized) {
+    BR_LOG_ERROR("Cannot play a sound before the audio system is initialized");
+    return;
+  }
+
+  if (volume < 0.0f)
+    volume = 0.0f;
+
   pthread_mutex_lock(&audio_thread.mutex);
-  audio_thread.pending_sound = sound;
-  pthread_cond_signal(&audio_thread.cond);
+
+  Voice *free_voice = NULL;
+  for (int i = 0; i < MAX_VOICES; i++) {
+    if (!audio_thread.voices[i].active) {
+      free_voice = &audio_thread.voices[i];
+      break;
+    }
+  }
+
+  if (!free_voice) {
+    pthread_mutex_unlock(&audio_thread.mutex);
+    BR_LOG_WARN("All %d voices are in use, dropping sound", MAX_VOICES);
+    return;
+  }
+
+  free_voice->sound = sound;
+  free_voice->position = 0;
+  free_voice->volume = volume;
+  free_voice->active = true;
+
+  pthread_mutex_unlock(&audio_thread.mutex);
+  BR_LOG_TRACE("Playing sound of %u samples at volume %.2f", sound->size,
+               (double)volume);
+}
+
+void br_audio_stop_sound(BrSound *sound) {
+  if (!audio_thread.initialized)
+    return;
+
+  pthread_mutex_lock(&audio_thread.mutex);
+  for (int i = 0; i < MAX_VOICES; i++) {
+    if (audio_thread.voices[i].sound == sound)
+      audio_thread.voices[i].active = false;
+  }
   pthread_mutex_unlock(&audio_thread.mutex);
 }

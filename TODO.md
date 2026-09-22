@@ -52,10 +52,8 @@
 
 ### ALSA
 - [x] Play sound
-- [ ] Mixer
-- [ ] Play music
+- [x] Mixer
 
 ### Windows
 - [ ] Play sound
 - [ ] Mixer
-- [ ] Play music

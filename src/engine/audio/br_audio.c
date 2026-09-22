@@ -15,7 +15,12 @@ static void cleanup(BrSound *sound) {
   }
 }
 
-void br_sound_destroy(BrSound *sound) { cleanup(sound); }
+void br_sound_destroy(BrSound *sound) {
+  // The mixer holds raw pointers to sounds, so any voice still playing this
+  // one has to be stopped before the samples go away.
+  br_audio_stop_sound(sound);
+  cleanup(sound);
+}
 
 BrSound *br_sound_create(const char *filepath) {
   uint8_t *file_data = NULL;

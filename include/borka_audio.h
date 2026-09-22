@@ -49,4 +49,17 @@ void br_sound_destroy(BrSound *sound);
  */
 void br_play_sound(BrSound *sound);
 
+/**
+ * @brief Signal the audio thread to play a sound at a given volume.
+ *
+ * This function is non-blocking.
+ *
+ * @param sound Sound to play. Must not be NULL.
+ * @param volume Scales the sound: 0.0 is silent and 1.0 leaves it as
+ *               authored. Values above 1.0 amplify quiet assets, which is
+ *               only safe while the mix stays in range; the mixer clamps
+ *               anything louder than full scale.
+ */
+void br_play_sound_at_volume(BrSound *sound, float volume);
+
 #endif // BORKA_AUDIO_H
