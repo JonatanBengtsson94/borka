@@ -25,6 +25,22 @@
 - gcc
 - make
 
+### Quickstart
+
+Build and run the default game (`breakout`):
+
+```sh
+make
+make run
+```
+
+Build and run a specific example instead:
+
+```sh
+make GAME=audio
+make run
+```
+
 ### Example Games
 
 A few example games are included to verify your build environment:
@@ -45,6 +61,16 @@ A few example games are included to verify your build environment:
 | `PLATFORM` | `linux`, `windows` | `linux` |
 | `WINDOW_BACKEND` | `wayland`, `win32` | `wayland` |
 | `RENDER_BACKEND` | `software` | `software` |
+
+### Other Makefile Targets
+
+| Target | Description |
+|---|---|
+| `make` / `make all` | Build the selected `GAME` |
+| `make run` | Build (if needed) and run the selected `GAME` |
+| `make valgrind` | Build and run under Valgrind with leak-check enabled, using the suppressions in `valgrind.supp` |
+| `make clean` | Remove build output for the current `BUILD` type |
+| `make clean-all` | Remove all build output |
 
 ### Adding a new game
 
