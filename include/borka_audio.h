@@ -67,8 +67,8 @@ void br_play_sound_at_volume(BrSound *sound, float volume);
  *
  * Suits anything that should run continuously, such as background music or
  * an ambience bed. This function is non-blocking. The sound keeps looping
- * until it is destroyed or the audio system shuts down, so it has to stay
- * alive for as long as it should be heard.
+ * until br_stop_sound() is called, it is destroyed, or the audio system shuts
+ * down, so it has to stay alive for as long as it should be heard.
  *
  * @param sound Sound to loop. Must not be NULL.
  * @param volume Scales the sound, as for br_play_sound_at_volume().

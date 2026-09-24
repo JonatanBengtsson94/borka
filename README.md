@@ -8,8 +8,8 @@
 - PNG image decoding.
 - DEFLATE decompression.
 - Entity-Component-System (ECS) architecture.
-- Bitmap font rendering.
-- Asynchronous audio playback.
+- Bitmap font rendering with per-font character sets.
+- Asynchronous audio playback with mixing and looping.
 
 ## Supported Platforms
 
@@ -110,10 +110,28 @@ colour profiles, text and timestamps that an exporter adds are dead weight in
 the shipped asset. Strip metadata on export, or afterwards with a tool such as
 `optipng -strip all texture.png`.
 
+### Font Assets
+
+A font atlas is a texture (see Texture Assets) holding equally sized glyphs,
+packed with no padding, left to right and row by row. The atlas can be a
+single row or a grid. The game names the characters in atlas order when it
+sets up the font:
+
+```c
+BrFont font;
+br_font_init(&font, atlas, (BrVec2){8, 8}, (BrVec2){2, 2},
+             "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+```
+
+Characters not in the charset, including space unless it is listed, are left
+blank. Text is monospace, so every character takes the same width.
+`br_font_init` fails if the charset has more characters than the atlas has
+glyphs.
+
 ### Adding a new game
 
 1. Create `src/games/mygame` and add your source files there
-2. Create `games/mygame.mk`:
+2. Create `src/games/mygame.mk`:
 ```makefile
 GAME_OUT = mygame
 GAME_SRC = $(shell find src/games/mygame -name '*.c')

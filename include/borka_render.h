@@ -48,7 +48,7 @@ void br_renderer_draw_rectangle_filled(BrRenderer *renderer, BrVec2 position,
 void br_renderer_draw_rectangle_outlined(BrRenderer *renderer, BrVec2 position,
                                          BrVec2 size, int color);
 
-/*
+/**
  * @brief Draws a texture at the specified position.
  *
  * @param renderer Renderer to draw with. Must not be NULL.
@@ -60,25 +60,31 @@ void br_renderer_draw_rectangle_outlined(BrRenderer *renderer, BrVec2 position,
 void br_renderer_draw_texture(BrRenderer *renderer, BrVec2 position,
                               const BrTexture *texture);
 
-/*
+/**
  * @brief Draws a region of a texture at the specified position.
  *
  * @param renderer Renderer to draw with. Must not be NULL.
  * @param position Position of upper-left corner of the region.
- * @param texture texture region to draw. Must not be NULL.
+ * @param region Texture region to draw. Its texture must not be NULL.
  *
  * @note Changes are not visible until br_renderer_present() is called.
  */
 void br_renderer_draw_texture_region(BrRenderer *renderer, BrVec2 position,
                                      BrTextureRegion region);
 
-/*
- * @brief Draws a text at the specific position.
+/**
+ * @brief Draws a single line of text at the specified position.
+ *
+ * Every character advances by the glyph width plus the horizontal spacing,
+ * so br_font_text_width() gives the drawn width. Characters the font has no
+ * glyph for are left blank.
  *
  * @param renderer Renderer to draw with. Must not be NULL.
- * @param text Text to render.
- * @param font Font to use. Must not be NULL.
+ * @param font Font to use, set up with br_font_init(). Must not be NULL.
+ * @param text Text to render. Must not be NULL.
  * @param position Position of the upper-left corner of the first character.
+ *
+ * @note Changes are not visible until br_renderer_present() is called.
  */
 void br_renderer_draw_text(BrRenderer *renderer, const BrFont *font,
                            const char *text, BrVec2 position);
