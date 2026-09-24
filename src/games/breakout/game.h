@@ -42,10 +42,12 @@ typedef struct {
 
   int enemies_alive;
   int score;
+  int highscore; // Best score this session. Never reset, so not saved.
   bool won;
-  // Backing storage for the game over scene's score line. Text renderables
+  // Backing storage for the game over scene's score lines. Text renderables
   // only borrow their string, so it has to outlive the scene.
   char score_text[32];
+  char highscore_text[32];
   bool is_paused;
   bool game_over;
 } GameState;

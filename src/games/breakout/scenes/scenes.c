@@ -56,10 +56,15 @@ void scene_load(GameState *game, SceneId id) {
 
   case SCENE_GAME_OVER:
     BR_LOG_DEBUG("Loading game over scene");
+    if (game->score > game->highscore)
+      game->highscore = game->score;
     snprintf(game->score_text, sizeof(game->score_text), "SCORE %d",
              game->score);
+    snprintf(game->highscore_text, sizeof(game->highscore_text), "BEST %d",
+             game->highscore);
     create_game_over(registry, &game->font,
-                     game->won ? "YOU WIN" : "GAME OVER", game->score_text);
+                     game->won ? "YOU WIN" : "GAME OVER", game->score_text,
+                     game->highscore_text);
     next.background = game->textures.background;
     next.music = game->music.menu;
     break;
