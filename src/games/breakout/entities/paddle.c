@@ -7,6 +7,7 @@ void create_paddle(BrRegistry *registry, BrTexture *texture) {
   Velocity paddle_vel = {0, 0};
   Position paddle_pos = {GAME_WIDTH / 2, GAME_HEIGHT - 10};
   Renderable paddle_sprite = {.type = RENDERABLE_TEXTURE,
+                              .layer = RENDER_LAYER_WORLD,
                               .texture = {.texture = texture}};
   InputControlled paddle_input_control = {false, false};
   MovementConfig paddle_movement_conf = {PADDLE_SPEED};

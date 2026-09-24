@@ -9,6 +9,7 @@ BrComponentTypeId COMPONENT_COLLIDER = BR_INVALID_COMPONENT_TYPE;
 BrComponentTypeId COMPONENT_COLLISION = BR_INVALID_COMPONENT_TYPE;
 BrComponentTypeId COMPONENT_ANIMATOR = BR_INVALID_COMPONENT_TYPE;
 BrComponentTypeId COMPONENT_BRICK = BR_INVALID_COMPONENT_TYPE;
+BrComponentTypeId COMPONENT_TRAIL = BR_INVALID_COMPONENT_TYPE;
 
 bool components_register(BrRegistry *registry) {
   COMPONENT_POSITION = br_register_component(registry, sizeof(Position));
@@ -22,16 +23,18 @@ bool components_register(BrRegistry *registry) {
   COMPONENT_COLLISION = br_register_component(registry, sizeof(Collision));
   COMPONENT_ANIMATOR = br_register_component(registry, sizeof(Animator));
   COMPONENT_BRICK = br_register_component(registry, sizeof(Brick));
+  COMPONENT_TRAIL = br_register_component(registry, sizeof(Trail));
 
   BrComponentTypeId ids[] = {COMPONENT_POSITION,
                              COMPONENT_VELOCITY,
                              COMPONENT_RENDERABLE,
                              COMPONENT_MOVEMENT_CONFIG,
-                             COMPONENT_MOVEMENT_CONFIG,
+                             COMPONENT_INPUT_CONTROLLED,
                              COMPONENT_COLLIDER,
                              COMPONENT_COLLISION,
                              COMPONENT_ANIMATOR,
-                             COMPONENT_BRICK};
+                             COMPONENT_BRICK,
+                             COMPONENT_TRAIL};
 
   size_t length = sizeof(ids) / sizeof(BrComponentTypeId);
   for (size_t i = 0; i < length; i++) {

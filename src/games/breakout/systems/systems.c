@@ -8,6 +8,7 @@ BrSystemId SYSTEM_MOVEMENT = BR_INVALID_SYSTEM_ID;
 BrSystemId SYSTEM_COLLISION_DETECTION = BR_INVALID_SYSTEM_ID;
 BrSystemId SYSTEM_COLLISION_HANDLING = BR_INVALID_SYSTEM_ID;
 BrSystemId SYSTEM_ANIMATION = BR_INVALID_SYSTEM_ID;
+BrSystemId SYSTEM_TRAIL = BR_INVALID_SYSTEM_ID;
 
 bool systems_register(BrRegistry *registry) {
   BrComponentTypeId input_required[] = {COMPONENT_INPUT_CONTROLLED};
@@ -24,6 +25,8 @@ bool systems_register(BrRegistry *registry) {
                                                      COMPONENT_COLLIDER};
   BrComponentTypeId animation_required[] = {COMPONENT_ANIMATOR,
                                             COMPONENT_RENDERABLE};
+  BrComponentTypeId trail_required[] = {COMPONENT_TRAIL, COMPONENT_POSITION,
+                                        COMPONENT_VELOCITY};
 
   SYSTEM_INPUT = br_register_system(registry, COMPONENT_INPUT_CONTROLLED,
                                     input_required, 1);
@@ -39,6 +42,8 @@ bool systems_register(BrRegistry *registry) {
       registry, COMPONENT_COLLISION, collision_handling_required, 2);
   SYSTEM_ANIMATION =
       br_register_system(registry, COMPONENT_ANIMATOR, animation_required, 2);
+  SYSTEM_TRAIL =
+      br_register_system(registry, COMPONENT_TRAIL, trail_required, 3);
 
   BrSystemId ids[] = {SYSTEM_INPUT,
                       SYSTEM_RENDER,
@@ -46,7 +51,8 @@ bool systems_register(BrRegistry *registry) {
                       SYSTEM_PLAYER_MOVEMENT,
                       SYSTEM_COLLISION_DETECTION,
                       SYSTEM_COLLISION_HANDLING,
-                      SYSTEM_ANIMATION};
+                      SYSTEM_ANIMATION,
+                      SYSTEM_TRAIL};
 
   size_t length = sizeof(ids) / sizeof(BrSystemId);
   for (size_t i = 0; i < length; i++) {

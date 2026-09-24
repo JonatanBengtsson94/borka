@@ -26,6 +26,7 @@ void create_bricks(GameState *game) {
     }
     for (int j = 0; j < bricks_per_row; j++) {
       Renderable brick_sprite = {.type = RENDERABLE_TEXTURE_REGION,
+                                 .layer = RENDER_LAYER_WORLD,
                                  .region.region = region};
       Collider brick_collider = {.size.x = brick_sprite.region.region.size.x,
                                  .size.y = brick_sprite.region.region.size.y,

@@ -7,6 +7,7 @@ static void create_centered_text(BrRegistry *registry, BrFont *font,
   BrEntity txt = br_entity_create(registry);
   Position pos = {(GAME_WIDTH - br_font_text_width(font, text)) / 2, y};
   Renderable ren = {.type = RENDERABLE_TEXT,
+                    .layer = RENDER_LAYER_UI,
                     .text = {.font = font, .text = text}};
   br_component_add(registry, txt, COMPONENT_POSITION, &pos);
   br_component_add(registry, txt, COMPONENT_RENDERABLE, &ren);

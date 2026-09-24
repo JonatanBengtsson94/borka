@@ -67,6 +67,7 @@ static void brick_hit(GameState *game, BrEntity brick) {
   };
   Position anim_pos = {.x = pos->x, .y = pos->y};
   Renderable anim_ren = {.type = RENDERABLE_TEXTURE_REGION,
+                         .layer = RENDER_LAYER_WORLD,
                          .region.region = animator.frames[0]};
   br_component_add(game->app->registry, anim, COMPONENT_POSITION, &anim_pos);
   br_component_add(game->app->registry, anim, COMPONENT_ANIMATOR, &animator);

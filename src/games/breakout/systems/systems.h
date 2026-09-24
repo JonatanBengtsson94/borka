@@ -12,6 +12,7 @@ void system_movement(BrRegistry *registry, double delta_time);
 void system_collision_detection(BrRegistry *registry);
 void system_collision_handling(GameState *game);
 void system_animation(BrRegistry *registry, double delta_time);
+void system_trail(BrRegistry *registry);
 
 extern BrSystemId SYSTEM_INPUT;
 extern BrSystemId SYSTEM_ANIMATION;
@@ -20,6 +21,7 @@ extern BrSystemId SYSTEM_RENDER;
 extern BrSystemId SYSTEM_MOVEMENT;
 extern BrSystemId SYSTEM_COLLISION_DETECTION;
 extern BrSystemId SYSTEM_COLLISION_HANDLING;
+extern BrSystemId SYSTEM_TRAIL;
 
 bool systems_register(BrRegistry *registry);
 

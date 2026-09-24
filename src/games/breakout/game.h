@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include "borka.h"
+#include "constants.h"
 #include "scenes/scene.h"
 #include <stdbool.h>
 
@@ -21,6 +22,7 @@ typedef struct {
     BrTextureRegion brick_blue;
     BrTextureRegion brick_red;
     BrTextureRegion brick_green;
+    BrTextureRegion trail[TRAIL_LENGTH]; // Largest, nearest the ball, first.
   } textures;
 
   struct {

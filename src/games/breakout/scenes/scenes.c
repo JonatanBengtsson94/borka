@@ -46,7 +46,7 @@ void scene_load(GameState *game, SceneId id) {
     game->score = 0;
     game->won = false;
     create_paddle(registry, game->textures.paddle);
-    create_ball(registry, game->textures.ball);
+    create_ball(registry, game->textures.ball, game->textures.trail);
     create_walls(registry);
     create_bricks(game);
     next.background = game->textures.background;

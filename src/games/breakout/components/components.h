@@ -11,9 +11,11 @@
 #include "movement_config.h"
 #include "position.h"
 #include "renderable.h"
+#include "trail.h"
 #include "velocity.h"
 
 extern BrComponentTypeId COMPONENT_ANIMATOR;
+extern BrComponentTypeId COMPONENT_TRAIL;
 extern BrComponentTypeId COMPONENT_POSITION;
 extern BrComponentTypeId COMPONENT_VELOCITY;
 extern BrComponentTypeId COMPONENT_RENDERABLE;

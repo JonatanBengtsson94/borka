@@ -5,6 +5,12 @@
 
 #define PADDLE_SPEED 220
 #define BALL_SPEED 60
+// Ball trail segments. Each shows where the ball was TRAIL_STEP_TIME seconds
+// before the previous one, so the trail stretches as the ball speeds up.
+#define TRAIL_LENGTH 3
+#define TRAIL_STEP_TIME 0.03f
+// Pixels the ball travels between recorded path points.
+#define TRAIL_POINT_SPACING 2.0f
 #define GAME_WIDTH 320
 #define GAME_HEIGHT 180
 

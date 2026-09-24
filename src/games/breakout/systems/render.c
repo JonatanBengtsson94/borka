@@ -1,6 +1,18 @@
 #include "components/components.h"
 #include "systems.h"
 
+typedef struct {
+  BrEntity entity;
+  Renderable *renderable;
+  Position *position;
+} DrawItem;
+
+static bool draw_before(const DrawItem *a, const DrawItem *b) {
+  if (a->renderable->layer != b->renderable->layer)
+    return a->renderable->layer < b->renderable->layer;
+  return a->entity < b->entity;
+}
+
 void system_render(BrRegistry *registry, BrRenderer *renderer,
                    const Scene *scene) {
   assert(registry);
@@ -11,14 +23,35 @@ void system_render(BrRegistry *registry, BrRenderer *renderer,
   if (scene->background)
     br_renderer_draw_texture(renderer, (BrVec2){0, 0}, scene->background);
 
+  // Storage order changes whenever a component is removed, so draw order
+  // comes from sorting by layer, then entity for a stable order within one.
+  DrawItem items[MAX_ENTITIES];
+  int count = 0;
+
   BrQuery *query = br_query_begin(registry, SYSTEM_RENDER);
   while (br_query_next(query)) {
-    Renderable *r =
-        (Renderable *)br_query_get_component(query, COMPONENT_RENDERABLE);
-    Position *p = (Position *)br_query_get_component(query, COMPONENT_POSITION);
+    DrawItem item = {
+        .entity = query->current_entity,
+        .renderable =
+            (Renderable *)br_query_get_component(query, COMPONENT_RENDERABLE),
+        .position =
+            (Position *)br_query_get_component(query, COMPONENT_POSITION),
+    };
+    assert(item.renderable);
+    assert(item.position);
 
-    assert(r);
-    assert(p);
+    // Insertion sort: cheap for at most MAX_ENTITIES items.
+    int i = count++;
+    while (i > 0 && draw_before(&item, &items[i - 1])) {
+      items[i] = items[i - 1];
+      i--;
+    }
+    items[i] = item;
+  }
+
+  for (int i = 0; i < count; i++) {
+    Renderable *r = items[i].renderable;
+    Position *p = items[i].position;
     BrVec2 int_pos = {p->x, p->y};
 
     switch (r->type) {

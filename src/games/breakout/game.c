@@ -48,6 +48,21 @@ bool game_init(GameState *game) {
     goto error;
   }
 
+  BrTexture *trail_atlas = br_texture_create("assets/textures/trail.png");
+  if (!trail_atlas) {
+    BR_LOG_ERROR("Failed to load trail atlas");
+    goto error;
+  }
+
+  game->textures.trail[0] = (BrTextureRegion){
+      .texture = trail_atlas, .position = {0, 0}, .size = {6, 6}};
+
+  game->textures.trail[1] = (BrTextureRegion){
+      .texture = trail_atlas, .position = {8, 0}, .size = {4, 4}};
+
+  game->textures.trail[2] = (BrTextureRegion){
+      .texture = trail_atlas, .position = {16, 0}, .size = {2, 2}};
+
   BrTexture *brick_atlas = br_texture_create("assets/textures/bricks.png");
   if (!brick_atlas) {
     BR_LOG_ERROR("Failed to load brick atlas");
@@ -145,6 +160,8 @@ void game_shutdown(GameState *game) {
   if (game->textures.brick_green.texture) {
     br_texture_destroy(game->textures.brick_green.texture);
   }
+  if (game->textures.trail[0].texture)
+    br_texture_destroy(game->textures.trail[0].texture);
   if (game->sfx.paddle_hit)
     br_sound_destroy(game->sfx.paddle_hit);
   if (game->sfx.wall_hit)
@@ -192,5 +209,6 @@ void game_update(GameState *game, double delta_time) {
   system_collision_detection(game->app->registry);
   system_collision_handling(game);
   system_animation(game->app->registry, delta_time);
+  system_trail(game->app->registry);
   system_render(game->app->registry, game->app->renderer, &game->scene);
 }
