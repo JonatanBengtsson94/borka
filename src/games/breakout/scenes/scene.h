@@ -7,6 +7,7 @@ typedef enum {
   SCENE_NONE, // Zero value, so a zeroed GameState starts with no scene.
   SCENE_START,
   SCENE_LEVEL_01,
+  SCENE_GAME_OVER,
 } SceneId;
 
 // What a scene shows and plays beyond its entities. Assets are borrowed from

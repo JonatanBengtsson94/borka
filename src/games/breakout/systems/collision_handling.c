@@ -73,16 +73,19 @@ static void brick_hit(GameState *game, BrEntity brick) {
   br_component_add(game->app->registry, anim, COMPONENT_RENDERABLE, &anim_ren);
 
   br_entity_destroy(game->app->registry, brick);
+  game->score++;
   game->enemies_alive--;
   BR_LOG_TRACE("Enemies alive: %d", game->enemies_alive);
   if (game->enemies_alive == 0) {
     BR_LOG_INFO("Game is won");
+    game->won = true;
     game->game_over = true;
   }
 }
 
 static void floor_hit(GameState *game) {
   BR_LOG_INFO("Game is lost");
+  game->won = false;
   game->game_over = true;
 }
 

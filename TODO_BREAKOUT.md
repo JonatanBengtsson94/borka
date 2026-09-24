@@ -5,7 +5,7 @@
 - [x] Collisions
 - [x] Win conditions
 - [x] Start screen
-- [ ] Scoring system
+- [x] Scoring system
 - [ ] FPS Counter
 
 ## Rendering
@@ -17,4 +17,4 @@
 ## Sound
 - [x] Sound effects
 - [ ] Material based sound effects
-- [ ] Music
+- [x] Music

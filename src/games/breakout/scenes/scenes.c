@@ -1,5 +1,6 @@
 #include "scenes.h"
 #include "entities/entities.h"
+#include <stdio.h>
 
 static void destroy_scene(BrRegistry *reg) {
   assert(reg);
@@ -42,6 +43,8 @@ void scene_load(GameState *game, SceneId id) {
   case SCENE_LEVEL_01:
     BR_LOG_DEBUG("Loading level 1 scene");
     game->enemies_alive = 0;
+    game->score = 0;
+    game->won = false;
     create_paddle(registry, game->textures.paddle);
     create_ball(registry, game->textures.ball);
     create_walls(registry);
@@ -49,6 +52,16 @@ void scene_load(GameState *game, SceneId id) {
     next.background = game->textures.background;
     next.music = game->music.gameplay;
     game->game_over = false;
+    break;
+
+  case SCENE_GAME_OVER:
+    BR_LOG_DEBUG("Loading game over scene");
+    snprintf(game->score_text, sizeof(game->score_text), "SCORE %d",
+             game->score);
+    create_game_over(registry, &game->font,
+                     game->won ? "YOU WIN" : "GAME OVER", game->score_text);
+    next.background = game->textures.background;
+    next.music = game->music.menu;
     break;
   }
 

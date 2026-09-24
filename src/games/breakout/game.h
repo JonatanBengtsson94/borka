@@ -41,6 +41,11 @@ typedef struct {
   Scene scene;
 
   int enemies_alive;
+  int score;
+  bool won;
+  // Backing storage for the game over scene's score line. Text renderables
+  // only borrow their string, so it has to outlive the scene.
+  char score_text[32];
   bool is_paused;
   bool game_over;
 } GameState;

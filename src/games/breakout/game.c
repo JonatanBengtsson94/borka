@@ -141,20 +141,29 @@ void game_shutdown(GameState *game) {
 }
 
 void game_handle_event(GameState *game, BrEvent event) {
-  if (event.type == BR_EVENT_KEY_PRESSED ||
-      event.type == BR_EVENT_KEY_RELEASED) {
-    if (game->scene.id == SCENE_START) {
+  if (event.type != BR_EVENT_KEY_PRESSED &&
+      event.type != BR_EVENT_KEY_RELEASED)
+    return;
+
+  // Only a press starts a run, so releasing a key still held when the last
+  // run ended does not skip the game over screen. The key is not forwarded
+  // either, or starting with space would pause the new level.
+  bool in_menu = game->scene.id == SCENE_START ||
+                 game->scene.id == SCENE_GAME_OVER;
+  if (in_menu) {
+    if (event.type == BR_EVENT_KEY_PRESSED)
       scene_load(game, SCENE_LEVEL_01);
-    }
-    system_input(game, event);
+    return;
   }
+
+  system_input(game, event);
 }
 
 void game_update(GameState *game, double delta_time) {
   if (game->is_paused)
     return;
-  if (game->game_over && game->scene.id != SCENE_START) {
-    scene_load(game, SCENE_START);
+  if (game->game_over && game->scene.id == SCENE_LEVEL_01) {
+    scene_load(game, SCENE_GAME_OVER);
     return;
   }
   system_player_movement(game->app->registry);
