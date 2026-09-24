@@ -13,6 +13,9 @@
  * in the same layer in the order they were made. The order of the calls
  * themselves therefore does not matter across layers.
  *
+ * Each layer can be given an offset with br_renderer_set_layer_offset(), for
+ * example to move the world with a camera while the UI stays put.
+ *
  * Textures passed to draw calls, including a font's atlas, are only read at
  * present, so they must stay alive until then. Text and fonts themselves are
  * only read during the call, so the text may be a temporary.
@@ -29,6 +32,25 @@ typedef struct BrRenderer BrRenderer;
  * @param color 32-bit ARGB color value (0xAARRGGBB format).
  */
 void br_renderer_clear(BrRenderer *renderer, int color);
+
+/**
+ * @brief Offsets every draw on a layer.
+ *
+ * The offset is added to the position of each draw on the layer when the
+ * frame is presented, so it applies to the whole layer however the draws
+ * were ordered. It stays in effect across frames until it is changed; set it
+ * to {0, 0} to stop offsetting the layer. Useful for cameras, screen shake
+ * and parallax.
+ *
+ * @param renderer Renderer to offset a layer of. Must not be NULL.
+ * @param layer Layer to offset.
+ * @param offset Pixels to move the layer by.
+ *
+ * @note Up to 16 distinct layers can have an offset. Offsetting another layer
+ * beyond that logs a warning and is ignored.
+ */
+void br_renderer_set_layer_offset(BrRenderer *renderer, int layer,
+                                  BrVec2 offset);
 
 /**
  * @brief Draws a filled rectangle.

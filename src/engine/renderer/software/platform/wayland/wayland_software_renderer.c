@@ -158,6 +158,13 @@ void br_renderer_clear(struct BrRenderer *renderer, int color) {
   renderer->queue->clear_requested = true;
 }
 
+void br_renderer_set_layer_offset(struct BrRenderer *renderer, int layer,
+                                  BrVec2 offset) {
+  assert(renderer);
+  br_render_queue_set_layer_offset(renderer->queue, layer, offset);
+  BR_LOG_TRACE("Layer %d offset set to (%d, %d)", layer, offset.x, offset.y);
+}
+
 void br_renderer_draw_rectangle_filled(struct BrRenderer *renderer, int layer,
                                        BrVec2 position, BrVec2 size,
                                        int color) {
@@ -213,10 +220,11 @@ void br_renderer_draw_text(struct BrRenderer *renderer, int layer,
   br_render_queue_push_text(renderer->queue, layer, font, text, position);
 }
 
-static void execute(struct BrRenderer *renderer, const BrDrawCommand *c) {
+static void execute(struct BrRenderer *renderer, const BrDrawCommand *c,
+                    BrVec2 layer_offset) {
   int *pixels = renderer->game_pixels;
   BrVec2 dims = renderer->game_dimensions;
-  BrVec2 pos = c->position;
+  BrVec2 pos = {c->position.x + layer_offset.x, c->position.y + layer_offset.y};
 
   switch (c->type) {
   case BR_DRAW_RECTANGLE_FILLED:
@@ -257,8 +265,14 @@ void br_renderer_present(struct BrRenderer *renderer) {
   if (queue->clear_requested)
     software_clear(renderer->game_pixels, renderer->game_dimensions,
                    queue->clear_color);
-  for (int i = 0; i < queue->count; i++)
-    execute(renderer, &queue->commands[i]);
+  // Commands are sorted by layer, so each layer's offset is looked up once.
+  BrVec2 layer_offset = {0, 0};
+  for (int i = 0; i < queue->count; i++) {
+    const BrDrawCommand *command = &queue->commands[i];
+    if (i == 0 || command->layer != queue->commands[i - 1].layer)
+      layer_offset = br_render_queue_layer_offset(queue, command->layer);
+    execute(renderer, command, layer_offset);
+  }
   br_render_queue_reset(queue);
 
   int back = renderer->back_buffer_index;

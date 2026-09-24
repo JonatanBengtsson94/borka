@@ -84,3 +84,36 @@ void br_render_queue_sort(BrRenderQueue *queue) {
   qsort(queue->commands, queue->count, sizeof(BrDrawCommand),
         compare_commands);
 }
+
+bool br_render_queue_set_layer_offset(BrRenderQueue *queue, int layer,
+                                      BrVec2 offset) {
+  assert(queue);
+
+  for (int i = 0; i < queue->layer_offset_count; i++) {
+    if (queue->layer_offsets[i].layer == layer) {
+      queue->layer_offsets[i].offset = offset;
+      return true;
+    }
+  }
+
+  if (queue->layer_offset_count >= BR_RENDER_QUEUE_MAX_LAYER_OFFSETS) {
+    BR_LOG_WARN("Cannot offset layer %d: all %d layer offsets are in use",
+                layer, BR_RENDER_QUEUE_MAX_LAYER_OFFSETS);
+    return false;
+  }
+
+  queue->layer_offsets[queue->layer_offset_count++] =
+      (BrLayerOffset){.layer = layer, .offset = offset};
+  BR_LOG_DEBUG("Layer %d given an offset, %d of %d offsets in use", layer,
+               queue->layer_offset_count, BR_RENDER_QUEUE_MAX_LAYER_OFFSETS);
+  return true;
+}
+
+BrVec2 br_render_queue_layer_offset(const BrRenderQueue *queue, int layer) {
+  assert(queue);
+
+  for (int i = 0; i < queue->layer_offset_count; i++)
+    if (queue->layer_offsets[i].layer == layer)
+      return queue->layer_offsets[i].offset;
+  return (BrVec2){0, 0};
+}
