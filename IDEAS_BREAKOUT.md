@@ -12,8 +12,9 @@ Effects and animations that could make breakout feel more polished.
 
 ## Ball
 
-- **Trail** (done): afterimages at the ball's recent positions, each smaller
-  and darker than the last. Uses render layers to stay behind the ball.
+- **Trail** (done): thin afterimages at the ball's recent positions, each
+  smaller and darker than the last. Uses render layers to stay behind the
+  ball.
 - **Squash on bounce**: the ball flattens for a couple of frames on impact,
   sideways on walls and vertically on the paddle and bricks. Needs extra ball
   frames, and the animator must not destroy the ball when the animation ends.

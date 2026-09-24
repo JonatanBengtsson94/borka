@@ -55,13 +55,13 @@ bool game_init(GameState *game) {
   }
 
   game->textures.trail[0] = (BrTextureRegion){
-      .texture = trail_atlas, .position = {0, 0}, .size = {6, 6}};
+      .texture = trail_atlas, .position = {0, 0}, .size = {4, 4}};
 
   game->textures.trail[1] = (BrTextureRegion){
-      .texture = trail_atlas, .position = {8, 0}, .size = {4, 4}};
+      .texture = trail_atlas, .position = {8, 0}, .size = {2, 2}};
 
   game->textures.trail[2] = (BrTextureRegion){
-      .texture = trail_atlas, .position = {16, 0}, .size = {2, 2}};
+      .texture = trail_atlas, .position = {16, 0}, .size = {1, 1}};
 
   BrTexture *brick_atlas = br_texture_create("assets/textures/bricks.png");
   if (!brick_atlas) {
