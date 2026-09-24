@@ -230,6 +230,7 @@ void game_handle_event(GameState *game, BrEvent event) {
 
 void game_update(GameState *game, double delta_time) {
   scene_update(game, delta_time);
+  camera_update(&game->camera, delta_time);
   if (game->is_paused)
     return;
   if (game->game_over && game->scene.id == SCENE_LEVEL_01) {
@@ -242,5 +243,6 @@ void game_update(GameState *game, double delta_time) {
   system_collision_handling(game);
   system_animation(game->app->registry, delta_time);
   system_trail(game->app->registry);
-  system_render(game->app->registry, game->app->renderer, &game->scene);
+  system_render(game->app->registry, game->app->renderer, &game->scene,
+                &game->camera);
 }

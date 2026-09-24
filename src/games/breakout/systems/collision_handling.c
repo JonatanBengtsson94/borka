@@ -102,6 +102,7 @@ static void brick_hit(GameState *game, BrEntity brick) {
   br_component_add(game->app->registry, anim, COMPONENT_RENDERABLE, &anim_ren);
 
   br_entity_destroy(game->app->registry, brick);
+  camera_shake(&game->camera);
   game->score++;
   game->enemies_alive--;
   BR_LOG_TRACE("Enemies alive: %d", game->enemies_alive);

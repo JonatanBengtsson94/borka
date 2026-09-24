@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include "borka.h"
+#include "camera.h"
 #include "constants.h"
 #include "scenes/scene.h"
 #include <stdbool.h>
@@ -50,6 +51,7 @@ typedef struct {
   } music;
 
   Scene scene;
+  Camera camera;
 
   int enemies_alive;
   int score;

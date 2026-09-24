@@ -2,10 +2,16 @@
 #include "systems.h"
 
 void system_render(BrRegistry *registry, BrRenderer *renderer,
-                   const Scene *scene) {
+                   const Scene *scene, const Camera *camera) {
   assert(registry);
   assert(renderer);
   assert(scene);
+  assert(camera);
+
+  // The camera moves the world. The background stays put, since moving it
+  // would show its edges, and so does the UI.
+  br_renderer_set_layer_offset(renderer, RENDER_LAYER_BEHIND, camera->offset);
+  br_renderer_set_layer_offset(renderer, RENDER_LAYER_WORLD, camera->offset);
 
   br_renderer_clear(renderer, 0xFF000000);
   if (scene->background)

@@ -25,5 +25,5 @@ Effects and animations that could make breakout feel more polished.
 
 ## Screen
 
-- **Screen shake**: shift everything by a pixel or two for about 100 ms when
-  a brick breaks. No entities or art needed.
+- **Screen shake** (done): the world shifts by a pixel or two for 0.15 s when
+  a brick breaks. The background and text stay still.

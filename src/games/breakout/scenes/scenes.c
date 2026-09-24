@@ -72,6 +72,7 @@ void scene_load(GameState *game, SceneId id) {
 
   switch_music(game->scene.music, next.music);
   game->scene = next;
+  game->camera = (Camera){0}; // A new scene starts without any shake.
 }
 
 // Menus only show their prompt, and only accept a key press, once
