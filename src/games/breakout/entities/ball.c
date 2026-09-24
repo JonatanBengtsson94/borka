@@ -2,8 +2,12 @@
 #include "constants.h"
 #include "entities.h"
 
-void create_ball(BrRegistry *registry, BrTexture *texture,
-                 const BrTextureRegion trail[TRAIL_LENGTH]) {
+void create_ball(GameState *game) {
+  assert(game);
+  BrRegistry *registry = game->app->registry;
+  BrTexture *texture = game->textures.ball;
+  const BrTextureRegion *trail = game->textures.trail;
+
   BrEntity ball = br_entity_create(registry);
   Velocity ball_vel = {0, BALL_SPEED};
   Position ball_pos = {GAME_WIDTH / 2, GAME_HEIGHT / 2};
@@ -27,11 +31,21 @@ void create_ball(BrRegistry *registry, BrTexture *texture,
     ball_trail.segments[i] = segment;
   }
 
-  Renderable ball_sprite = {.type = RENDERABLE_TEXTURE,
-                            .layer = RENDER_LAYER_WORLD,
-                            .texture = {.texture = texture}};
-  Collider ball_col = {.size = {ball_sprite.texture.texture->size.x,
-                                ball_sprite.texture.texture->size.y},
+  // A region rather than the whole texture, so the squash animation can swap
+  // in frames from another texture.
+  Renderable ball_sprite = {
+      .type = RENDERABLE_TEXTURE_REGION,
+      .layer = RENDER_LAYER_WORLD,
+      .region.region = {.texture = texture, .size = texture->size}};
+  // Idle until a bounce restarts it, resting on the round ball frame.
+  Animator ball_squash = {.frames = game->animations.ball_squash_vertical,
+                          .offsets = game->animations.ball_squash_vertical_offsets,
+                          .number_of_frames = 3,
+                          .current_frame = 2,
+                          .frame_time = BALL_SQUASH_FRAME_TIME,
+                          .on_end = ANIMATION_END_HOLD,
+                          .finished = true};
+  Collider ball_col = {.size = {texture->size.x, texture->size.y},
                        .layer = LAYER_BALL,
                        .mask = LAYER_WALL | LAYER_PADDLE | LAYER_BRICK |
                                LAYER_FLOOR};
@@ -40,4 +54,5 @@ void create_ball(BrRegistry *registry, BrTexture *texture,
   br_component_add(registry, ball, COMPONENT_RENDERABLE, &ball_sprite);
   br_component_add(registry, ball, COMPONENT_COLLIDER, &ball_col);
   br_component_add(registry, ball, COMPONENT_TRAIL, &ball_trail);
+  br_component_add(registry, ball, COMPONENT_ANIMATOR, &ball_squash);
 }

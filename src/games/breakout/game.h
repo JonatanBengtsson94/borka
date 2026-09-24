@@ -18,6 +18,7 @@ typedef struct {
   struct {
     BrTexture *paddle;
     BrTexture *ball;
+    BrTexture *ball_squash;
     BrTexture *background;
     BrTextureRegion brick_blue;
     BrTextureRegion brick_red;
@@ -29,6 +30,12 @@ typedef struct {
     BrTextureRegion brick_blue_break[3];
     BrTextureRegion brick_red_break[3];
     BrTextureRegion brick_green_break[3];
+    // Squash after a bounce, ending on the round ball. The offsets keep each
+    // frame centred on the ball's 8x8 collider.
+    BrTextureRegion ball_squash_vertical[3];
+    BrVec2 ball_squash_vertical_offsets[3];
+    BrTextureRegion ball_squash_horizontal[3];
+    BrVec2 ball_squash_horizontal_offsets[3];
   } animations;
 
   struct {

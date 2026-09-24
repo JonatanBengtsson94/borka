@@ -15,6 +15,10 @@ void system_animation(BrRegistry *registry, double delta_time) {
     assert(a->number_of_frames > 0);
     assert(a->frame_time > 0);
 
+    // A held animation stays on its last frame until restarted.
+    if (a->finished)
+      continue;
+
     a->elapsed_time += (float)delta_time;
 
     while (a->elapsed_time >= a->frame_time) {
@@ -22,7 +26,7 @@ void system_animation(BrRegistry *registry, double delta_time) {
       a->current_frame++;
 
       if (a->current_frame >= a->number_of_frames) {
-        if (a->loop) {
+        if (a->on_end == ANIMATION_END_LOOP) {
           a->current_frame = 0;
         } else {
           a->current_frame = a->number_of_frames - 1;
@@ -32,8 +36,9 @@ void system_animation(BrRegistry *registry, double delta_time) {
       }
     }
     r->region.region = a->frames[a->current_frame];
+    r->offset = a->offsets ? a->offsets[a->current_frame] : (BrVec2){0, 0};
 
-    if (!a->loop && a->finished) {
+    if (a->finished && a->on_end == ANIMATION_END_DESTROY) {
       br_entity_destroy(registry, query->current_entity);
       BR_LOG_TRACE("Destroying animation entity %d", query->current_entity);
     }

@@ -19,6 +19,7 @@ typedef enum {
 typedef struct {
   RenderType type;
   RenderLayer layer;
+  BrVec2 offset; // Drawn this far from the entity's position.
   union {
 
     struct {

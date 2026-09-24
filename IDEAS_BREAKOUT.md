@@ -15,9 +15,9 @@ Effects and animations that could make breakout feel more polished.
 - **Trail** (done): thin afterimages at the ball's recent positions, each
   smaller and darker than the last. Uses render layers to stay behind the
   ball.
-- **Squash on bounce**: the ball flattens for a couple of frames on impact,
-  sideways on walls and vertically on the paddle and bricks. Needs extra ball
-  frames, and the animator must not destroy the ball when the animation ends.
+- **Squash on bounce** (done): the ball flattens for a couple of frames
+  against whatever it bounces off. Animations choose what happens at the end
+  (loop, hold or destroy), and frames can be offset to stay centred.
 - **Hit flash**: the ball turns white for about 50 ms on every hit. Needs a
   white ball sprite.
 - **Sparks**: a few pixels fly out from the hit point and vanish. Uses

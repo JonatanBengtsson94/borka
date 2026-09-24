@@ -5,6 +5,8 @@
 
 #define PADDLE_SPEED 220
 #define BALL_SPEED 60
+// Seconds each ball squash frame shows after a bounce.
+#define BALL_SQUASH_FRAME_TIME 0.04f
 // Ball trail segments. Each shows where the ball was TRAIL_STEP_TIME seconds
 // before the previous one, so the trail stretches as the ball speeds up.
 #define TRAIL_LENGTH 3

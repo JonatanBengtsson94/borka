@@ -20,7 +20,7 @@ void system_render(BrRegistry *registry, BrRenderer *renderer,
 
     assert(r);
     assert(p);
-    BrVec2 int_pos = {p->x, p->y};
+    BrVec2 int_pos = {(int)p->x + r->offset.x, (int)p->y + r->offset.y};
 
     switch (r->type) {
     case RENDERABLE_TEXTURE:

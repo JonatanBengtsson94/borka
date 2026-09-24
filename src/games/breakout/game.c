@@ -28,6 +28,36 @@ bool game_init(GameState *game) {
     goto error;
   }
 
+  game->textures.ball_squash =
+      br_texture_create("assets/textures/ball_squash.png");
+  if (!game->textures.ball_squash) {
+    BR_LOG_ERROR("Failed to load ball squash texture");
+    goto error;
+  }
+
+  BrTextureRegion ball_rest = {
+      .texture = game->textures.ball, .position = {0, 0}, .size = {8, 8}};
+
+  // Flattened, for bounces off something above or below the ball.
+  game->animations.ball_squash_vertical[0] = (BrTextureRegion){
+      .texture = game->textures.ball_squash, .position = {0, 0}, .size = {10, 6}};
+  game->animations.ball_squash_vertical[1] = (BrTextureRegion){
+      .texture = game->textures.ball_squash, .position = {10, 0}, .size = {9, 7}};
+  game->animations.ball_squash_vertical[2] = ball_rest;
+  game->animations.ball_squash_vertical_offsets[0] = (BrVec2){-1, 1};
+  game->animations.ball_squash_vertical_offsets[1] = (BrVec2){-1, 1};
+  game->animations.ball_squash_vertical_offsets[2] = (BrVec2){0, 0};
+
+  // Narrowed, for bounces off something beside the ball.
+  game->animations.ball_squash_horizontal[0] = (BrTextureRegion){
+      .texture = game->textures.ball_squash, .position = {20, 0}, .size = {6, 10}};
+  game->animations.ball_squash_horizontal[1] = (BrTextureRegion){
+      .texture = game->textures.ball_squash, .position = {30, 0}, .size = {7, 9}};
+  game->animations.ball_squash_horizontal[2] = ball_rest;
+  game->animations.ball_squash_horizontal_offsets[0] = (BrVec2){1, -1};
+  game->animations.ball_squash_horizontal_offsets[1] = (BrVec2){1, -1};
+  game->animations.ball_squash_horizontal_offsets[2] = (BrVec2){0, 0};
+
   game->textures.background =
       br_texture_create("assets/textures/background.png");
   if (!game->textures.background) {
@@ -152,6 +182,8 @@ void game_shutdown(GameState *game) {
     br_texture_destroy(game->textures.paddle);
   if (game->textures.ball)
     br_texture_destroy(game->textures.ball);
+  if (game->textures.ball_squash)
+    br_texture_destroy(game->textures.ball_squash);
   if (game->textures.background)
     br_texture_destroy(game->textures.background);
   if (game->font.font_atlas) {

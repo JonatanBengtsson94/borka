@@ -3,6 +3,34 @@
 #include "systems.h"
 #include <math.h>
 
+typedef enum {
+  BOUNCE_NONE,       // Already moving away, so the velocity was left as is.
+  BOUNCE_HORIZONTAL, // Off something beside the ball.
+  BOUNCE_VERTICAL,   // Off something above or below the ball.
+} Bounce;
+
+// Restarts the ball's squash animation, flattened against whatever it hit.
+static void squash_ball(GameState *game, BrEntity ball, Bounce bounce) {
+  if (bounce == BOUNCE_NONE)
+    return;
+
+  Animator *a = br_component_get(game->app->registry, COMPONENT_ANIMATOR, ball);
+  assert(a);
+
+  if (bounce == BOUNCE_VERTICAL) {
+    a->frames = game->animations.ball_squash_vertical;
+    a->offsets = game->animations.ball_squash_vertical_offsets;
+  } else {
+    a->frames = game->animations.ball_squash_horizontal;
+    a->offsets = game->animations.ball_squash_horizontal_offsets;
+  }
+  a->current_frame = 0;
+  a->elapsed_time = 0.0f;
+  a->finished = false;
+  BR_LOG_TRACE("Squashing ball %s",
+               bounce == BOUNCE_VERTICAL ? "vertically" : "horizontally");
+}
+
 static void paddle_hit(BrRegistry *registry, BrEntity ball, BrEntity paddle,
                        Collider *ball_col, Collider *paddle_col) {
   Position *ball_p = br_component_get(registry, COMPONENT_POSITION, ball);
@@ -62,7 +90,7 @@ static void brick_hit(GameState *game, BrEntity brick) {
       .current_frame = 0,
       .frame_time = 0.05f,
       .elapsed_time = 0.0f,
-      .loop = false,
+      .on_end = ANIMATION_END_DESTROY,
       .finished = false,
   };
   Position anim_pos = {.x = pos->x, .y = pos->y};
@@ -90,8 +118,8 @@ static void floor_hit(GameState *game) {
   game->game_over = true;
 }
 
-static void bounce_ball(BrRegistry *registry, BrEntity ball, BrEntity hit,
-                        Collider *ball_col, Collider *hit_col) {
+static Bounce bounce_ball(BrRegistry *registry, BrEntity ball, BrEntity hit,
+                          Collider *ball_col, Collider *hit_col) {
   Velocity *ball_v = br_component_get(registry, COMPONENT_VELOCITY, ball);
   Position *ball_p = br_component_get(registry, COMPONENT_POSITION, ball);
   Position *hit_p = br_component_get(registry, COMPONENT_POSITION, hit);
@@ -117,12 +145,16 @@ static void bounce_ball(BrRegistry *registry, BrEntity ball, BrEntity hit,
   if (overlap_x < overlap_y) {
     if (dx > 0) {
       ball_p->x += overlap_x;
-      if (ball_v->vx < 0)
+      if (ball_v->vx < 0) {
         ball_v->vx *= -1;
+        return BOUNCE_HORIZONTAL;
+      }
     } else {
       ball_p->x -= overlap_x;
-      if (ball_v->vx > 0)
+      if (ball_v->vx > 0) {
         ball_v->vx *= -1;
+        return BOUNCE_HORIZONTAL;
+      }
     }
   } else {
     if (dy > 0) {
@@ -130,15 +162,18 @@ static void bounce_ball(BrRegistry *registry, BrEntity ball, BrEntity hit,
       if (ball_v->vy < 0) {
         ball_v->vy *= -1;
         ball_v->vy += 5;
+        return BOUNCE_VERTICAL;
       }
     } else {
       ball_p->y -= overlap_y;
       if (ball_v->vy > 0) {
         ball_v->vy *= -1;
         ball_v->vy -= 5;
+        return BOUNCE_VERTICAL;
       }
     }
   }
+  return BOUNCE_NONE;
 }
 
 void system_collision_handling(GameState *game) {
@@ -162,18 +197,21 @@ void system_collision_handling(GameState *game) {
       if (col_a->layer == LAYER_PADDLE && col_b->layer == LAYER_BALL) {
         BR_LOG_TRACE("Paddle hit ball");
         paddle_hit(registry, entity_b, entity_a, col_b, col_a);
+        squash_ball(game, entity_b, BOUNCE_VERTICAL);
         br_play_sound_at_volume(game->sfx.paddle_hit, SFX_VOLUME);
       }
 
       if (col_a->layer == LAYER_BALL && col_b->layer == LAYER_WALL) {
         BR_LOG_TRACE("Ball hit wall");
-        bounce_ball(registry, entity_a, entity_b, col_a, col_b);
+        squash_ball(game, entity_a,
+                    bounce_ball(registry, entity_a, entity_b, col_a, col_b));
         br_play_sound_at_volume(game->sfx.wall_hit, SFX_VOLUME);
       }
 
       if (col_a->layer == LAYER_BALL && col_b->layer == LAYER_BRICK) {
         BR_LOG_TRACE("Ball hit brick");
-        bounce_ball(registry, entity_a, entity_b, col_a, col_b);
+        squash_ball(game, entity_a,
+                    bounce_ball(registry, entity_a, entity_b, col_a, col_b));
         brick_hit(game, entity_b);
         br_play_sound_at_volume(game->sfx.brick_hit, SFX_VOLUME);
       }
