@@ -36,8 +36,18 @@ int main() {
 
   BrTextureRegion brick_red = {
       .texture = bricks, .position = {0, 8}, .size = {16, 8}};
-  BrFont font = {
-      .glyph_size = {8, 8}, .font_atlas = font_atlas, .spacing = {2, 2}};
+  BrFont font;
+  if (!br_font_init(&font, font_atlas, (BrVec2){8, 8}, (BrVec2){2, 2},
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ")) {
+    br_texture_destroy(ball);
+    br_texture_destroy(paddle);
+    br_texture_destroy(bricks);
+    br_texture_destroy(font_atlas);
+    br_renderer_destroy(renderer);
+    br_window_destroy(window);
+    br_logger_shutdown();
+    return 1;
+  }
 
   BrVec2 filled_pos = {16, 16};
   BrVec2 filled_size = {48, 48};

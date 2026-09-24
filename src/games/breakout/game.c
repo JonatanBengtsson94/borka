@@ -41,9 +41,12 @@ bool game_init(GameState *game) {
     goto error;
   }
 
-  BrFont font = {
-      .glyph_size = {8, 8}, .font_atlas = font_atlas, .spacing = {2, 2}};
-  game->font = font;
+  // Sets font_atlas even on failure, so game_shutdown still frees it.
+  if (!br_font_init(&game->font, font_atlas, (BrVec2){8, 8}, (BrVec2){2, 2},
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")) {
+    BR_LOG_ERROR("Failed to set up font");
+    goto error;
+  }
 
   BrTexture *brick_atlas = br_texture_create("assets/textures/bricks.png");
   if (!brick_atlas) {
