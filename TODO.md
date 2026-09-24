@@ -24,6 +24,7 @@
 
 ## Rendering
 - [x] PNG decoding
+- [ ] Render queue
 
 ### Software rendering
 - [ ] Render triangle
