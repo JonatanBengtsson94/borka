@@ -1,2 +1,3 @@
 - Always add sufficent debug and trace logs when developing new functionality.
 - Always add doxygen style comments when adding to the public facing api (prefixed borka_)
+- Use asserts, not if-checks, for preconditions in engine functions (e.g. a renderer that must not be NULL). If a doc comment disagrees with an assert, fix the doc.
