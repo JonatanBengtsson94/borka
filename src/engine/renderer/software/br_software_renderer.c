@@ -101,19 +101,25 @@ void software_draw_text(int *pixels, BrVec2 canvas_dimensions, BrVec2 position,
   BrVec2 cursor = position;
 
   for (int i = 0; text[i]; i++) {
+    // The atlas holds A-Z followed by 0-9. Anything else has no glyph and
+    // is left blank rather than indexing outside the atlas.
     char c = text[i];
-    if (c == ' ') {
-      cursor.x += glyph_w;
-      continue;
+    int index = -1;
+    if (c >= 'A' && c <= 'Z')
+      index = c - 'A';
+    else if (c >= '0' && c <= '9')
+      index = 26 + (c - '0');
+
+    if (index >= 0) {
+      BrVec2 src_pos;
+      src_pos.x = (index % cols) * glyph_w;
+      src_pos.y = (index / cols) * glyph_h;
+
+      blit(pixels, canvas_dimensions, cursor, font->font_atlas, src_pos,
+           font->glyph_size);
     }
 
-    int index = (int)c - (int)'A';
-    BrVec2 src_pos;
-    src_pos.x = (index % cols) * glyph_w;
-    src_pos.y = (index / cols) * glyph_h;
-
-    blit(pixels, canvas_dimensions, cursor, font->font_atlas, src_pos,
-         font->glyph_size);
+    // Every character, blank or not, takes the same space (monospace).
     cursor.x += glyph_w;
     cursor.x += font->spacing.x;
   }
