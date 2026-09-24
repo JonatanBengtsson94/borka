@@ -107,10 +107,8 @@ bool game_init(GameState *game) {
 
   game->is_paused = false;
   game->enemies_alive = 0;
-  game->game_over = true;
-  game->level = 99;
 
-  create_start_scene(game);
+  scene_load(game, SCENE_START);
 
   return true;
 
@@ -145,8 +143,8 @@ void game_shutdown(GameState *game) {
 void game_handle_event(GameState *game, BrEvent event) {
   if (event.type == BR_EVENT_KEY_PRESSED ||
       event.type == BR_EVENT_KEY_RELEASED) {
-    if (game->level == 0) {
-      create_level_01_scene(game);
+    if (game->scene.id == SCENE_START) {
+      scene_load(game, SCENE_LEVEL_01);
     }
     system_input(game, event);
   }
@@ -155,8 +153,8 @@ void game_handle_event(GameState *game, BrEvent event) {
 void game_update(GameState *game, double delta_time) {
   if (game->is_paused)
     return;
-  if (game->game_over && game->level != 0) {
-    create_start_scene(game);
+  if (game->game_over && game->scene.id != SCENE_START) {
+    scene_load(game, SCENE_START);
     return;
   }
   system_player_movement(game->app->registry);
@@ -164,6 +162,5 @@ void game_update(GameState *game, double delta_time) {
   system_collision_detection(game->app->registry);
   system_collision_handling(game);
   system_animation(game->app->registry, delta_time);
-  system_render(game->app->registry, game->app->renderer,
-                game->textures.background);
+  system_render(game->app->registry, game->app->renderer, &game->scene);
 }

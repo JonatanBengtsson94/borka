@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include "borka.h"
+#include "scenes/scene.h"
 #include <stdbool.h>
 
 // Both audio assets are normalised to the same peak, so these only set the
@@ -37,8 +38,9 @@ typedef struct {
     BrSound *gameplay;
   } music;
 
+  Scene scene;
+
   int enemies_alive;
-  int level;
   bool is_paused;
   bool game_over;
 } GameState;

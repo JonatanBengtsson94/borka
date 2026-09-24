@@ -9,36 +9,49 @@ static void destroy_scene(BrRegistry *reg) {
   }
 }
 
-// Only one track should be looping at a time. Both are stopped first so
-// that re-entering a scene cannot stack a second copy of its own track on
-// top of the first. Stopping a track that is not playing is a no-op.
-static void play_music(BrSound *track, BrSound *other) {
-  br_stop_sound(other);
-  br_stop_sound(track);
-  br_play_sound_looping(track, MUSIC_VOLUME);
+// Only the outgoing scene's track can be looping, so stopping it is enough to
+// keep tracks from stacking. A track shared by both scenes keeps playing
+// instead of restarting.
+static void switch_music(BrSound *current, BrSound *next) {
+  if (current == next)
+    return;
+  if (current)
+    br_stop_sound(current);
+  if (next)
+    br_play_sound_looping(next, MUSIC_VOLUME);
 }
 
-void create_start_scene(GameState *game) {
+void scene_load(GameState *game, SceneId id) {
   assert(game);
-  destroy_scene(game->app->registry);
-  BR_LOG_DEBUG("Creating start scene");
+  BrRegistry *registry = game->app->registry;
+  destroy_scene(registry);
 
-  create_main_menu(game->app->registry, &game->font);
-  play_music(game->music.menu, game->music.gameplay);
+  Scene next = {.id = id};
 
-  game->level = 0;
-}
+  switch (id) {
+  case SCENE_NONE:
+    break;
 
-void create_level_01_scene(GameState *game) {
-  destroy_scene(game->app->registry);
-  BR_LOG_DEBUG("Creating level 1 scene");
+  case SCENE_START:
+    BR_LOG_DEBUG("Loading start scene");
+    create_main_menu(registry, &game->font);
+    next.background = game->textures.background;
+    next.music = game->music.menu;
+    break;
 
-  create_paddle(game->app->registry, game->textures.paddle);
-  create_ball(game->app->registry, game->textures.ball);
-  create_walls(game->app->registry);
-  create_bricks(game);
-  play_music(game->music.gameplay, game->music.menu);
+  case SCENE_LEVEL_01:
+    BR_LOG_DEBUG("Loading level 1 scene");
+    game->enemies_alive = 0;
+    create_paddle(registry, game->textures.paddle);
+    create_ball(registry, game->textures.ball);
+    create_walls(registry);
+    create_bricks(game);
+    next.background = game->textures.background;
+    next.music = game->music.gameplay;
+    game->game_over = false;
+    break;
+  }
 
-  game->level = 1;
-  game->game_over = false;
+  switch_music(game->scene.music, next.music);
+  game->scene = next;
 }

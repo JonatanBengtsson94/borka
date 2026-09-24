@@ -7,7 +7,7 @@
 void system_input(GameState *game, BrEvent e);
 void system_player_movement(BrRegistry *registry);
 void system_render(BrRegistry *registry, BrRenderer *renderer,
-                   const BrTexture *background);
+                   const Scene *scene);
 void system_movement(BrRegistry *registry, double delta_time);
 void system_collision_detection(BrRegistry *registry);
 void system_collision_handling(GameState *game);

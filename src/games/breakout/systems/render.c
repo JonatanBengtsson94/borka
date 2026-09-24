@@ -2,13 +2,14 @@
 #include "systems.h"
 
 void system_render(BrRegistry *registry, BrRenderer *renderer,
-                   const BrTexture *background) {
+                   const Scene *scene) {
   assert(registry);
   assert(renderer);
+  assert(scene);
 
   br_renderer_clear(renderer, 0xFF000000);
-  if (background)
-    br_renderer_draw_texture(renderer, (BrVec2){0, 0}, background);
+  if (scene->background)
+    br_renderer_draw_texture(renderer, (BrVec2){0, 0}, scene->background);
 
   BrQuery *query = br_query_begin(registry, SYSTEM_RENDER);
   while (br_query_next(query)) {
