@@ -2,6 +2,7 @@
 #define WAYLAND_SOFTWARE_RENDERER_H
 
 #include "borka_math.h"
+#include "renderer/br_render_queue.h"
 #include "window/platform/wayland/wayland_shm.h"
 
 struct BrRenderer {
@@ -14,6 +15,7 @@ struct BrRenderer {
   BrVec2 game_dimensions;
   int front_buffer_index;
   int back_buffer_index;
+  BrRenderQueue *queue;
 };
 
 #endif // WAYLAND_SOFTWARE_RENDERER_H

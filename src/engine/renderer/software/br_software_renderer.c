@@ -88,22 +88,3 @@ void software_draw_texture_region(int *pixels, BrVec2 canvas_dimensions,
   blit(pixels, canvas_dimensions, position, region.texture, region.position,
        region.size);
 }
-
-void software_draw_text(int *pixels, BrVec2 canvas_dimensions, BrVec2 position,
-                        const BrFont *font, const char *text) {
-  assert(pixels && font && text && font->font_atlas);
-
-  BrVec2 cursor = position;
-
-  for (int i = 0; text[i]; i++) {
-    BrVec2 glyph = font->glyph_positions[(unsigned char)text[i]];
-    // Characters the font has no glyph for are left blank.
-    if (glyph.x >= 0)
-      blit(pixels, canvas_dimensions, cursor, font->font_atlas, glyph,
-           font->glyph_size);
-
-    // Every character, blank or not, takes the same space (monospace).
-    cursor.x += font->glyph_size.x;
-    cursor.x += font->spacing.x;
-  }
-}

@@ -78,14 +78,14 @@ int main() {
     }
 
     br_renderer_clear(renderer, 0xFF000000);
-    br_renderer_draw_rectangle_filled(renderer, filled_pos, filled_size,
+    br_renderer_draw_rectangle_filled(renderer, 0, filled_pos, filled_size,
                                       0xFFFFFFFF);
-    br_renderer_draw_rectangle_outlined(renderer, outlined_pos, outlined_size,
-                                        0xFFFF0000);
-    br_renderer_draw_texture(renderer, ball_pos, ball);
-    br_renderer_draw_texture(renderer, paddle_pos, paddle);
-    br_renderer_draw_texture_region(renderer, brick_pos, brick_red);
-    br_renderer_draw_text(renderer, &font, "BORKA SHAPES", text_pos);
+    br_renderer_draw_rectangle_outlined(renderer, 0, outlined_pos,
+                                        outlined_size, 0xFFFF0000);
+    br_renderer_draw_texture(renderer, 0, ball_pos, ball);
+    br_renderer_draw_texture(renderer, 0, paddle_pos, paddle);
+    br_renderer_draw_texture_region(renderer, 0, brick_pos, brick_red);
+    br_renderer_draw_text(renderer, 0, &font, "BORKA SHAPES", text_pos);
     br_renderer_present(renderer);
   }
 

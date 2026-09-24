@@ -83,6 +83,7 @@ void br_renderer_destroy(struct BrRenderer *renderer) {
   if (renderer->game_pixels) {
     free(renderer->game_pixels);
   }
+  free(renderer->queue);
   free(renderer);
 }
 
@@ -123,6 +124,13 @@ struct BrRenderer *br_renderer_create(struct BrWindow *window) {
     goto error;
   }
 
+  renderer->queue = calloc(1, sizeof(BrRenderQueue));
+  if (!renderer->queue) {
+    BR_LOG_ERROR("Failed to allocate render queue");
+    goto error;
+  }
+  BR_LOG_DEBUG("Render queue created: %d commands", BR_RENDER_QUEUE_CAPACITY);
+
   renderer->buffers = wayland_shm_buffer_pair_create(
       renderer->wl_shm, renderer->game_dimensions.x,
       renderer->game_dimensions.y);
@@ -145,72 +153,127 @@ error:
 void br_renderer_clear(struct BrRenderer *renderer, int color) {
   assert(renderer);
 
-  software_clear(renderer->game_pixels, renderer->game_dimensions, color);
+  br_render_queue_reset(renderer->queue);
+  renderer->queue->clear_color = color;
+  renderer->queue->clear_requested = true;
 }
 
-void br_renderer_draw_rectangle_filled(struct BrRenderer *renderer,
+void br_renderer_draw_rectangle_filled(struct BrRenderer *renderer, int layer,
                                        BrVec2 position, BrVec2 size,
                                        int color) {
-  if (on_screen(renderer, position.x + size.x, position.x, position.y + size.y,
-                position.y))
-    software_draw_rectangle_filled(renderer->game_pixels,
-                                   renderer->game_dimensions, position, size,
-                                   color);
+  assert(renderer);
+
+  BrDrawCommand *command = br_render_queue_push(
+      renderer->queue, layer, BR_DRAW_RECTANGLE_FILLED, position);
+  if (command) {
+    command->rectangle.size = size;
+    command->rectangle.color = color;
+  }
 }
 
 void br_renderer_draw_rectangle_outlined(struct BrRenderer *renderer,
-                                         BrVec2 position, BrVec2 size,
-                                         int color) {
-  if (on_screen(renderer, position.x + size.x, position.x, position.y + size.y,
-                position.y))
-    software_draw_rectangle_outlined(renderer->game_pixels,
-                                     renderer->game_dimensions, position, size,
-                                     color);
+                                         int layer, BrVec2 position,
+                                         BrVec2 size, int color) {
+  assert(renderer);
+
+  BrDrawCommand *command = br_render_queue_push(
+      renderer->queue, layer, BR_DRAW_RECTANGLE_OUTLINED, position);
+  if (command) {
+    command->rectangle.size = size;
+    command->rectangle.color = color;
+  }
 }
 
-void br_renderer_draw_texture(struct BrRenderer *renderer, BrVec2 position,
-                              const BrTexture *texture) {
+void br_renderer_draw_texture(struct BrRenderer *renderer, int layer,
+                              BrVec2 position, const BrTexture *texture) {
+  assert(renderer);
   assert(texture);
 
-  if (on_screen(renderer, position.x + texture->size.x, position.x,
-                position.y + texture->size.y, position.y))
-    software_draw_texture(renderer->game_pixels, renderer->game_dimensions,
-                          position, texture);
+  BrDrawCommand *command =
+      br_render_queue_push(renderer->queue, layer, BR_DRAW_TEXTURE, position);
+  if (command)
+    command->texture = texture;
 }
 
-void br_renderer_draw_texture_region(struct BrRenderer *renderer,
+void br_renderer_draw_texture_region(struct BrRenderer *renderer, int layer,
                                      BrVec2 position, BrTextureRegion region) {
+  assert(renderer);
   assert(region.texture);
 
-  if (on_screen(renderer, position.x + region.size.x, position.x,
-                position.y + region.size.y, position.y))
-    software_draw_texture_region(renderer->game_pixels,
-                                 renderer->game_dimensions, position, region);
+  BrDrawCommand *command = br_render_queue_push(
+      renderer->queue, layer, BR_DRAW_TEXTURE_REGION, position);
+  if (command)
+    command->region = region;
 }
 
-void br_renderer_draw_text(struct BrRenderer *renderer, const BrFont *font,
-                           const char *text, BrVec2 position) {
-  if (on_screen(renderer, position.x + font->font_atlas->size.x, position.x,
-                position.y + font->font_atlas->size.y, position.y))
-    software_draw_text(renderer->game_pixels, renderer->game_dimensions,
-                       position, font, text);
+void br_renderer_draw_text(struct BrRenderer *renderer, int layer,
+                           const BrFont *font, const char *text,
+                           BrVec2 position) {
+  assert(renderer);
+  br_render_queue_push_text(renderer->queue, layer, font, text, position);
+}
+
+static void execute(struct BrRenderer *renderer, const BrDrawCommand *c) {
+  int *pixels = renderer->game_pixels;
+  BrVec2 dims = renderer->game_dimensions;
+  BrVec2 pos = c->position;
+
+  switch (c->type) {
+  case BR_DRAW_RECTANGLE_FILLED:
+    if (on_screen(renderer, pos.x + c->rectangle.size.x, pos.x,
+                  pos.y + c->rectangle.size.y, pos.y))
+      software_draw_rectangle_filled(pixels, dims, pos, c->rectangle.size,
+                                     c->rectangle.color);
+    break;
+
+  case BR_DRAW_RECTANGLE_OUTLINED:
+    if (on_screen(renderer, pos.x + c->rectangle.size.x, pos.x,
+                  pos.y + c->rectangle.size.y, pos.y))
+      software_draw_rectangle_outlined(pixels, dims, pos, c->rectangle.size,
+                                       c->rectangle.color);
+    break;
+
+  case BR_DRAW_TEXTURE:
+    if (on_screen(renderer, pos.x + c->texture->size.x, pos.x,
+                  pos.y + c->texture->size.y, pos.y))
+      software_draw_texture(pixels, dims, pos, c->texture);
+    break;
+
+  case BR_DRAW_TEXTURE_REGION:
+    if (on_screen(renderer, pos.x + c->region.size.x, pos.x,
+                  pos.y + c->region.size.y, pos.y))
+      software_draw_texture_region(pixels, dims, pos, c->region);
+    break;
+  }
 }
 
 void br_renderer_present(struct BrRenderer *renderer) {
   assert(renderer);
 
+  BrRenderQueue *queue = renderer->queue;
+  br_render_queue_sort(queue);
+  BR_LOG_TRACE("Presenting %d draw commands", queue->count);
+
+  if (queue->clear_requested)
+    software_clear(renderer->game_pixels, renderer->game_dimensions,
+                   queue->clear_color);
+  for (int i = 0; i < queue->count; i++)
+    execute(renderer, &queue->commands[i]);
+  br_render_queue_reset(queue);
+
   int back = renderer->back_buffer_index;
 
   if (renderer->buffers->buffer_busy[back]) {
-    BR_LOG_DEBUG("Back buffer is busy, dropping frame");
+    BR_LOG_TRACE("Back buffer is busy, dropping frame");
     return;
   }
 
   if (!scale_render_target(renderer->game_pixels,
                            renderer->buffers->buffer_data[back],
                            renderer->game_dimensions, renderer->dimensions))
+    return;
 
-    renderer->buffers->buffer_busy[back] = true;
+  renderer->buffers->buffer_busy[back] = true;
   wl_surface_attach(renderer->wl_surface, renderer->buffers->wl_buffers[back],
                     0, 0);
   wl_surface_damage_buffer(renderer->wl_surface, 0, 0, renderer->dimensions.x,

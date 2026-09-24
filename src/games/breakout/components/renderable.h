@@ -8,10 +8,10 @@ typedef enum {
   RENDERABLE_TEXT,
 } RenderType;
 
-// Draw order, back to front. Renderables in the same layer are drawn in
-// entity order.
+// Draw order, back to front, passed to the renderer as the draw layer.
 typedef enum {
-  RENDER_LAYER_BEHIND, // Effects behind the world, such as the ball trail.
+  RENDER_LAYER_BACKGROUND, // The scene's background.
+  RENDER_LAYER_BEHIND,     // Effects behind the world, such as the ball trail.
   RENDER_LAYER_WORLD,  // Paddle, ball and bricks.
   RENDER_LAYER_UI,     // Text.
 } RenderLayer;
