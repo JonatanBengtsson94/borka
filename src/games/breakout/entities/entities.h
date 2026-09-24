@@ -1,7 +1,7 @@
 #include "borka.h"
 #include "game.h"
 
-void create_paddle(BrRegistry *registry, BrTexture *texture);
+void create_paddle(GameState *game);
 void create_ball(GameState *game);
 void create_walls(BrRegistry *registry);
 void create_bricks(GameState *game);

@@ -37,6 +37,10 @@ typedef struct {
     BrVec2 ball_squash_vertical_offsets[3];
     BrTextureRegion ball_squash_horizontal[3];
     BrVec2 ball_squash_horizontal_offsets[3];
+    // The paddle dipping down when hit and springing back. Every frame is the
+    // paddle sprite; only the offsets change.
+    BrTextureRegion paddle_recoil[3];
+    BrVec2 paddle_recoil_offsets[3];
   } animations;
 
   struct {

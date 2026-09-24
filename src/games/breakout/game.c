@@ -58,6 +58,14 @@ bool game_init(GameState *game) {
   game->animations.ball_squash_horizontal_offsets[1] = (BrVec2){1, -1};
   game->animations.ball_squash_horizontal_offsets[2] = (BrVec2){0, 0};
 
+  BrTextureRegion paddle_region = {.texture = game->textures.paddle,
+                                   .position = {0, 0},
+                                   .size = game->textures.paddle->size};
+  for (int i = 0; i < 3; i++) {
+    game->animations.paddle_recoil[i] = paddle_region;
+    game->animations.paddle_recoil_offsets[i] = (BrVec2){0, 2 - i};
+  }
+
   game->textures.background =
       br_texture_create("assets/textures/background.png");
   if (!game->textures.background) {

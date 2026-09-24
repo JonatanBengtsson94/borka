@@ -23,6 +23,11 @@ Effects and animations that could make breakout feel more polished.
 - **Sparks**: a few pixels fly out from the hit point and vanish. Uses
   entities quickly, so only 3 or 4 per hit fit the budget.
 
+## Paddle
+
+- **Recoil** (done): the paddle dips 2 px when the ball hits it and springs
+  back over 80 ms. Only the sprite moves; the collider stays put.
+
 ## Screen
 
 - **Screen shake** (done): the world shifts by a pixel or two for 0.15 s when

@@ -31,6 +31,16 @@ static void squash_ball(GameState *game, BrEntity ball, Bounce bounce) {
                bounce == BOUNCE_VERTICAL ? "vertically" : "horizontally");
 }
 
+// Restarts the paddle's dip, so it gives under the ball.
+static void recoil_paddle(BrRegistry *registry, BrEntity paddle) {
+  Animator *a = br_component_get(registry, COMPONENT_ANIMATOR, paddle);
+  assert(a);
+  a->current_frame = 0;
+  a->elapsed_time = 0.0f;
+  a->finished = false;
+  BR_LOG_TRACE("Paddle recoiling");
+}
+
 static void paddle_hit(BrRegistry *registry, BrEntity ball, BrEntity paddle,
                        Collider *ball_col, Collider *paddle_col) {
   Position *ball_p = br_component_get(registry, COMPONENT_POSITION, ball);
@@ -199,6 +209,7 @@ void system_collision_handling(GameState *game) {
         BR_LOG_TRACE("Paddle hit ball");
         paddle_hit(registry, entity_b, entity_a, col_b, col_a);
         squash_ball(game, entity_b, BOUNCE_VERTICAL);
+        recoil_paddle(registry, entity_a);
         br_play_sound_at_volume(game->sfx.paddle_hit, SFX_VOLUME);
       }
 
