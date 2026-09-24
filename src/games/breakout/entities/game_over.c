@@ -17,5 +17,8 @@ void create_game_over(BrRegistry *registry, BrFont *font, char *title,
   create_centered_text(registry, font, title, 60);
   create_centered_text(registry, font, score_text, 80);
   create_centered_text(registry, font, highscore_text, 92);
+}
+
+void create_game_over_prompt(BrRegistry *registry, BrFont *font) {
   create_centered_text(registry, font, "PRESS ANY KEY TO PLAY AGAIN", 110);
 }

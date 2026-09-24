@@ -1,4 +1,5 @@
 #include "scenes.h"
+#include "constants.h"
 #include "entities/entities.h"
 #include <stdio.h>
 
@@ -35,7 +36,6 @@ void scene_load(GameState *game, SceneId id) {
 
   case SCENE_START:
     BR_LOG_DEBUG("Loading start scene");
-    create_main_menu(registry, &game->font);
     next.background = game->textures.background;
     next.music = game->music.menu;
     break;
@@ -72,4 +72,32 @@ void scene_load(GameState *game, SceneId id) {
 
   switch_music(game->scene.music, next.music);
   game->scene = next;
+}
+
+// Menus only show their prompt, and only accept a key press, once
+// MENU_INPUT_DELAY has passed. Both happen together so the prompt is never
+// on screen while presses are still being ignored.
+void scene_update(GameState *game, double delta_time) {
+  assert(game);
+  Scene *scene = &game->scene;
+  scene->elapsed += delta_time;
+
+  if (scene->input_ready || scene->elapsed < MENU_INPUT_DELAY)
+    return;
+
+  switch (scene->id) {
+  case SCENE_NONE:
+  case SCENE_LEVEL_01:
+    break;
+
+  case SCENE_START:
+    create_main_menu(game->app->registry, &game->font);
+    scene->input_ready = true;
+    break;
+
+  case SCENE_GAME_OVER:
+    create_game_over_prompt(game->app->registry, &game->font);
+    scene->input_ready = true;
+    break;
+  }
 }

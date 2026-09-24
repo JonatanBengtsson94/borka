@@ -16,6 +16,8 @@ typedef struct {
   SceneId id;
   const BrTexture *background; // NULL leaves just the clear color.
   BrSound *music;              // Looped while the scene is active, or NULL.
+  double elapsed;              // Seconds since the scene was loaded.
+  bool input_ready; // Menu prompt is shown and a key press starts a run.
 } Scene;
 
 #endif // SCENE_H

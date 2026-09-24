@@ -150,11 +150,12 @@ void game_handle_event(GameState *game, BrEvent event) {
 
   // Only a press starts a run, so releasing a key still held when the last
   // run ended does not skip the game over screen. The key is not forwarded
-  // either, or starting with space would pause the new level.
+  // either, or starting with space would pause the new level. Presses are
+  // ignored until the menu shows its prompt, see scene_update().
   bool in_menu = game->scene.id == SCENE_START ||
                  game->scene.id == SCENE_GAME_OVER;
   if (in_menu) {
-    if (event.type == BR_EVENT_KEY_PRESSED)
+    if (event.type == BR_EVENT_KEY_PRESSED && game->scene.input_ready)
       scene_load(game, SCENE_LEVEL_01);
     return;
   }
@@ -163,6 +164,7 @@ void game_handle_event(GameState *game, BrEvent event) {
 }
 
 void game_update(GameState *game, double delta_time) {
+  scene_update(game, delta_time);
   if (game->is_paused)
     return;
   if (game->game_over && game->scene.id == SCENE_LEVEL_01) {

@@ -8,3 +8,4 @@ void create_bricks(GameState *game);
 void create_main_menu(BrRegistry *registry, BrFont *font);
 void create_game_over(BrRegistry *registry, BrFont *font, char *title,
                       char *score_text, char *highscore_text);
+void create_game_over_prompt(BrRegistry *registry, BrFont *font);
