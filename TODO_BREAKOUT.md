@@ -12,7 +12,7 @@
 - [x] Start screen
 - [x] Animations
 - [ ] VFX
-- [ ] Background
+- [x] Background
 
 ## Sound
 - [x] Sound effects

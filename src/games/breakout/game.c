@@ -28,6 +28,13 @@ bool game_init(GameState *game) {
     goto error;
   }
 
+  game->textures.background =
+      br_texture_create("assets/textures/background.png");
+  if (!game->textures.background) {
+    BR_LOG_ERROR("Failed to load background texture");
+    goto error;
+  }
+
   BrTexture *font_atlas = br_texture_create("assets/fonts/font_atlas.png");
   if (!font_atlas) {
     BR_LOG_ERROR("Failed to load font atlas");
@@ -105,6 +112,8 @@ void game_shutdown(GameState *game) {
     br_texture_destroy(game->textures.paddle);
   if (game->textures.ball)
     br_texture_destroy(game->textures.ball);
+  if (game->textures.background)
+    br_texture_destroy(game->textures.background);
   if (game->font.font_atlas) {
     br_texture_destroy(game->font.font_atlas);
   }
@@ -139,5 +148,6 @@ void game_update(GameState *game, double delta_time) {
   system_collision_detection(game->app->registry);
   system_collision_handling(game);
   system_animation(game->app->registry, delta_time);
-  system_render(game->app->registry, game->app->renderer);
+  system_render(game->app->registry, game->app->renderer,
+                game->textures.background);
 }

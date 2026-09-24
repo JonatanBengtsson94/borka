@@ -11,6 +11,7 @@ typedef struct {
   struct {
     BrTexture *paddle;
     BrTexture *ball;
+    BrTexture *background;
     BrTextureRegion brick_blue;
     BrTextureRegion brick_red;
     BrTextureRegion brick_green;
