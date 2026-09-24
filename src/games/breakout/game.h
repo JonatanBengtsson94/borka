@@ -6,9 +6,9 @@
 #include <stdbool.h>
 
 // Both audio assets are normalised to the same peak, so these only set the
-// balance: the music sits well back, leaving room for bounces on top of it.
+// balance: the music sits well back, leaving room for hits on top of it.
 #define MUSIC_VOLUME 0.3f
-#define BOUNCE_VOLUME 0.7f
+#define SFX_VOLUME 0.7f
 
 typedef struct {
   BrApp *app;
@@ -30,7 +30,9 @@ typedef struct {
   } animations;
 
   struct {
-    BrSound *bounce_sound;
+    BrSound *paddle_hit;
+    BrSound *wall_hit;
+    BrSound *brick_hit;
   } sfx;
 
   struct {

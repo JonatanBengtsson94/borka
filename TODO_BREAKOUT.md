@@ -16,5 +16,5 @@
 
 ## Sound
 - [x] Sound effects
-- [ ] Material based sound effects
+- [x] Material based sound effects
 - [x] Music

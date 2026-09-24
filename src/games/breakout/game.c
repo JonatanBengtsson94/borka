@@ -90,9 +90,21 @@ bool game_init(GameState *game) {
   game->animations.brick_blue_break[2] = (BrTextureRegion){
       .texture = brick_atlas, .position = {32, 16}, .size = {16, 8}};
 
-  game->sfx.bounce_sound = br_sound_create("assets/sfx/bounce.flac");
-  if (!game->sfx.bounce_sound) {
-    BR_LOG_ERROR("Failed to load bounce sfx");
+  game->sfx.paddle_hit = br_sound_create("assets/sfx/paddle.flac");
+  if (!game->sfx.paddle_hit) {
+    BR_LOG_ERROR("Failed to load paddle sfx");
+    goto error;
+  }
+
+  game->sfx.wall_hit = br_sound_create("assets/sfx/wall.flac");
+  if (!game->sfx.wall_hit) {
+    BR_LOG_ERROR("Failed to load wall sfx");
+    goto error;
+  }
+
+  game->sfx.brick_hit = br_sound_create("assets/sfx/brick.flac");
+  if (!game->sfx.brick_hit) {
+    BR_LOG_ERROR("Failed to load brick sfx");
     goto error;
   }
 
@@ -133,8 +145,12 @@ void game_shutdown(GameState *game) {
   if (game->textures.brick_green.texture) {
     br_texture_destroy(game->textures.brick_green.texture);
   }
-  if (game->sfx.bounce_sound)
-    br_sound_destroy(game->sfx.bounce_sound);
+  if (game->sfx.paddle_hit)
+    br_sound_destroy(game->sfx.paddle_hit);
+  if (game->sfx.wall_hit)
+    br_sound_destroy(game->sfx.wall_hit);
+  if (game->sfx.brick_hit)
+    br_sound_destroy(game->sfx.brick_hit);
   if (game->music.menu)
     br_sound_destroy(game->music.menu);
   if (game->music.gameplay)
