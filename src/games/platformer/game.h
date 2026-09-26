@@ -9,7 +9,8 @@ typedef struct {
   Assets assets;
 } Game;
 
-void game_update(Game *game);
+void game_update(Game *game, double delta_time);
+void game_handle_event(Game *game, BrEvent event);
 // Expects a zeroed Game with app set.
 bool game_init(Game *game);
 void game_shutdown(Game *game);

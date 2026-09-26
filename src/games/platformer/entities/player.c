@@ -1,6 +1,7 @@
+#include "assets/assets.h"
+#include "borka_ecs.h"
 #include "components/components.h"
 #include "constants.h"
-#include "entities.h"
 
 BrEntity create_player(BrRegistry *registry, const Assets *assets) {
   assert(registry);
@@ -17,6 +18,8 @@ BrEntity create_player(BrRegistry *registry, const Assets *assets) {
       .layer = RENDER_LAYER_WORLD,
       .texture.texture = texture,
   };
+  Velocity player_vel = {0, 0};
+  InputControlled player_control = {};
 
   if (!br_component_add(registry, player, COMPONENT_POSITION, &player_pos)) {
     BR_LOG_ERROR("Failed to add position component");
@@ -24,6 +27,15 @@ BrEntity create_player(BrRegistry *registry, const Assets *assets) {
   }
   if (!br_component_add(registry, player, COMPONENT_RENDERABLE, &player_ren)) {
     BR_LOG_ERROR("Failed to add renderable component");
+    return BR_INVALID_ENTITY;
+  }
+  if (!br_component_add(registry, player, COMPONENT_VELOCITY, &player_vel)) {
+    BR_LOG_ERROR("Failed to add velocity component");
+    return BR_INVALID_ENTITY;
+  }
+  if (!br_component_add(registry, player, COMPONENT_INPUT_CONTROLLED,
+                        &player_control)) {
+    BR_LOG_ERROR("Failed to add input controlled component");
     return BR_INVALID_ENTITY;
   }
 

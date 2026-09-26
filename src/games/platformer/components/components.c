@@ -2,12 +2,18 @@
 
 BrComponentTypeId COMPONENT_POSITION = BR_INVALID_COMPONENT_TYPE;
 BrComponentTypeId COMPONENT_RENDERABLE = BR_INVALID_COMPONENT_TYPE;
+BrComponentTypeId COMPONENT_VELOCITY = BR_INVALID_COMPONENT_TYPE;
+BrComponentTypeId COMPONENT_INPUT_CONTROLLED = BR_INVALID_COMPONENT_TYPE;
 
 bool components_register(BrRegistry *registry) {
   COMPONENT_POSITION = br_register_component(registry, sizeof(Position));
   COMPONENT_RENDERABLE = br_register_component(registry, sizeof(Renderable));
+  COMPONENT_VELOCITY = br_register_component(registry, sizeof(Velocity));
+  COMPONENT_INPUT_CONTROLLED =
+      br_register_component(registry, sizeof(InputControlled));
 
-  BrComponentTypeId ids[] = {COMPONENT_POSITION, COMPONENT_RENDERABLE};
+  BrComponentTypeId ids[] = {COMPONENT_POSITION, COMPONENT_RENDERABLE,
+                             COMPONENT_VELOCITY, COMPONENT_INPUT_CONTROLLED};
 
   size_t length = sizeof(ids) / sizeof(BrComponentTypeId);
   for (size_t i = 0; i < length; i++) {

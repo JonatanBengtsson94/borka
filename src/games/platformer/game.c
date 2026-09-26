@@ -1,4 +1,5 @@
 #include "game.h"
+#include "borka_events.h"
 #include "components/components.h"
 #include "entities/entities.h"
 #include "systems/systems.h"
@@ -42,6 +43,21 @@ error:
   return false;
 }
 
-void game_update(Game *game) {
+void game_handle_event(Game *game, BrEvent event) {
+  assert(game);
+  assert(game->app);
+
+  if (event.type != BR_EVENT_KEY_PRESSED &&
+      event.type != BR_EVENT_KEY_RELEASED) {
+    BR_LOG_TRACE("Ignoring non-key event of type %d", event.type);
+    return;
+  }
+
+  system_input(game->app->registry, event);
+}
+
+void game_update(Game *game, double delta_time) {
+  system_player_actions(game->app->registry);
+  system_movement(game->app->registry, delta_time);
   system_render(game->app->registry, game->app->renderer);
 }
