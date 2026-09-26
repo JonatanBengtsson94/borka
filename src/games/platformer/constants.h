@@ -1,0 +1,8 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
+// GAME SIZE
+#define GAME_WIDTH 256
+#define GAME_HEIGHT 240
+
+#endif // CONSTANTS_H
