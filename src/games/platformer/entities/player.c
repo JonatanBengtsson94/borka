@@ -1,5 +1,4 @@
 #include "assets/assets.h"
-#include "borka_ecs.h"
 #include "components/components.h"
 #include "constants.h"
 
