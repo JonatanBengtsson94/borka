@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "br_event.h"
 #include "borka_log.h"
 
@@ -13,6 +15,8 @@ typedef struct {
 static EventQueue event_queue;
 
 bool br_event_push(const BrEvent *event) {
+  assert(event);
+
   if (event_queue.count >= EVENT_QUEUE_SIZE) {
     BR_LOG_ERROR("Window event queue is full, dropped event");
     return false;
@@ -25,6 +29,8 @@ bool br_event_push(const BrEvent *event) {
 }
 
 bool br_event_poll(BrEvent *out_event) {
+  assert(out_event);
+
   if (event_queue.count == 0) {
     return false;
   }

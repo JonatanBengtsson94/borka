@@ -22,8 +22,9 @@ typedef struct {
 /**
  * @brief Creates a BrSound instance from an audio file.
  *
- * @param filepath Path to the audio file.
- * @return The newly created BrSound instance, or NULL on failure.
+ * @param filepath Path to the audio file. Must not be NULL.
+ * @return The newly created BrSound instance, or NULL if the file can't be
+ * read or decoded.
  *
  * @note Which file formats are recognised depends on the AUDIO_FORMATS
  *       build option (wav, flac).
@@ -36,7 +37,8 @@ BrSound *br_sound_create(const char *filepath);
 /**
  * @brief Destroys the sound instance and frees its memory.
  *
- * @param sound Sound instance to destroy.
+ * @param sound Sound instance to destroy. Passing NULL is safe and does
+ * nothing.
  */
 void br_sound_destroy(BrSound *sound);
 

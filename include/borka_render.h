@@ -148,10 +148,9 @@ void br_renderer_present(BrRenderer *renderer);
 /**
  * @brief Resizes the renderer and recreates its buffers.
  *
- * @param renderer BrRenderer instance to resize. Passing NULL is safe and
- * does nothing.
- * @param width New width in pixels.
- * @param height New height in pixels.
+ * @param renderer BrRenderer instance to resize. Must not be NULL.
+ * @param width New width in pixels. Must be positive.
+ * @param height New height in pixels. Must be positive.
  */
 void br_renderer_resize(BrRenderer *renderer, int width, int height);
 

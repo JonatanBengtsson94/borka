@@ -21,11 +21,11 @@ typedef struct {
 /**
  * @brief Initializes a dynamic array. Allocating memory for its data.
  *
- * @param array The array that should be initialized.
- * @param element_size Size of each element in bytes.
+ * @param array The array that should be initialized. Must not be NULL.
+ * @param element_size Size of each element in bytes. Must be greater than 0.
  * @param initial_length The initial number of elements the array can store
- * before reallocation.
- * @return True on success, false on failure.
+ * before reallocation. Must be greater than 0.
+ * @return True on success, false if memory allocation fails.
  *
  * @note Should call br_dynamic_array_free() when array no longer needed.
  */
@@ -35,24 +35,30 @@ bool br_dynamic_array_init(BrDynamicArray *array, size_t element_size,
 /**
  * @brief Cleans up the arrays allocated data.
  *
- * @param array The array that should have its data freed.
+ * @param array The array that should have its data freed. Passing NULL is
+ * safe and does nothing.
  */
 void br_dynamic_array_free(BrDynamicArray *array);
 
 /**
  * @brief Adds an element to the dynamic array.
  *
- * @param array The array to add an element to.
- * @param element The element that should be added.
- * @return True on success. False on failure.
+ * @param array The array to add an element to. Must not be NULL.
+ * @param element The element that should be added. Must not be NULL.
+ * @return True on success, false if growing the array fails.
  */
 bool br_dynamic_array_add(BrDynamicArray *array, const void *element);
 
 /**
  * @brief Removes an element from the dynamic array.
  *
- * @param array The array to remove an element from.
- * @param index Index of the element that should be removed.
+ * Swaps the last element into the removed slot, so element order is not
+ * kept.
+ *
+ * @param array The array to remove an element from. Must not be NULL.
+ * @param index Index of the element that should be removed. Must be less
+ * than the array's length.
+ * @return Always true.
  */
 bool br_dynamic_array_remove(BrDynamicArray *array, size_t index);
 

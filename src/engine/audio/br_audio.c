@@ -23,6 +23,8 @@ void br_sound_destroy(BrSound *sound) {
 }
 
 BrSound *br_sound_create(const char *filepath) {
+  assert(filepath);
+
   uint8_t *file_data = NULL;
   size_t file_size;
   file_data = read_entire_file(filepath, &file_size);

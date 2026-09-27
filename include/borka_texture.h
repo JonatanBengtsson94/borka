@@ -24,8 +24,9 @@ typedef struct {
 /**
  * @brief Creates a BrTexture instances from an image file.
  *
- * @param filepath Path to the image file.
- * @return The newly created BrTexture instance, or NULL on failure.
+ * @param filepath Path to the image file. Must not be NULL.
+ * @return The newly created BrTexture instance, or NULL if the file can't be
+ * read or decoded.
  *
  * @note Only supports the png image format.
  * @note Only supports pngs with 8-bit depth and rbga color type.

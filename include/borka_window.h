@@ -16,8 +16,9 @@ typedef struct BrWindow BrWindow;
  * releases, input events, etc.) and returns the next queued window event if
  * available. It should be called once per frame in the main loop.
  *
- * @param window The window to poll events from.
- * @param out_event The BrWindowEvent structure to fill with event data.
+ * @param window The window to poll events from. Must not be NULL.
+ * @param out_event The BrEvent structure to fill with event data. Must not be
+ * NULL.
  * @return true if an event was retrieved, false if the queue was empty.
  */
 bool br_window_poll_events(BrWindow *window, BrEvent *out_event);

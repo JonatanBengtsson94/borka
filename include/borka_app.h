@@ -29,10 +29,13 @@ typedef struct BrApp {
  * ECS.
  *
  * @param title The title used for the application window and the logfile dir
- * name. Passing NULL is safe but no instance will be created.
- * @param width The width of the application window in pixels.
- * @param height The height of the application window in pixels.
- * @return The newly created BrApp instance.
+ * name. Must not be NULL.
+ * @param width The width of the application window in pixels. Must be
+ * positive.
+ * @param height The height of the application window in pixels. Must be
+ * positive.
+ * @return The newly created BrApp instance, or NULL if a subsystem fails to
+ * start.
  *
  * @note Should be destroyed with br_app_destroy() when no longer needed.
  */

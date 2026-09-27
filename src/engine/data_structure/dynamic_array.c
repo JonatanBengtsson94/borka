@@ -19,10 +19,9 @@ static bool br_dynamic_array_grow(BrDynamicArray *array) {
 
 bool br_dynamic_array_init(BrDynamicArray *array, size_t element_size,
                            size_t initial_length) {
-  if (element_size == 0 || initial_length == 0) {
-    BR_LOG_ERROR("Failed to init dynamic array, invalid arguments");
-    return false;
-  }
+  assert(array);
+  assert(element_size > 0);
+  assert(initial_length > 0);
 
   array->length = 0;
   array->capacity = initial_length;
@@ -45,6 +44,7 @@ void br_dynamic_array_free(BrDynamicArray *array) {
 
 bool br_dynamic_array_add(BrDynamicArray *array, const void *element) {
   assert(array);
+  assert(element);
   assert(array->data);
   assert(array->capacity > 0);
 
@@ -68,7 +68,7 @@ bool br_dynamic_array_remove(BrDynamicArray *array, size_t index) {
   assert(array);
   assert(array->data);
   assert(array->capacity > 0);
-  assert(index <= array->length);
+  assert(index < array->length);
 
   size_t last_index = array->length - 1;
 

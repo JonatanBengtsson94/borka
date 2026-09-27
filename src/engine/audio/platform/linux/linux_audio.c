@@ -244,11 +244,9 @@ void br_audio_shutdown() {
 
 static void start_voice(BrSound *sound, float volume, bool looping) {
   assert(sound && sound->data);
-
-  if (!audio_thread.initialized) {
-    BR_LOG_ERROR("Cannot play a sound before the audio system is initialized");
-    return;
-  }
+  // br_app_create() fails if audio can't start, so this is a call made
+  // before br_audio_init() or after br_audio_shutdown().
+  assert(audio_thread.initialized);
 
   // A looping voice would never advance through an empty sound.
   if (sound->size == 0) {

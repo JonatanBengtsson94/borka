@@ -93,7 +93,8 @@ struct BrRegistry {
                                                   system ID. */
   int free_entities[MAX_ENTITIES]; /**< Array holding entites that are not in
                                       use. */
-  int free_top; /**< Index of the next free slot in the free_entites. */
+  int free_top; /**< Number of free entities; the top of the free_entities
+                   stack is free_entities[free_top - 1]. */
   bool alive[MAX_ENTITIES]; /**< Whether each entity id is currently in use. */
   BrComponentTypeId next_component_id; /**< Next available component id. */
   BrSystemId next_system_id;           /**< Next available system id. */
@@ -102,9 +103,9 @@ struct BrRegistry {
 /**
  * @brief Creates a new Entity in the registry.
  *
- * @param registry Central ECS data store.
+ * @param registry Central ECS data store. Must not be NULL.
  * @return BrEntity Unique ID (index) assigned to the newly created entity,
- * or BR_INVALID_ENTITY if creation fails.
+ * or BR_INVALID_ENTITY if all MAX_ENTITIES entities are in use.
  *
  * @note Should be destroyed with destroy_entity() when no longer in use.
  */
@@ -113,16 +114,17 @@ BrEntity br_entity_create(BrRegistry *registry);
 /**
  * @brief Removes an entity from the registry.
  *
- * @param registry Central ECS data store.
- * @param entity Entity that should be destroyed.
+ * @param registry Central ECS data store. Must not be NULL.
+ * @param entity Entity that should be destroyed. Must be alive.
  */
 void br_entity_destroy(BrRegistry *registry, BrEntity entity);
 
 /**
  * @brief Checks whether an entity id is currently in use.
  *
- * @param registry Central ECS data store.
- * @param entity Entity to check.
+ * @param registry Central ECS data store. Must not be NULL.
+ * @param entity Entity to check. BR_INVALID_ENTITY is allowed and reports
+ * false.
  * @return True if the entity is alive, false otherwise.
  */
 bool br_entity_is_alive(const BrRegistry *registry, BrEntity entity);
@@ -130,10 +132,12 @@ bool br_entity_is_alive(const BrRegistry *registry, BrEntity entity);
 /**
  * @brief Registers a new component type with the registry.
  *
- * @param registry Central ECS data store.
- * @param component_size Size of a single component instance in bytes.
+ * @param registry Central ECS data store. Must not be NULL.
+ * @param component_size Size of a single component instance in bytes. Must
+ * be greater than 0.
  * @return The ID in the registry for the component type, or
- * BR_INVALID_COMPONENT_TYPE on failure.
+ * BR_INVALID_COMPONENT_TYPE if MAX_COMPONENT_TYPES are already registered or
+ * memory allocation fails.
  *
  * @note Component types should typically be registered once at startup.
  */
@@ -143,12 +147,13 @@ BrComponentTypeId br_register_component(BrRegistry *registry,
 /**
  * @brief Attaches a component instanced to a specific entity.
  *
- * @param registry Central ECS data store.
- * @param entity Entity that the component belongs to.
- * @param component_type Unique ID of the component type being added.
+ * @param registry Central ECS data store. Must not be NULL.
+ * @param entity Entity that the component belongs to. Must be a valid entity.
+ * @param component_type Unique ID of a registered component type.
  * @param component A constant pointer to the data of the component to be
- * copied.
- * @return True on success, false if fails.
+ * copied. Must not be NULL.
+ * @return True on success, false if the entity already has the component or
+ * memory allocation fails.
  */
 bool br_component_add(BrRegistry *registry, BrEntity entity,
                       BrComponentTypeId component_type, const void *component);
@@ -156,9 +161,12 @@ bool br_component_add(BrRegistry *registry, BrEntity entity,
 /**
  * @brief Get a pointer to the entities component data.
  *
- * @param registry Central ECS data store.
- * @param component_type The type of component to fetch.
- * @param entity The entity whose component data are requested.
+ * @param registry Central ECS data store. Must not be NULL.
+ * @param component_type Unique ID of a registered component type.
+ * @param entity The entity whose component data are requested. Must have a
+ * component of component_type; check with br_component_exists() first if
+ * unsure.
+ * @return Pointer to the component data. Never NULL.
  */
 void *br_component_get(const BrRegistry *registry,
                        BrComponentTypeId component_type, BrEntity entity);
@@ -166,21 +174,23 @@ void *br_component_get(const BrRegistry *registry,
 /**
  * @brief Removes a component from an entity.
  *
- * @param registry Central ECS data store.
- * @param entity Entity that should have its component removed.
- * @param component_type Component type ID of the component that should be
- * removed.
+ * @param registry Central ECS data store. Must not be NULL.
+ * @param entity Entity that should have its component removed. Must have a
+ * component of component_type; check with br_component_exists() first if
+ * unsure.
+ * @param component_type Unique ID of a registered component type.
  */
 void br_component_remove(BrRegistry *registry, BrEntity entity,
                          BrComponentTypeId component_type);
 /**
  * @brief Check if a component type exists on the entity.
  *
- * @param registry Central ECS data store.
- * @param entity Entity that should have its component checked.
+ * @param registry Central ECS data store. Must not be NULL.
+ * @param entity Entity that should have its component checked. Must be a
+ * valid entity.
  * @param component_type Component type ID of the component that should be
- * checked.
- * @return True if the component exists, false otherwise
+ * checked. Must be less than MAX_COMPONENT_TYPES.
+ * @return True if the component exists, false otherwise.
  */
 bool br_component_exists(BrRegistry *registry, BrEntity entity,
                          BrComponentTypeId component_type);
@@ -188,14 +198,16 @@ bool br_component_exists(BrRegistry *registry, BrEntity entity,
 /**
  * @brief Registers a new system with the registry.
  *
- * @param registry Central ECS data store.
+ * @param registry Central ECS data store. Must not be NULL.
  * @param primary_component The most unique type of the component for the
- * system. Will be used for iteration in query.
+ * system. Will be used for iteration in query. Must be registered and be one
+ * of required_components.
  * @param required_components What components must be held for the system to
- * process a entity.
+ * process a entity. Each must be less than MAX_COMPONENT_TYPES. May only be
+ * NULL when components_count is 0.
  * @param components_count The number of required components.
- * @return The ID in the registry for the system, or BR_INVALID_SYSTEM_ID on
- * failure.
+ * @return The ID in the registry for the system, or BR_INVALID_SYSTEM_ID if
+ * MAX_SYSTEMS are already registered.
  */
 BrSystemId br_register_system(BrRegistry *registry,
                               BrComponentTypeId primary_component,
@@ -205,9 +217,9 @@ BrSystemId br_register_system(BrRegistry *registry,
 /**
  * @brief Starts a new query for system iteration.
  *
- * @param registry Central ECS data store.
- * @param system_id The ID of the system to query.
- * @return The new BrQuery instance, or NULL on failure.
+ * @param registry Central ECS data store. Must not be NULL.
+ * @param system_id The ID of a registered system.
+ * @return The system's BrQuery, reset to the start. Never NULL.
  */
 static inline BrQuery *br_query_begin(BrRegistry *registry,
                                       BrSystemId system_id) {
@@ -227,7 +239,7 @@ static inline BrQuery *br_query_begin(BrRegistry *registry,
 /**
  * @brief Advances the iterator to the next matching entity.
  *
- * @param query Pointer to the query instance to advance.
+ * @param query Pointer to the query instance to advance. Must not be NULL.
  * @return True if a new entity was found, false if iteration is complete.
  */
 static inline bool br_query_next(BrQuery *query) {
@@ -259,9 +271,10 @@ static inline bool br_query_next(BrQuery *query) {
 /**
  * @brief Retrieves the component data for the current entity in the query.
  *
- * @param query Active query.
- * @param component_type Type of component to get.
- * @return Pointer to the component data, or NULL on failure.
+ * @param query Active query, positioned on an entity by br_query_next().
+ * @param component_type A registered component type that the system
+ * requires.
+ * @return Pointer to the component data. Never NULL.
  */
 static inline void *br_query_get_component(const BrQuery *query,
                                            BrComponentTypeId component_type) {
@@ -280,6 +293,8 @@ static inline void *br_query_get_component(const BrQuery *query,
 
   BrEntity entity = query->current_entity;
   int component_index = array->entity_to_index[entity];
+  // Only components the system requires are guaranteed to be present.
+  assert(component_index >= 0);
 
   return (char *)array->components.data + component_index * component_size;
 }

@@ -4,6 +4,9 @@
 #include "br_io.h"
 
 uint8_t *read_entire_file(const char *filepath, size_t *out_size) {
+  assert(filepath);
+  assert(out_size);
+
   FILE *fp = fopen(filepath, "rb");
   if (!fp) {
     BR_LOG_ERROR("Could not open file '%s'", filepath);

@@ -1,5 +1,8 @@
 - Always add sufficent debug and trace logs when developing new functionality.
 - Always add doxygen style comments when adding to the public facing api (prefixed borka_)
-- Use asserts, not if-checks, for preconditions in engine functions (e.g. a renderer that must not be NULL). If a doc comment disagrees with an assert, fix the doc.
+- Use asserts, not if-checks, for preconditions in engine functions (e.g. a renderer that must not be NULL), public API included. If a doc comment disagrees with an assert, fix the doc.
+  - Assert what only a bug can cause: NULL arguments, out-of-range ids, unregistered component types, destroying a dead entity, getting or removing a component the entity doesn't have.
+  - Use an if-check and return a failure for what can happen in a correct program: allocation failure, missing or corrupt files, full pools and queues, OS/compositor errors.
+  - Exception: destroy/free functions accept NULL and do nothing, like `free()`, and say so in their docs.
 - File naming: singular when a file is one thing (`game.h`, `camera.h`, `position.h`, `player.c`), plural when it collects many of a kind (`components.h`, `systems.h`, `entities.h`, `assets.h`, `constants.h`).
 - Engine modules are singular, and the public header matches the source folder: `include/borka_<module>.h` pairs with `src/engine/<module>/` (e.g. `borka_render.h` and `render/`). Files inside a module are named after what they hold (`br_renderer.h`, `br_registry.h`).

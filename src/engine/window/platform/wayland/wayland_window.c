@@ -253,8 +253,12 @@ static void window_cleanup(BrWindow *window) {
 // --- Public API ---
 
 BrWindow *br_window_create(const char *title, int width, int height) {
+  assert(title);
+  assert(width > 0 && height > 0);
+
   BrWindow *window = calloc(1, sizeof(BrWindow));
   if (!window) {
+    BR_LOG_ERROR("Failed to allocate window");
     return NULL;
   }
 
@@ -346,15 +350,10 @@ void br_window_destroy(BrWindow *window) {
 }
 
 bool br_window_poll_events(BrWindow *window, BrEvent *out_event) {
-  if (!window) {
-    BR_LOG_ERROR("Can't poll NULL window");
-    return false;
-  }
-
-  if (!window->wl_display) {
-    BR_LOG_ERROR("wl display was NULL");
-    return false;
-  }
+  assert(window);
+  assert(out_event);
+  // br_window_create() fails without a display, so a live window has one.
+  assert(window->wl_display);
 
   while (wl_display_prepare_read(window->wl_display) != 0) {
     wl_display_dispatch_pending(window->wl_display);

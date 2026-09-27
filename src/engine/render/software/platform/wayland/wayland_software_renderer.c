@@ -20,21 +20,12 @@ static bool on_screen(const struct BrRenderer *renderer, int maxX, int minX,
   return true;
 }
 
-static bool scale_render_target(const int *source_pixels, int *target_pixels,
+static void scale_render_target(const int *source_pixels, int *target_pixels,
                                 BrVec2 source_size, BrVec2 target_size) {
-  if (!source_pixels) {
-    BR_LOG_ERROR("Could not scale render target: source pixels was NULL");
-    return false;
-  }
-  if (!target_pixels) {
-    BR_LOG_ERROR("Could not scale render target: target pixels was NULL");
-    return false;
-  }
-  if (source_size.x <= 0 || source_size.y <= 0 || target_size.x <= 0 ||
-      target_size.y <= 0) {
-    BR_LOG_ERROR("Could not scale render target, invalid dimenstions");
-    return false;
-  }
+  assert(source_pixels);
+  assert(target_pixels);
+  assert(source_size.x > 0 && source_size.y > 0);
+  assert(target_size.x > 0 && target_size.y > 0);
 
   int scale_factor_x = target_size.x / source_size.x;
   int scale_factor_y = target_size.y / source_size.y;
@@ -68,8 +59,6 @@ static bool scale_render_target(const int *source_pixels, int *target_pixels,
       }
     }
   }
-
-  return true;
 }
 
 void br_renderer_destroy(struct BrRenderer *renderer) {
@@ -88,10 +77,9 @@ void br_renderer_destroy(struct BrRenderer *renderer) {
 }
 
 struct BrRenderer *br_renderer_create(struct BrWindow *window) {
-  if (!window) {
-    BR_LOG_ERROR("Cannot create renderer with NULL window");
-    return NULL;
-  }
+  assert(window);
+  // br_window_create() fails without a surface, so a live window has one.
+  assert(window->wl_surface);
 
   struct BrRenderer *renderer = calloc(1, sizeof(struct BrRenderer));
   if (!renderer) {
@@ -109,11 +97,6 @@ struct BrRenderer *br_renderer_create(struct BrWindow *window) {
 
   if (!renderer->wl_shm) {
     BR_LOG_ERROR("shm not available for renderer");
-    goto error;
-  }
-
-  if (!renderer->wl_surface) {
-    BR_LOG_ERROR("surface not available for renderer");
     goto error;
   }
 
@@ -282,10 +265,9 @@ void br_renderer_present(struct BrRenderer *renderer) {
     return;
   }
 
-  if (!scale_render_target(renderer->game_pixels,
-                           renderer->buffers->buffer_data[back],
-                           renderer->game_dimensions, renderer->dimensions))
-    return;
+  scale_render_target(renderer->game_pixels,
+                      renderer->buffers->buffer_data[back],
+                      renderer->game_dimensions, renderer->dimensions);
 
   renderer->buffers->buffer_busy[back] = true;
   wl_surface_attach(renderer->wl_surface, renderer->buffers->wl_buffers[back],
@@ -300,10 +282,8 @@ void br_renderer_present(struct BrRenderer *renderer) {
 }
 
 void br_renderer_resize(struct BrRenderer *renderer, int width, int height) {
-  if (!renderer) {
-    BR_LOG_ERROR("Cannot resize: renderer is NULL");
-    return;
-  }
+  assert(renderer);
+  assert(width > 0 && height > 0);
 
   if (renderer->dimensions.x == width && renderer->dimensions.y == height) {
     return;

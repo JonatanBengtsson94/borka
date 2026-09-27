@@ -34,9 +34,8 @@ static void wl_buffer_release(void *data, struct wl_buffer *wl_buffer) {
   (void)wl_buffer;
 
   bool *busy_flag = data;
-  if (busy_flag) {
-    *busy_flag = false;
-  }
+  assert(busy_flag);
+  *busy_flag = false;
 }
 
 static const struct wl_buffer_listener buffer_listener = {
@@ -45,6 +44,9 @@ static const struct wl_buffer_listener buffer_listener = {
 
 ShmBufferPair *wayland_shm_buffer_pair_create(struct wl_shm *shm, int width,
                                               int height) {
+  assert(shm);
+  assert(width > 0 && height > 0);
+
   int stride = width * 4;
   int buffer_size = stride * height;
   int total_size = buffer_size * 2;

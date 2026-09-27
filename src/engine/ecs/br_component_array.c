@@ -60,7 +60,7 @@ bool br_component_array_add(BrComponentArray *array, BrEntity entity,
                             const void *component) {
   assert(array);
   assert(component);
-  assert(entity <= MAX_ENTITIES);
+  assert(entity < MAX_ENTITIES);
 
   int index = array->entity_to_index[entity];
   if (index != -1) {
@@ -75,6 +75,9 @@ bool br_component_array_add(BrComponentArray *array, BrEntity entity,
 
   if (!br_dynamic_array_add(&array->entity_ids, &entity)) {
     BR_LOG_ERROR("Failed to add entity to entity ids array");
+    // Roll back the component so both arrays stay index-aligned.
+    br_dynamic_array_remove(&array->components, array->components.length - 1);
+    BR_LOG_TRACE("Rolled back component for entity %u", entity);
     return false;
   }
 
@@ -85,47 +88,34 @@ bool br_component_array_add(BrComponentArray *array, BrEntity entity,
 
 void *br_component_array_get(BrComponentArray *array, BrEntity entity) {
   assert(array);
-  assert(entity <= MAX_ENTITIES);
+  assert(entity < MAX_ENTITIES);
 
   int index = array->entity_to_index[entity];
-  if (index < 0) {
-    BR_LOG_WARN("Could not find component for entity: %u", entity);
-    return NULL;
-  }
+  // Getting a component the entity doesn't have is a caller bug.
+  assert(index >= 0);
 
   return (char *)array->components.data +
          index * array->components.element_size;
 }
 
-bool br_component_array_remove(BrComponentArray *array, BrEntity entity) {
+void br_component_array_remove(BrComponentArray *array, BrEntity entity) {
   assert(array);
-  assert(entity <= MAX_ENTITIES);
+  assert(entity < MAX_ENTITIES);
 
   int index = array->entity_to_index[entity];
-  if (index == -1) {
-    BR_LOG_WARN(
-        "Could not remove component, entity has no component of that type");
-    return false;
-  }
+  // Removing a component the entity doesn't have is a caller bug.
+  assert(index != -1);
 
   int last_index = array->entity_ids.length - 1;
   BrEntity last_entity = ((BrEntity *)array->entity_ids.data)[last_index];
 
-  if (!br_dynamic_array_remove(&array->components, index)) {
-    BR_LOG_ERROR("Failed to remove component from components array");
-    return false;
-  }
-
-  if (!br_dynamic_array_remove(&array->entity_ids, index)) {
-    BR_LOG_ERROR("Failed to remove entity from entity ids array");
-    return false;
-  }
+  // Swap-removes, so the last entity's component moves into the gap.
+  br_dynamic_array_remove(&array->components, index);
+  br_dynamic_array_remove(&array->entity_ids, index);
 
   if (index != last_index) {
     array->entity_to_index[last_entity] = index;
   }
 
   array->entity_to_index[entity] = -1;
-
-  return true;
 }

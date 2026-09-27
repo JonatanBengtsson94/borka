@@ -1064,6 +1064,8 @@ static void rgba_to_argb(const uint8_t *src_rgba, uint32_t *dst_argb,
 // --- PUBLIC API ---
 
 BrTexture *br_texture_create(const char *filepath) {
+  assert(filepath);
+
   // Read file
   size_t file_size;
   uint8_t *file_data = read_entire_file(filepath, &file_size);

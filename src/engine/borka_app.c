@@ -25,10 +25,8 @@ static void app_cleanup(BrApp *app) {
 }
 
 BrApp *br_app_create(const char *title, int width, int height) {
-  if (!title) {
-    BR_LOG_ERROR("Can't create app without title");
-    return NULL;
-  }
+  assert(title);
+  assert(width > 0 && height > 0);
 
   if (!br_logger_init(title)) {
     BR_LOG_ERROR("Failed to initialize logging system");
