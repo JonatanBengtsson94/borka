@@ -11,7 +11,7 @@ BrEntity create_player(BrRegistry *registry, const Assets *assets) {
   BrTexture *texture = assets->textures.player_texture;
   assert(texture);
 
-  Position player_pos = {GAME_WIDTH / 2, GAME_HEIGHT / 2};
+  Position player_pos = {GAME_WIDTH / 2.0, GAME_HEIGHT / 2.0};
   Renderable player_ren = {
       .type = RENDERABLE_TEXTURE,
       .layer = RENDER_LAYER_WORLD,
@@ -22,23 +22,27 @@ BrEntity create_player(BrRegistry *registry, const Assets *assets) {
 
   if (!br_component_add(registry, player, COMPONENT_POSITION, &player_pos)) {
     BR_LOG_ERROR("Failed to add position component");
-    return BR_INVALID_ENTITY;
+    goto error;
   }
   if (!br_component_add(registry, player, COMPONENT_RENDERABLE, &player_ren)) {
     BR_LOG_ERROR("Failed to add renderable component");
-    return BR_INVALID_ENTITY;
+    goto error;
   }
   if (!br_component_add(registry, player, COMPONENT_VELOCITY, &player_vel)) {
     BR_LOG_ERROR("Failed to add velocity component");
-    return BR_INVALID_ENTITY;
+    goto error;
   }
   if (!br_component_add(registry, player, COMPONENT_INPUT_CONTROLLED,
                         &player_control)) {
     BR_LOG_ERROR("Failed to add input controlled component");
-    return BR_INVALID_ENTITY;
+    goto error;
   }
 
   BR_LOG_DEBUG("Created player entity at (%.1f, %.1f)", player_pos.x,
                player_pos.y);
   return player;
+
+error:
+  br_entity_destroy(registry, player);
+  return BR_INVALID_ENTITY;
 }
