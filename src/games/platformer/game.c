@@ -1,6 +1,6 @@
 #include "game.h"
 #include "components/components.h"
-#include "entities/entities.h"
+#include "scenes/scenes.h"
 #include "systems/systems.h"
 
 void game_shutdown(Game *game) {
@@ -29,8 +29,9 @@ bool game_init(Game *game) {
     goto error;
   }
 
-  if (create_player(game->app->registry, &game->assets) == BR_INVALID_ENTITY) {
-    BR_LOG_ERROR("Failed to create player");
+  // TODO: Should load main menu when it exists
+  if (!scene_load(game, SCENE_SANDBOX)) {
+    BR_LOG_ERROR("Failed to load sandbox scene");
     goto error;
   }
 

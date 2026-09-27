@@ -7,6 +7,10 @@ void assets_destroy(Assets *assets) {
     br_texture_destroy(assets->textures.player_texture);
     assets->textures.player_texture = NULL;
   }
+  if (assets->textures.ground_texture) {
+    br_texture_destroy(assets->textures.ground_texture);
+    assets->textures.ground_texture = NULL;
+  }
 }
 
 bool assets_load(Assets *assets) {
@@ -20,6 +24,14 @@ bool assets_load(Assets *assets) {
     goto error;
   }
   BR_LOG_TRACE("Loaded player texture");
+
+  assets->textures.ground_texture =
+      br_texture_create("assets/textures/ground_placeholder.png");
+  if (!assets->textures.ground_texture) {
+    BR_LOG_ERROR("Failed to load ground texture");
+    goto error;
+  }
+  BR_LOG_TRACE("Loaded ground texture");
 
   return true;
 

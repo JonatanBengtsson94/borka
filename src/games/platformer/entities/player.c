@@ -1,12 +1,15 @@
-#include "assets/assets.h"
 #include "components/components.h"
 #include "constants.h"
+#include "entities.h"
 
-BrEntity create_player(BrRegistry *registry, const Assets *assets) {
+BrEntity player_create(BrRegistry *registry, const Assets *assets) {
   assert(registry);
   assert(assets);
   BrEntity player = br_entity_create(registry);
-  assert(player != BR_INVALID_ENTITY);
+  if (player == BR_INVALID_ENTITY) {
+    BR_LOG_ERROR("Failed to create player entity");
+    return BR_INVALID_ENTITY;
+  }
 
   BrTexture *texture = assets->textures.player_texture;
   assert(texture);

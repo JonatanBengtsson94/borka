@@ -9,6 +9,7 @@ typedef enum {
 // Draw order, back to front, passed to the renderer as the draw layer.
 typedef enum {
   RENDER_LAYER_BACKGROUND,
+  RENDER_LAYER_TERRAIN,
   RENDER_LAYER_WORLD,
   RENDER_LAYER_FOREGROUND,
 } RenderLayer;

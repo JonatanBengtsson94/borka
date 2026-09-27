@@ -7,6 +7,9 @@
 #define GAME_WIDTH 256
 #define GAME_HEIGHT 240
 
+// Top edge of the ground row
+#define GROUND_Y 200
+
 // Player stats
 #define BASE_SPEED 100
 #define JUMP_POWER 100

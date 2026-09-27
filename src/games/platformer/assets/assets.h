@@ -5,6 +5,7 @@
 
 typedef struct {
   BrTexture *player_texture;
+  BrTexture *ground_texture;
 } Textures;
 
 typedef struct {

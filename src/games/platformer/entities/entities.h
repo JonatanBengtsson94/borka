@@ -4,6 +4,7 @@
 #include "assets/assets.h"
 #include "borka.h"
 
-BrEntity create_player(BrRegistry *registry, const Assets *assets);
+BrEntity player_create(BrRegistry *registry, const Assets *assets);
+bool ground_create(BrRegistry *registry, const Assets *assets);
 
 #endif // ENTITIES_H
