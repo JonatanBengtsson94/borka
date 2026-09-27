@@ -27,23 +27,25 @@
 
 ### Quickstart
 
-Build and run the default game (`breakout`):
+Build and run the default game (`platformer`):
 
 ```sh
 make
 make run
 ```
 
-Build and run a specific example instead:
+Build and run a specific game instead. `GAME` has to be passed to every
+target, since `make run` on its own builds and runs the default:
 
 ```sh
 make GAME=audio
-make run
+make run GAME=audio
 ```
 
-### Example Games
+### Games
 
-A few example games are included to verify your build environment:
+`platformer` is the game currently in development. The rest are examples
+that verify your build environment:
 
 - `logging` - only exercises the logging system, no window/audio/renderer required
 - `window` - opens a window and pumps events until closed, no renderer/audio/ECS
@@ -51,12 +53,14 @@ A few example games are included to verify your build environment:
 - `audio` - loads and plays a sound, no window/renderer/ECS
 - `input` - opens a window and logs key press/release events, no audio/ECS
 - `breakout` - a full game, test the renderer, audio and input systems
+- `platformer` - work in progress: a player you can move left and right over a
+  row of ground tiles
 
 ### Build Options
 
 | Variable | Values | Default |
 |---|---|---|
-| `GAME` | `breakout`, `logging`, `window`, `render`, `audio`, `input` | `breakout` |
+| `GAME` | `platformer`, `breakout`, `logging`, `window`, `render`, `audio`, `input` | `platformer` |
 | `BUILD` | `debug`, `trace`, `release` | `debug` |
 | `PLATFORM` | `linux`, `windows` | `linux` |
 | `WINDOW_BACKEND` | `wayland`, `win32` | `wayland` |

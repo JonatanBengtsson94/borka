@@ -12,7 +12,7 @@ BUILD ?= debug
 WINDOW_BACKEND ?= wayland
 RENDER_BACKEND ?= software
 PLATFORM ?= linux
-GAME ?= breakout
+GAME ?= platformer
 AUDIO_FORMATS ?= flac
 
 # Include game-specific config
