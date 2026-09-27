@@ -3,7 +3,7 @@
 #include "borka_log.h"
 #include "br_io.h"
 
-uint8_t *read_entire_file(const char *filepath, size_t *out_size) {
+uint8_t *br_file_read_all(const char *filepath, size_t *out_size) {
   assert(filepath);
   assert(out_size);
 

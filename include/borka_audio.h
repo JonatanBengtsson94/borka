@@ -49,7 +49,7 @@ void br_sound_destroy(BrSound *sound);
  *
  * @param sound Sound to play. Must not be NULL.
  */
-void br_play_sound(BrSound *sound);
+void br_sound_play(BrSound *sound);
 
 /**
  * @brief Signal the audio thread to play a sound at a given volume.
@@ -62,20 +62,20 @@ void br_play_sound(BrSound *sound);
  *               only safe while the mix stays in range; the mixer clamps
  *               anything louder than full scale.
  */
-void br_play_sound_at_volume(BrSound *sound, float volume);
+void br_sound_play_at_volume(BrSound *sound, float volume);
 
 /**
  * @brief Signal the audio thread to play a sound on repeat.
  *
  * Suits anything that should run continuously, such as background music or
  * an ambience bed. This function is non-blocking. The sound keeps looping
- * until br_stop_sound() is called, it is destroyed, or the audio system shuts
+ * until br_sound_stop() is called, it is destroyed, or the audio system shuts
  * down, so it has to stay alive for as long as it should be heard.
  *
  * @param sound Sound to loop. Must not be NULL.
- * @param volume Scales the sound, as for br_play_sound_at_volume().
+ * @param volume Scales the sound, as for br_sound_play_at_volume().
  */
-void br_play_sound_looping(BrSound *sound, float volume);
+void br_sound_play_looping(BrSound *sound, float volume);
 
 /**
  * @brief Stops every voice currently playing the given sound.
@@ -85,6 +85,6 @@ void br_play_sound_looping(BrSound *sound, float volume);
  *
  * @param sound Sound to stop.
  */
-void br_stop_sound(BrSound *sound);
+void br_sound_stop(BrSound *sound);
 
 #endif // BORKA_AUDIO_H

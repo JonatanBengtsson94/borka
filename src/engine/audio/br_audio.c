@@ -18,7 +18,7 @@ static void cleanup(BrSound *sound) {
 void br_sound_destroy(BrSound *sound) {
   // The mixer holds raw pointers to sounds, so any voice still playing this
   // one has to be stopped before the samples go away.
-  br_stop_sound(sound);
+  br_sound_stop(sound);
   cleanup(sound);
 }
 
@@ -27,7 +27,7 @@ BrSound *br_sound_create(const char *filepath) {
 
   uint8_t *file_data = NULL;
   size_t file_size;
-  file_data = read_entire_file(filepath, &file_size);
+  file_data = br_file_read_all(filepath, &file_size);
   if (!file_data) {
     BR_LOG_ERROR("Failed to create sound, could not read file: '%s'", filepath);
     return NULL;

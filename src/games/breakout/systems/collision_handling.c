@@ -210,14 +210,14 @@ void system_collision_handling(GameState *game) {
         paddle_hit(registry, entity_b, entity_a, col_b, col_a);
         squash_ball(game, entity_b, BOUNCE_VERTICAL);
         recoil_paddle(registry, entity_a);
-        br_play_sound_at_volume(game->sfx.paddle_hit, SFX_VOLUME);
+        br_sound_play_at_volume(game->sfx.paddle_hit, SFX_VOLUME);
       }
 
       if (col_a->layer == LAYER_BALL && col_b->layer == LAYER_WALL) {
         BR_LOG_TRACE("Ball hit wall");
         squash_ball(game, entity_a,
                     bounce_ball(registry, entity_a, entity_b, col_a, col_b));
-        br_play_sound_at_volume(game->sfx.wall_hit, SFX_VOLUME);
+        br_sound_play_at_volume(game->sfx.wall_hit, SFX_VOLUME);
       }
 
       if (col_a->layer == LAYER_BALL && col_b->layer == LAYER_BRICK) {
@@ -225,7 +225,7 @@ void system_collision_handling(GameState *game) {
         squash_ball(game, entity_a,
                     bounce_ball(registry, entity_a, entity_b, col_a, col_b));
         brick_hit(game, entity_b);
-        br_play_sound_at_volume(game->sfx.brick_hit, SFX_VOLUME);
+        br_sound_play_at_volume(game->sfx.brick_hit, SFX_VOLUME);
       }
 
       if (col_a->layer == LAYER_BALL && col_b->layer == LAYER_FLOOR) {

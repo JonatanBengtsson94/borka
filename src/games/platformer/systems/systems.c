@@ -16,12 +16,12 @@ bool systems_register(BrRegistry *registry) {
                                                  COMPONENT_VELOCITY};
 
   SYSTEM_RENDER =
-      br_register_system(registry, COMPONENT_RENDERABLE, render_required, 2);
+      br_system_register(registry, COMPONENT_RENDERABLE, render_required, 2);
   SYSTEM_MOVEMENT =
-      br_register_system(registry, COMPONENT_VELOCITY, movement_required, 2);
-  SYSTEM_INPUT = br_register_system(registry, COMPONENT_INPUT_CONTROLLED,
+      br_system_register(registry, COMPONENT_VELOCITY, movement_required, 2);
+  SYSTEM_INPUT = br_system_register(registry, COMPONENT_INPUT_CONTROLLED,
                                     input_required, 1);
-  SYSTEM_PLAYER_ACTIONS = br_register_system(
+  SYSTEM_PLAYER_ACTIONS = br_system_register(
       registry, COMPONENT_INPUT_CONTROLLED, player_actions_required, 2);
 
   BrSystemId ids[] = {SYSTEM_RENDER, SYSTEM_MOVEMENT, SYSTEM_INPUT,

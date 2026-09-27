@@ -1,5 +1,5 @@
-#ifndef BR_MATH_H
-#define BR_MATH_H
+#ifndef BORKA_MATH_H
+#define BORKA_MATH_H
 
 /**
  * @brief Returns the smaller of two integers.
@@ -8,7 +8,7 @@
  * @param b Second integer to compare.
  * @return The smaller of `a` and `b`.
  */
-static inline int min_int(int a, int b) { return a < b ? a : b; }
+static inline int br_int_min(int a, int b) { return a < b ? a : b; }
 
 /**
  * @brief Returns the larger of two integers.
@@ -17,7 +17,7 @@ static inline int min_int(int a, int b) { return a < b ? a : b; }
  * @param b Second integer to compare.
  * @return The larger of `a` and `b`.
  */
-static inline int max_int(int a, int b) { return a > b ? a : b; }
+static inline int br_int_max(int a, int b) { return a > b ? a : b; }
 
 /**
  * @brief Clamps a integer between a minumum and maximum.
@@ -27,7 +27,7 @@ static inline int max_int(int a, int b) { return a > b ? a : b; }
  * @param max Maximum allowed value.
  * @return The clamped value.
  */
-static inline int clamp_int(int value, int min, int max) {
+static inline int br_int_clamp(int value, int min, int max) {
   if (value < min)
     return min;
   if (value > max)
@@ -76,4 +76,4 @@ static inline int br_vec2_cross(BrVec2 a, BrVec2 b) {
   return a.x * b.y - a.y * b.x;
 }
 
-#endif // BR_MATH_H
+#endif // BORKA_MATH_H

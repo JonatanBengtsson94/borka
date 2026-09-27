@@ -12,18 +12,18 @@ BrComponentTypeId COMPONENT_BRICK = BR_INVALID_COMPONENT_TYPE;
 BrComponentTypeId COMPONENT_TRAIL = BR_INVALID_COMPONENT_TYPE;
 
 bool components_register(BrRegistry *registry) {
-  COMPONENT_POSITION = br_register_component(registry, sizeof(Position));
-  COMPONENT_VELOCITY = br_register_component(registry, sizeof(Velocity));
-  COMPONENT_RENDERABLE = br_register_component(registry, sizeof(Renderable));
+  COMPONENT_POSITION = br_component_register(registry, sizeof(Position));
+  COMPONENT_VELOCITY = br_component_register(registry, sizeof(Velocity));
+  COMPONENT_RENDERABLE = br_component_register(registry, sizeof(Renderable));
   COMPONENT_MOVEMENT_CONFIG =
-      br_register_component(registry, sizeof(MovementConfig));
+      br_component_register(registry, sizeof(MovementConfig));
   COMPONENT_INPUT_CONTROLLED =
-      br_register_component(registry, sizeof(InputControlled));
-  COMPONENT_COLLIDER = br_register_component(registry, sizeof(Collider));
-  COMPONENT_COLLISION = br_register_component(registry, sizeof(Collision));
-  COMPONENT_ANIMATOR = br_register_component(registry, sizeof(Animator));
-  COMPONENT_BRICK = br_register_component(registry, sizeof(Brick));
-  COMPONENT_TRAIL = br_register_component(registry, sizeof(Trail));
+      br_component_register(registry, sizeof(InputControlled));
+  COMPONENT_COLLIDER = br_component_register(registry, sizeof(Collider));
+  COMPONENT_COLLISION = br_component_register(registry, sizeof(Collision));
+  COMPONENT_ANIMATOR = br_component_register(registry, sizeof(Animator));
+  COMPONENT_BRICK = br_component_register(registry, sizeof(Brick));
+  COMPONENT_TRAIL = br_component_register(registry, sizeof(Trail));
 
   BrComponentTypeId ids[] = {COMPONENT_POSITION,
                              COMPONENT_VELOCITY,

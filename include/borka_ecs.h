@@ -1,5 +1,5 @@
-#ifndef BR_ECS_H
-#define BR_ECS_H
+#ifndef BORKA_ECS_H
+#define BORKA_ECS_H
 
 #include "borka_data_structure.h"
 #include <assert.h>
@@ -107,7 +107,7 @@ struct BrRegistry {
  * @return BrEntity Unique ID (index) assigned to the newly created entity,
  * or BR_INVALID_ENTITY if all MAX_ENTITIES entities are in use.
  *
- * @note Should be destroyed with destroy_entity() when no longer in use.
+ * @note Should be destroyed with br_entity_destroy() when no longer in use.
  */
 BrEntity br_entity_create(BrRegistry *registry);
 
@@ -141,7 +141,7 @@ bool br_entity_is_alive(const BrRegistry *registry, BrEntity entity);
  *
  * @note Component types should typically be registered once at startup.
  */
-BrComponentTypeId br_register_component(BrRegistry *registry,
+BrComponentTypeId br_component_register(BrRegistry *registry,
                                         size_t component_size);
 
 /**
@@ -209,7 +209,7 @@ bool br_component_exists(BrRegistry *registry, BrEntity entity,
  * @return The ID in the registry for the system, or BR_INVALID_SYSTEM_ID if
  * MAX_SYSTEMS are already registered.
  */
-BrSystemId br_register_system(BrRegistry *registry,
+BrSystemId br_system_register(BrRegistry *registry,
                               BrComponentTypeId primary_component,
                               BrComponentTypeId *required_components,
                               size_t components_count);
@@ -299,4 +299,4 @@ static inline void *br_query_get_component(const BrQuery *query,
   return (char *)array->components.data + component_index * component_size;
 }
 
-#endif // BR_ECS_H
+#endif // BORKA_ECS_H

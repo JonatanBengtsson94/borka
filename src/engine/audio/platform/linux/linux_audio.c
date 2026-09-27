@@ -284,17 +284,17 @@ static void start_voice(BrSound *sound, float volume, bool looping) {
                looping ? "loop" : "sound", sound->size, (double)volume);
 }
 
-void br_play_sound(BrSound *sound) { start_voice(sound, 1.0f, false); }
+void br_sound_play(BrSound *sound) { start_voice(sound, 1.0f, false); }
 
-void br_play_sound_at_volume(BrSound *sound, float volume) {
+void br_sound_play_at_volume(BrSound *sound, float volume) {
   start_voice(sound, volume, false);
 }
 
-void br_play_sound_looping(BrSound *sound, float volume) {
+void br_sound_play_looping(BrSound *sound, float volume) {
   start_voice(sound, volume, true);
 }
 
-void br_stop_sound(BrSound *sound) {
+void br_sound_stop(BrSound *sound) {
   if (!audio_thread.initialized)
     return;
 

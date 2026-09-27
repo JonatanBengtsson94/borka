@@ -74,7 +74,7 @@ bool br_entity_is_alive(const BrRegistry *registry, BrEntity entity) {
   return registry->alive[entity];
 }
 
-BrComponentTypeId br_register_component(BrRegistry *registry,
+BrComponentTypeId br_component_register(BrRegistry *registry,
                                         size_t component_size) {
   assert(registry);
   assert(component_size > 0);
@@ -163,7 +163,7 @@ bool br_component_exists(BrRegistry *registry, BrEntity entity,
   return (registry->entity_signatures[entity] & (1 << component_type)) != 0;
 }
 
-BrSystemId br_register_system(BrRegistry *registry,
+BrSystemId br_system_register(BrRegistry *registry,
                               BrComponentTypeId primary_component,
                               BrComponentTypeId *required_components,
                               size_t components_count) {

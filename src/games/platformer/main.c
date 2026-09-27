@@ -15,11 +15,11 @@ int main() {
   }
 
   const double target_frame = 1.0 / MAX_FPS;
-  double last = br_get_time();
+  double last = br_time_get();
   BrEvent e;
 
   while (!app->should_shutdown) {
-    double now = br_get_time();
+    double now = br_time_get();
     double delta_time = now - last;
     last = now;
 
@@ -43,10 +43,10 @@ int main() {
     game_update(&game, delta_time);
 
     // Frame cap
-    double frame_time = br_get_time() - now;
+    double frame_time = br_time_get() - now;
     if (frame_time < target_frame) {
       int ns = (target_frame - frame_time) * 1e9;
-      sleep(ns);
+      br_time_sleep(ns);
     }
   }
 

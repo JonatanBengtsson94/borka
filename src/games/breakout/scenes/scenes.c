@@ -18,9 +18,9 @@ static void switch_music(BrSound *current, BrSound *next) {
   if (current == next)
     return;
   if (current)
-    br_stop_sound(current);
+    br_sound_stop(current);
   if (next)
-    br_play_sound_looping(next, MUSIC_VOLUME);
+    br_sound_play_looping(next, MUSIC_VOLUME);
 }
 
 void scene_load(GameState *game, SceneId id) {

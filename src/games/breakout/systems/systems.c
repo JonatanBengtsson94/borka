@@ -28,22 +28,22 @@ bool systems_register(BrRegistry *registry) {
   BrComponentTypeId trail_required[] = {COMPONENT_TRAIL, COMPONENT_POSITION,
                                         COMPONENT_VELOCITY};
 
-  SYSTEM_INPUT = br_register_system(registry, COMPONENT_INPUT_CONTROLLED,
+  SYSTEM_INPUT = br_system_register(registry, COMPONENT_INPUT_CONTROLLED,
                                     input_required, 1);
   SYSTEM_RENDER =
-      br_register_system(registry, COMPONENT_RENDERABLE, render_required, 2);
+      br_system_register(registry, COMPONENT_RENDERABLE, render_required, 2);
   SYSTEM_MOVEMENT =
-      br_register_system(registry, COMPONENT_VELOCITY, physics_required, 2);
-  SYSTEM_PLAYER_MOVEMENT = br_register_system(
+      br_system_register(registry, COMPONENT_VELOCITY, physics_required, 2);
+  SYSTEM_PLAYER_MOVEMENT = br_system_register(
       registry, COMPONENT_INPUT_CONTROLLED, player_movement_required, 4);
-  SYSTEM_COLLISION_DETECTION = br_register_system(
+  SYSTEM_COLLISION_DETECTION = br_system_register(
       registry, COMPONENT_COLLIDER, collision_detection_required, 2);
-  SYSTEM_COLLISION_HANDLING = br_register_system(
+  SYSTEM_COLLISION_HANDLING = br_system_register(
       registry, COMPONENT_COLLISION, collision_handling_required, 2);
   SYSTEM_ANIMATION =
-      br_register_system(registry, COMPONENT_ANIMATOR, animation_required, 2);
+      br_system_register(registry, COMPONENT_ANIMATOR, animation_required, 2);
   SYSTEM_TRAIL =
-      br_register_system(registry, COMPONENT_TRAIL, trail_required, 3);
+      br_system_register(registry, COMPONENT_TRAIL, trail_required, 3);
 
   BrSystemId ids[] = {SYSTEM_INPUT,
                       SYSTEM_RENDER,

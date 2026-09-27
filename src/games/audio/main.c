@@ -3,8 +3,8 @@
 #include "borka_time.h"
 #include "log/br_logger.h"
 
-// sleep() puts its whole argument into tv_nsec, which nanosleep rejects at a
-// full second, so longer waits have to be made in chunks.
+// br_time_sleep() puts its whole argument into tv_nsec, which nanosleep
+// rejects at a full second, so longer waits have to be made in chunks.
 #define SLEEP_CHUNK_NS 50000000
 
 // How often a bounce is triggered over the music.
@@ -21,8 +21,8 @@
 #define PLAYBACK_TAIL_SECONDS 0.25
 
 static void wait_until(double timestamp) {
-  while (br_get_time() < timestamp)
-    sleep(SLEEP_CHUNK_NS);
+  while (br_time_get() < timestamp)
+    br_time_sleep(SLEEP_CHUNK_NS);
 }
 
 static double sound_seconds(const BrSound *sound) {
@@ -52,15 +52,15 @@ int main() {
   BR_LOG_INFO("Playing %.1f seconds of music, with a bounce every %.1f",
               music_seconds, SFX_INTERVAL_SECONDS);
 
-  double started_at = br_get_time();
-  br_play_sound_at_volume(music, MUSIC_VOLUME);
+  double started_at = br_time_get();
+  br_sound_play_at_volume(music, MUSIC_VOLUME);
 
   // Trigger the sfx over the music to show both mixing together.
   for (double at = SFX_INTERVAL_SECONDS; at < music_seconds;
        at += SFX_INTERVAL_SECONDS) {
     wait_until(started_at + at);
     BR_LOG_INFO("Bounce at %.1f seconds", at);
-    br_play_sound_at_volume(bounce, SFX_VOLUME);
+    br_sound_play_at_volume(bounce, SFX_VOLUME);
   }
 
   wait_until(started_at + music_seconds + PLAYBACK_TAIL_SECONDS);

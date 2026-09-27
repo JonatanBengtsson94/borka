@@ -116,7 +116,7 @@ static bool has_bits(BitReader *bit_reader, int number_of_bits) {
   return true;
 }
 
-static int read_bit(BitReader *bit_reader) {
+static int bit_reader_read_bit(BitReader *bit_reader) {
   int bit = (bit_reader->buffer[bit_reader->byte_position] >>
              bit_reader->bit_position) &
             1;
@@ -128,15 +128,15 @@ static int read_bit(BitReader *bit_reader) {
   return bit;
 }
 
-static bool read_bits(BitReader *bit_reader, int bits_to_read,
-                      uint32_t *out_value) {
+static bool bit_reader_read_bits(BitReader *bit_reader, int bits_to_read,
+                                 uint32_t *out_value) {
   if (!has_bits(bit_reader, bits_to_read)) {
     return false;
   }
 
   uint32_t value = 0;
   for (int i = 0; i < bits_to_read; i++) {
-    value |= (read_bit(bit_reader) << i);
+    value |= (bit_reader_read_bit(bit_reader) << i);
   }
 
   *out_value = value;
@@ -212,7 +212,7 @@ static bool decode_deflate_length(BitReader *bit_reader, uint32_t length_code,
   }
 
   uint32_t extra_value = 0;
-  if (!read_bits(bit_reader, extra_bits, &extra_value)) {
+  if (!bit_reader_read_bits(bit_reader, extra_bits, &extra_value)) {
     BR_LOG_ERROR("Failed to read extra length bits");
     return false;
   }
@@ -259,7 +259,7 @@ static bool decode_deflate_distance(BitReader *bit_reader,
   }
 
   uint32_t extra_value = 0;
-  if (!read_bits(bit_reader, extra_bits, &extra_value)) {
+  if (!bit_reader_read_bits(bit_reader, extra_bits, &extra_value)) {
     BR_LOG_ERROR("Failed to read extra distance bits");
     return false;
   }
@@ -364,7 +364,7 @@ static uint32_t decode_symbol(BitReader *bit_reader,
   }
 
   uint32_t throwaway;
-  if (!read_bits(bit_reader, length, &throwaway))
+  if (!bit_reader_read_bits(bit_reader, length, &throwaway))
     return UINT32_MAX;
 
   return symbol;
@@ -425,22 +425,22 @@ static bool decode_btype01(BitReader *bit_reader, uint8_t *out_data,
 
     uint32_t value_7bit = reverse_bits(raw_value & 0x7F, 7);
     if (value_7bit <= 23) {
-      read_bits(bit_reader, 7, &code);
+      bit_reader_read_bits(bit_reader, 7, &code);
       symbol = reverse_bits(code, 7) + 256;
     }
 
     else {
       uint32_t value_8bit = reverse_bits(raw_value & 0xFF, 8);
       if (value_8bit >= 48 && value_8bit <= 191) {
-        read_bits(bit_reader, 8, &code);
+        bit_reader_read_bits(bit_reader, 8, &code);
         symbol = reverse_bits(code, 8) - 48;
       } else if (value_8bit >= 192 && value_8bit <= 199) {
-        read_bits(bit_reader, 8, &code);
+        bit_reader_read_bits(bit_reader, 8, &code);
         symbol = reverse_bits(code, 8) - 192 + 280;
       }
 
       else {
-        read_bits(bit_reader, 9, &code);
+        bit_reader_read_bits(bit_reader, 9, &code);
         symbol = reverse_bits(code, 9) - 400 + 144;
       }
     }
@@ -469,7 +469,7 @@ static bool decode_btype01(BitReader *bit_reader, uint8_t *out_data,
         return false;
 
       uint32_t distance_code = 0;
-      if (!read_bits(bit_reader, 5, &distance_code))
+      if (!bit_reader_read_bits(bit_reader, 5, &distance_code))
         return false;
       distance_code = reverse_bits(distance_code, 5);
 
@@ -513,15 +513,15 @@ static bool decode_btype10(BitReader *bit_reader, uint8_t *out_data,
 
   // Read header
   uint32_t hlit = 0;
-  if (!read_bits(bit_reader, 5, &hlit))
+  if (!bit_reader_read_bits(bit_reader, 5, &hlit))
     goto cleanup;
   int number_literal_length_symbols = hlit + 257;
   uint32_t hdist = 0;
-  if (!read_bits(bit_reader, 5, &hdist))
+  if (!bit_reader_read_bits(bit_reader, 5, &hdist))
     goto cleanup;
   int number_distance_symbols = hdist + 1;
   uint32_t hclen = 0;
-  if (!read_bits(bit_reader, 4, &hclen))
+  if (!bit_reader_read_bits(bit_reader, 4, &hclen))
     goto cleanup;
   int number_code_length_symbols = hclen + 4;
   BR_LOG_TRACE(
@@ -533,7 +533,7 @@ static bool decode_btype10(BitReader *bit_reader, uint8_t *out_data,
   uint8_t code_length_symbol_lengths[19] = {0};
   for (int i = 0; i < number_code_length_symbols; i++) {
     uint32_t length = 0;
-    if (!read_bits(bit_reader, 3, &length))
+    if (!bit_reader_read_bits(bit_reader, 3, &length))
       goto cleanup;
     code_length_symbol_lengths[hclen_order[i]] = (uint8_t)length;
   }
@@ -577,7 +577,7 @@ static bool decode_btype10(BitReader *bit_reader, uint8_t *out_data,
       i++;
     } else if (symbol == 16) {
       uint32_t repeat_count = 0;
-      if (!read_bits(bit_reader, 2, &repeat_count))
+      if (!bit_reader_read_bits(bit_reader, 2, &repeat_count))
         goto cleanup;
       repeat_count += 3;
 
@@ -590,7 +590,7 @@ static bool decode_btype10(BitReader *bit_reader, uint8_t *out_data,
       }
     } else if (symbol == 17) {
       uint32_t repeat_count = 0;
-      if (!read_bits(bit_reader, 3, &repeat_count))
+      if (!bit_reader_read_bits(bit_reader, 3, &repeat_count))
         goto cleanup;
       repeat_count += 3;
       for (uint32_t j = 0; j < repeat_count && i < current_max; j++) {
@@ -598,7 +598,7 @@ static bool decode_btype10(BitReader *bit_reader, uint8_t *out_data,
       }
     } else if (symbol == 18) {
       uint32_t repeat_count = 0;
-      if (!read_bits(bit_reader, 7, &repeat_count))
+      if (!bit_reader_read_bits(bit_reader, 7, &repeat_count))
         goto cleanup;
       repeat_count += 11;
       for (uint32_t j = 0; j < repeat_count && i < current_max; j++) {
@@ -729,11 +729,11 @@ static bool decompress_data(const uint8_t *compressed_data,
   uint32_t bfinal;
   uint32_t btype;
   do {
-    if (!read_bits(&bit_reader, 1, &bfinal)) {
+    if (!bit_reader_read_bits(&bit_reader, 1, &bfinal)) {
       BR_LOG_ERROR("Failed to read bits");
       return false;
     }
-    if (!read_bits(&bit_reader, 2, &btype)) {
+    if (!bit_reader_read_bits(&bit_reader, 2, &btype)) {
       BR_LOG_ERROR("Failed to read bits");
       return false;
     }
@@ -1068,7 +1068,7 @@ BrTexture *br_texture_create(const char *filepath) {
 
   // Read file
   size_t file_size;
-  uint8_t *file_data = read_entire_file(filepath, &file_size);
+  uint8_t *file_data = br_file_read_all(filepath, &file_size);
   if (!file_data) {
     BR_LOG_ERROR("Failed to read file: '%s'", filepath);
     return NULL;

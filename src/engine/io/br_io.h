@@ -4,6 +4,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-uint8_t *read_entire_file(const char *filepath, size_t *out_size);
+uint8_t *br_file_read_all(const char *filepath, size_t *out_size);
 
 #endif // !BR_IO_H

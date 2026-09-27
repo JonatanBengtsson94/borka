@@ -28,7 +28,7 @@ static bool has_bits(BitReader *bit_reader, int number_of_bits) {
   return true;
 }
 
-static int read_bit(BitReader *bit_reader) {
+static int bit_reader_read_bit(BitReader *bit_reader) {
   int bit = (bit_reader->buffer[bit_reader->byte_position] >>
              (7 - bit_reader->bit_position)) &
             1;
@@ -40,15 +40,15 @@ static int read_bit(BitReader *bit_reader) {
   return bit;
 }
 
-static bool read_bits(BitReader *bit_reader, int bits_to_read,
-                      uint32_t *out_value) {
+static bool bit_reader_read_bits(BitReader *bit_reader, int bits_to_read,
+                                 uint32_t *out_value) {
   if (!has_bits(bit_reader, bits_to_read)) {
     return false;
   }
 
   uint32_t value = 0;
   for (int i = 0; i < bits_to_read; i++) {
-    value = (value << 1) | (uint32_t)read_bit(bit_reader);
+    value = (value << 1) | (uint32_t)bit_reader_read_bit(bit_reader);
   }
 
   *out_value = value;
@@ -56,10 +56,10 @@ static bool read_bits(BitReader *bit_reader, int bits_to_read,
 }
 
 // Reads a two's complement value and sign-extends it to a full 32 bits.
-static bool read_bits_signed(BitReader *bit_reader, int bits_to_read,
-                             int32_t *out_value) {
+static bool bit_reader_read_bits_signed(BitReader *bit_reader,
+                                        int bits_to_read, int32_t *out_value) {
   uint32_t value = 0;
-  if (!read_bits(bit_reader, bits_to_read, &value))
+  if (!bit_reader_read_bits(bit_reader, bits_to_read, &value))
     return false;
 
   if (bits_to_read < 32 && (value & (1u << (bits_to_read - 1))))
@@ -70,12 +70,12 @@ static bool read_bits_signed(BitReader *bit_reader, int bits_to_read,
 }
 
 // Reads a unary-coded value: the number of 0 bits before the next 1 bit.
-static bool read_unary(BitReader *bit_reader, uint32_t *out_value) {
+static bool bit_reader_read_unary(BitReader *bit_reader, uint32_t *out_value) {
   uint32_t zeros = 0;
   while (true) {
     if (!has_bits(bit_reader, 1))
       return false;
-    if (read_bit(bit_reader) != 0)
+    if (bit_reader_read_bit(bit_reader) != 0)
       break;
     zeros++;
   }
@@ -171,19 +171,19 @@ bool br_flac_can_load(const uint8_t *data, size_t size) {
 static bool parse_metadata_block_header(BitReader *bit_reader,
                                         MetadataBlockHeader *out_header) {
   uint32_t is_last = 0;
-  if (!read_bits(bit_reader, 1, &is_last)) {
+  if (!bit_reader_read_bits(bit_reader, 1, &is_last)) {
     BR_LOG_ERROR("Failed to read metadata block last-flag");
     return false;
   }
 
   uint32_t type = 0;
-  if (!read_bits(bit_reader, 7, &type)) {
+  if (!bit_reader_read_bits(bit_reader, 7, &type)) {
     BR_LOG_ERROR("Failed to read metadata block type");
     return false;
   }
 
   uint32_t length = 0;
-  if (!read_bits(bit_reader, 24, &length)) {
+  if (!bit_reader_read_bits(bit_reader, 24, &length)) {
     BR_LOG_ERROR("Failed to read metadata block length");
     return false;
   }
@@ -217,23 +217,23 @@ static bool parse_streaminfo(BitReader *bit_reader, StreamInfo *out_stream_info,
 
   uint32_t value = 0;
 
-  if (!read_bits(bit_reader, 16, &value))
+  if (!bit_reader_read_bits(bit_reader, 16, &value))
     return false;
   out_stream_info->min_block_size = (uint16_t)value;
 
-  if (!read_bits(bit_reader, 16, &value))
+  if (!bit_reader_read_bits(bit_reader, 16, &value))
     return false;
   out_stream_info->max_block_size = (uint16_t)value;
 
-  if (!read_bits(bit_reader, 24, &value))
+  if (!bit_reader_read_bits(bit_reader, 24, &value))
     return false;
   out_stream_info->min_frame_size = value;
 
-  if (!read_bits(bit_reader, 24, &value))
+  if (!bit_reader_read_bits(bit_reader, 24, &value))
     return false;
   out_stream_info->max_frame_size = value;
 
-  if (!read_bits(bit_reader, 20, &value))
+  if (!bit_reader_read_bits(bit_reader, 20, &value))
     return false;
   out_stream_info->sample_rate = value;
   if (out_stream_info->sample_rate != BR_AUDIO_SAMPLE_RATE) {
@@ -243,7 +243,7 @@ static bool parse_streaminfo(BitReader *bit_reader, StreamInfo *out_stream_info,
   }
 
   // Channels and bits-per-sample are stored as (actual value - 1) on disk.
-  if (!read_bits(bit_reader, 3, &value))
+  if (!bit_reader_read_bits(bit_reader, 3, &value))
     return false;
   out_stream_info->channels = (uint8_t)value + 1;
   if (out_stream_info->channels != BR_AUDIO_CHANNELS) {
@@ -251,7 +251,7 @@ static bool parse_streaminfo(BitReader *bit_reader, StreamInfo *out_stream_info,
     return false;
   }
 
-  if (!read_bits(bit_reader, 5, &value))
+  if (!bit_reader_read_bits(bit_reader, 5, &value))
     return false;
   out_stream_info->bits_per_sample = (uint8_t)value + 1;
   if (out_stream_info->bits_per_sample != BR_AUDIO_BITS_PER_SAMPLE) {
@@ -260,13 +260,13 @@ static bool parse_streaminfo(BitReader *bit_reader, StreamInfo *out_stream_info,
     return false;
   }
 
-  // total_samples is 36 bits, wider than a single read_bits() call
+  // total_samples is 36 bits, wider than a single bit_reader_read_bits() call
   // supports, so read it as a 4-bit high part and a 32-bit low part.
   uint32_t total_samples_high = 0;
   uint32_t total_samples_low = 0;
-  if (!read_bits(bit_reader, 4, &total_samples_high))
+  if (!bit_reader_read_bits(bit_reader, 4, &total_samples_high))
     return false;
-  if (!read_bits(bit_reader, 32, &total_samples_low))
+  if (!bit_reader_read_bits(bit_reader, 32, &total_samples_low))
     return false;
   out_stream_info->total_samples =
       ((uint64_t)total_samples_high << 32) | total_samples_low;
@@ -323,7 +323,7 @@ static bool skip_remaining_metadata(BitReader *bit_reader, bool is_last) {
 static bool decode_residual(BitReader *bit_reader, uint32_t block_size,
                             uint32_t predictor_order, int32_t *samples) {
   uint32_t method = 0;
-  if (!read_bits(bit_reader, 2, &method))
+  if (!bit_reader_read_bits(bit_reader, 2, &method))
     return false;
 
   int parameter_bits;
@@ -340,7 +340,7 @@ static bool decode_residual(BitReader *bit_reader, uint32_t block_size,
   }
 
   uint32_t partition_order = 0;
-  if (!read_bits(bit_reader, 4, &partition_order))
+  if (!bit_reader_read_bits(bit_reader, 4, &partition_order))
     return false;
 
   uint32_t partitions = 1u << partition_order;
@@ -364,19 +364,19 @@ static bool decode_residual(BitReader *bit_reader, uint32_t block_size,
     }
 
     uint32_t parameter = 0;
-    if (!read_bits(bit_reader, parameter_bits, &parameter))
+    if (!bit_reader_read_bits(bit_reader, parameter_bits, &parameter))
       return false;
 
     // An all-ones parameter escapes to unencoded residuals of a fixed width.
     if (parameter == escape_parameter) {
       uint32_t raw_bits = 0;
-      if (!read_bits(bit_reader, 5, &raw_bits))
+      if (!bit_reader_read_bits(bit_reader, 5, &raw_bits))
         return false;
 
       for (uint32_t i = 0; i < partition_samples; i++) {
         int32_t residual = 0;
         if (raw_bits > 0 &&
-            !read_bits_signed(bit_reader, (int)raw_bits, &residual))
+            !bit_reader_read_bits_signed(bit_reader, (int)raw_bits, &residual))
           return false;
         samples[sample_index++] = residual;
       }
@@ -385,11 +385,12 @@ static bool decode_residual(BitReader *bit_reader, uint32_t block_size,
 
     for (uint32_t i = 0; i < partition_samples; i++) {
       uint32_t msbs = 0;
-      if (!read_unary(bit_reader, &msbs))
+      if (!bit_reader_read_unary(bit_reader, &msbs))
         return false;
 
       uint32_t lsbs = 0;
-      if (parameter > 0 && !read_bits(bit_reader, (int)parameter, &lsbs))
+      if (parameter > 0 &&
+          !bit_reader_read_bits(bit_reader, (int)parameter, &lsbs))
         return false;
 
       // Rice codes are zigzag folded, so the low bit carries the sign.
@@ -448,7 +449,7 @@ static bool decode_fixed_subframe(BitReader *bit_reader, uint32_t block_size,
   }
 
   for (uint32_t i = 0; i < order; i++) {
-    if (!read_bits_signed(bit_reader, sample_bits, &samples[i]))
+    if (!bit_reader_read_bits_signed(bit_reader, sample_bits, &samples[i]))
       return false;
   }
 
@@ -468,12 +469,12 @@ static bool decode_lpc_subframe(BitReader *bit_reader, uint32_t block_size,
   }
 
   for (uint32_t i = 0; i < order; i++) {
-    if (!read_bits_signed(bit_reader, sample_bits, &samples[i]))
+    if (!bit_reader_read_bits_signed(bit_reader, sample_bits, &samples[i]))
       return false;
   }
 
   uint32_t precision_bits = 0;
-  if (!read_bits(bit_reader, 4, &precision_bits))
+  if (!bit_reader_read_bits(bit_reader, 4, &precision_bits))
     return false;
   if (precision_bits == 0x0F) {
     BR_LOG_ERROR("Invalid LPC coefficient precision");
@@ -482,7 +483,7 @@ static bool decode_lpc_subframe(BitReader *bit_reader, uint32_t block_size,
   int coefficient_bits = (int)precision_bits + 1;
 
   int32_t shift = 0;
-  if (!read_bits_signed(bit_reader, 5, &shift))
+  if (!bit_reader_read_bits_signed(bit_reader, 5, &shift))
     return false;
   if (shift < 0) {
     BR_LOG_ERROR("Invalid negative LPC shift: %d", shift);
@@ -491,7 +492,8 @@ static bool decode_lpc_subframe(BitReader *bit_reader, uint32_t block_size,
 
   int32_t coefficients[FLAC_MAX_LPC_ORDER];
   for (uint32_t i = 0; i < order; i++) {
-    if (!read_bits_signed(bit_reader, coefficient_bits, &coefficients[i]))
+    if (!bit_reader_read_bits_signed(bit_reader, coefficient_bits,
+                                     &coefficients[i]))
       return false;
   }
 
@@ -511,7 +513,7 @@ static bool decode_lpc_subframe(BitReader *bit_reader, uint32_t block_size,
 static bool decode_subframe(BitReader *bit_reader, uint32_t block_size,
                             uint8_t bits_per_sample, int32_t *samples) {
   uint32_t padding = 0;
-  if (!read_bits(bit_reader, 1, &padding))
+  if (!bit_reader_read_bits(bit_reader, 1, &padding))
     return false;
   if (padding != 0) {
     BR_LOG_ERROR("Invalid subframe header: padding bit is set");
@@ -519,11 +521,11 @@ static bool decode_subframe(BitReader *bit_reader, uint32_t block_size,
   }
 
   uint32_t type = 0;
-  if (!read_bits(bit_reader, 6, &type))
+  if (!bit_reader_read_bits(bit_reader, 6, &type))
     return false;
 
   uint32_t has_wasted_bits = 0;
-  if (!read_bits(bit_reader, 1, &has_wasted_bits))
+  if (!bit_reader_read_bits(bit_reader, 1, &has_wasted_bits))
     return false;
 
   // Wasted bits are trailing zeroes the encoder stripped from every sample
@@ -531,7 +533,7 @@ static bool decode_subframe(BitReader *bit_reader, uint32_t block_size,
   uint32_t wasted_bits = 0;
   if (has_wasted_bits) {
     uint32_t zeros = 0;
-    if (!read_unary(bit_reader, &zeros))
+    if (!bit_reader_read_unary(bit_reader, &zeros))
       return false;
     wasted_bits = zeros + 1;
   }
@@ -545,13 +547,13 @@ static bool decode_subframe(BitReader *bit_reader, uint32_t block_size,
 
   if (type == SUBFRAME_CONSTANT) {
     int32_t constant = 0;
-    if (!read_bits_signed(bit_reader, sample_bits, &constant))
+    if (!bit_reader_read_bits_signed(bit_reader, sample_bits, &constant))
       return false;
     for (uint32_t i = 0; i < block_size; i++)
       samples[i] = constant;
   } else if (type == SUBFRAME_VERBATIM) {
     for (uint32_t i = 0; i < block_size; i++) {
-      if (!read_bits_signed(bit_reader, sample_bits, &samples[i]))
+      if (!bit_reader_read_bits_signed(bit_reader, sample_bits, &samples[i]))
         return false;
     }
   } else if (type >= SUBFRAME_FIXED_MIN && type <= SUBFRAME_FIXED_MAX) {
@@ -594,7 +596,7 @@ typedef struct {
 // the leading byte's high bits give the length, the rest carry the payload.
 static bool read_utf8_coded_number(BitReader *bit_reader, uint64_t *out_value) {
   uint32_t first = 0;
-  if (!read_bits(bit_reader, 8, &first))
+  if (!bit_reader_read_bits(bit_reader, 8, &first))
     return false;
 
   int continuation_bytes;
@@ -627,7 +629,7 @@ static bool read_utf8_coded_number(BitReader *bit_reader, uint64_t *out_value) {
 
   for (int i = 0; i < continuation_bytes; i++) {
     uint32_t next = 0;
-    if (!read_bits(bit_reader, 8, &next))
+    if (!bit_reader_read_bits(bit_reader, 8, &next))
       return false;
     if ((next & 0xC0) != 0x80) {
       BR_LOG_ERROR("Invalid UTF-8 coded number continuation byte: 0x%02X",
@@ -647,7 +649,7 @@ static bool parse_frame_header(BitReader *bit_reader,
   size_t header_start = bit_reader->byte_position;
 
   uint32_t sync_code = 0;
-  if (!read_bits(bit_reader, 14, &sync_code))
+  if (!bit_reader_read_bits(bit_reader, 14, &sync_code))
     return false;
   if (sync_code != FLAC_FRAME_SYNC_CODE) {
     BR_LOG_ERROR("Invalid frame sync code: 0x%04X", sync_code);
@@ -655,7 +657,7 @@ static bool parse_frame_header(BitReader *bit_reader,
   }
 
   uint32_t reserved = 0;
-  if (!read_bits(bit_reader, 1, &reserved))
+  if (!bit_reader_read_bits(bit_reader, 1, &reserved))
     return false;
   if (reserved != 0) {
     BR_LOG_ERROR("Invalid frame header: reserved bit is set");
@@ -663,26 +665,26 @@ static bool parse_frame_header(BitReader *bit_reader,
   }
 
   uint32_t blocking_strategy = 0;
-  if (!read_bits(bit_reader, 1, &blocking_strategy))
+  if (!bit_reader_read_bits(bit_reader, 1, &blocking_strategy))
     return false;
 
   uint32_t block_size_bits = 0;
-  if (!read_bits(bit_reader, 4, &block_size_bits))
+  if (!bit_reader_read_bits(bit_reader, 4, &block_size_bits))
     return false;
 
   uint32_t sample_rate_bits = 0;
-  if (!read_bits(bit_reader, 4, &sample_rate_bits))
+  if (!bit_reader_read_bits(bit_reader, 4, &sample_rate_bits))
     return false;
 
   uint32_t channel_assignment = 0;
-  if (!read_bits(bit_reader, 4, &channel_assignment))
+  if (!bit_reader_read_bits(bit_reader, 4, &channel_assignment))
     return false;
 
   uint32_t sample_size_bits = 0;
-  if (!read_bits(bit_reader, 3, &sample_size_bits))
+  if (!bit_reader_read_bits(bit_reader, 3, &sample_size_bits))
     return false;
 
-  if (!read_bits(bit_reader, 1, &reserved))
+  if (!bit_reader_read_bits(bit_reader, 1, &reserved))
     return false;
   if (reserved != 0) {
     BR_LOG_ERROR("Invalid frame header: trailing reserved bit is set");
@@ -816,14 +818,14 @@ static bool parse_frame_header(BitReader *bit_reader,
 
   if (deferred_block_size_bits > 0) {
     uint32_t value = 0;
-    if (!read_bits(bit_reader, deferred_block_size_bits, &value))
+    if (!bit_reader_read_bits(bit_reader, deferred_block_size_bits, &value))
       return false;
     block_size = value + 1;
   }
 
   if (deferred_sample_rate_bits > 0) {
     uint32_t value = 0;
-    if (!read_bits(bit_reader, deferred_sample_rate_bits, &value))
+    if (!bit_reader_read_bits(bit_reader, deferred_sample_rate_bits, &value))
       return false;
     sample_rate = value * deferred_sample_rate_scale;
   }
@@ -833,7 +835,7 @@ static bool parse_frame_header(BitReader *bit_reader,
            bit_reader->byte_position - header_start);
 
   uint32_t stored_crc = 0;
-  if (!read_bits(bit_reader, 8, &stored_crc))
+  if (!bit_reader_read_bits(bit_reader, 8, &stored_crc))
     return false;
   if (computed_crc != stored_crc) {
     BR_LOG_ERROR("Frame header CRC-8 mismatch: computed 0x%02X, stored 0x%02X",
@@ -885,7 +887,7 @@ static bool decode_frame(BitReader *bit_reader, const StreamInfo *stream_info,
                                 bit_reader->byte_position - frame_start);
 
   uint32_t stored_crc = 0;
-  if (!read_bits(bit_reader, 16, &stored_crc))
+  if (!bit_reader_read_bits(bit_reader, 16, &stored_crc))
     return false;
   if (computed_crc != stored_crc) {
     BR_LOG_ERROR("Frame CRC-16 mismatch: computed 0x%04X, stored 0x%04X",

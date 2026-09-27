@@ -30,7 +30,7 @@ static MessageQueue msg_queue;
 
 // --- FILE HANDLING ---
 
-static void get_log_dir(char *buffer, size_t size, const char *game_name) {
+static void log_dir_get(char *buffer, size_t size, const char *game_name) {
   const char *home = getenv("HOME");
   if (home) {
     snprintf(buffer, size, "%s/.local/share/%s/logs", home, game_name);
@@ -39,7 +39,7 @@ static void get_log_dir(char *buffer, size_t size, const char *game_name) {
   }
 }
 
-static int create_dir_r(const char *path) {
+static int dir_create_recursive(const char *path) {
   char tmp[MAX_LOG_FILE_PATH_SIZE];
   char *p = NULL;
   size_t len;
@@ -213,8 +213,8 @@ static void *logger_thread_func(void *arg) {
 
 bool br_logger_init(const char *game_name) {
   char log_dir[MAX_LOG_FILE_PATH_SIZE];
-  get_log_dir(log_dir, sizeof(log_dir), game_name);
-  create_dir_r(log_dir);
+  log_dir_get(log_dir, sizeof(log_dir), game_name);
+  dir_create_recursive(log_dir);
 
   int ret = snprintf(current_log_path, sizeof(current_log_path), "%s%c%s.log",
                      log_dir, '/', game_name);

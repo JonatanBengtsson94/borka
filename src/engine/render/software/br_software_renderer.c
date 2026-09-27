@@ -9,10 +9,10 @@ static void blit(int *pixels, BrVec2 canvas_dim, BrVec2 dst_pos,
                  BrVec2 src_rect_size) {
   int tex_stride = src->size.x;
 
-  int startX = clamp_int(-dst_pos.x, 0, src_rect_size.x);
-  int startY = clamp_int(-dst_pos.y, 0, src_rect_size.y);
-  int endX = clamp_int(canvas_dim.x - dst_pos.x, 0, src_rect_size.x);
-  int endY = clamp_int(canvas_dim.y - dst_pos.y, 0, src_rect_size.y);
+  int startX = br_int_clamp(-dst_pos.x, 0, src_rect_size.x);
+  int startY = br_int_clamp(-dst_pos.y, 0, src_rect_size.y);
+  int endX = br_int_clamp(canvas_dim.x - dst_pos.x, 0, src_rect_size.x);
+  int endY = br_int_clamp(canvas_dim.y - dst_pos.y, 0, src_rect_size.y);
 
   for (int y = startY; y < endY; ++y) {
     int screenY = dst_pos.y + y;
@@ -41,10 +41,10 @@ void software_draw_rectangle_filled(int *pixels, BrVec2 canvas_dimensions,
                                     BrVec2 position, BrVec2 size, int color) {
   assert(pixels);
 
-  int minX = clamp_int(position.x, 0, canvas_dimensions.x - 1);
-  int maxX = clamp_int(position.x + size.x, 0, canvas_dimensions.x - 1);
-  int minY = clamp_int(position.y, 0, canvas_dimensions.y - 1);
-  int maxY = clamp_int(position.y + size.y, 0, canvas_dimensions.y - 1);
+  int minX = br_int_clamp(position.x, 0, canvas_dimensions.x - 1);
+  int maxX = br_int_clamp(position.x + size.x, 0, canvas_dimensions.x - 1);
+  int minY = br_int_clamp(position.y, 0, canvas_dimensions.y - 1);
+  int maxY = br_int_clamp(position.y + size.y, 0, canvas_dimensions.y - 1);
 
   for (int y = minY; y <= maxY; ++y) {
     int rowOffset = y * canvas_dimensions.x;
@@ -58,10 +58,10 @@ void software_draw_rectangle_outlined(int *pixels, BrVec2 canvas_dimensions,
                                       BrVec2 position, BrVec2 size, int color) {
   assert(pixels);
 
-  int minX = clamp_int(position.x, 0, canvas_dimensions.x - 1);
-  int maxX = clamp_int(position.x + size.x, 0, canvas_dimensions.x - 1);
-  int minY = clamp_int(position.y, 0, canvas_dimensions.y - 1);
-  int maxY = clamp_int(position.y + size.y, 0, canvas_dimensions.y - 1);
+  int minX = br_int_clamp(position.x, 0, canvas_dimensions.x - 1);
+  int maxX = br_int_clamp(position.x + size.x, 0, canvas_dimensions.x - 1);
+  int minY = br_int_clamp(position.y, 0, canvas_dimensions.y - 1);
+  int maxY = br_int_clamp(position.y + size.y, 0, canvas_dimensions.y - 1);
 
   for (int x = minX; x <= maxX; ++x) {
     pixels[minY * canvas_dimensions.x + x] = color;

@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-static int create_shm_file(size_t size) {
+static int shm_file_create(size_t size) {
   int retries = 100;
   char name[] = "/wl_shm-XXXXXX";
 
@@ -51,7 +51,7 @@ ShmBufferPair *wayland_shm_buffer_pair_create(struct wl_shm *shm, int width,
   int buffer_size = stride * height;
   int total_size = buffer_size * 2;
 
-  int fd = create_shm_file(total_size);
+  int fd = shm_file_create(total_size);
   if (fd < 0) {
     BR_LOG_ERROR("Failed to create shm");
     return NULL;

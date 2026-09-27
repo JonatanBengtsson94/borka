@@ -29,7 +29,7 @@ static void scale_render_target(const int *source_pixels, int *target_pixels,
 
   int scale_factor_x = target_size.x / source_size.x;
   int scale_factor_y = target_size.y / source_size.y;
-  int scale_factor = min_int(scale_factor_x, scale_factor_y);
+  int scale_factor = br_int_min(scale_factor_x, scale_factor_y);
 
   if (scale_factor < 1) {
     BR_LOG_WARN("Render target is smaller then game dimensions");
