@@ -2,5 +2,8 @@
 
 - [x] Render main character
 - [x] Move main character
-- [ ] Ground and collisions
+- [x] Render ground tiles
+- [ ] Gravity - Make player fall
+- [ ] Collision - Make player stand on ground
+- [ ] Tilemap
 - [ ] Jumping
