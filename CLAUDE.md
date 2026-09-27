@@ -1,3 +1,5 @@
 - Always add sufficent debug and trace logs when developing new functionality.
 - Always add doxygen style comments when adding to the public facing api (prefixed borka_)
 - Use asserts, not if-checks, for preconditions in engine functions (e.g. a renderer that must not be NULL). If a doc comment disagrees with an assert, fix the doc.
+- File naming: singular when a file is one thing (`game.h`, `camera.h`, `position.h`, `player.c`), plural when it collects many of a kind (`components.h`, `systems.h`, `entities.h`, `assets.h`, `constants.h`).
+- Engine modules are singular, and the public header matches the source folder: `include/borka_<module>.h` pairs with `src/engine/<module>/` (e.g. `borka_render.h` and `render/`). Files inside a module are named after what they hold (`br_renderer.h`, `br_registry.h`).

@@ -2,7 +2,7 @@
 #define WAYLAND_SOFTWARE_RENDERER_H
 
 #include "borka_math.h"
-#include "renderer/br_render_queue.h"
+#include "render/br_render_queue.h"
 #include "window/platform/wayland/wayland_shm.h"
 
 struct BrRenderer {

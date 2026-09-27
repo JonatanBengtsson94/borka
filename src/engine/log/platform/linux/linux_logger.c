@@ -1,22 +1,22 @@
 #include "pch.h"
 
-#include "logger/br_logger.h"
+
+#include "log/br_logger.h"
+#include <pthread.h>
 #include <stdarg.h>
 #include <sys/stat.h>
-
-#define WIN32_LEAN_AND_MEAN
-#include <direct.h>
-#include <windows.h>
-#define mkdir_p(path) _mkdir(path)
+#include <sys/types.h>
+#include <unistd.h>
+#define mkdir_p(path) mkdir(path, 0755)
 
 typedef struct {
   LogMessage message[MESSAGE_QUEUE_SIZE];
   int head;
   int tail;
   int count;
-  CRITICAL_SECTION lock;
-  CONDITION_VARIABLE not_empty;
-  CONDITION_VARIABLE not_full;
+  pthread_mutex_t mutex;
+  pthread_cond_t not_empty;
+  pthread_cond_t not_full;
   bool shutdown;
 } MessageQueue;
 
@@ -25,15 +25,15 @@ static const char *level_strings[] = {"TRACE", "DEBUG", "INFO",
                                       "WARN",  "ERROR", "FATAL"};
 static char current_log_path[MAX_LOG_FILE_PATH_SIZE];
 static size_t bytes_written = 0;
-static HANDLE logger_thread;
+static pthread_t logger_thread;
 static MessageQueue msg_queue;
 
 // --- FILE HANDLING ---
 
 static void get_log_dir(char *buffer, size_t size, const char *game_name) {
-  const char *appdata = getenv("APPDATA");
-  if (appdata) {
-    snprintf(buffer, size, "%s/%s/logs", appdata, game_name);
+  const char *home = getenv("HOME");
+  if (home) {
+    snprintf(buffer, size, "%s/.local/share/%s/logs", home, game_name);
   } else {
     snprintf(buffer, size, ".logs");
   }
@@ -47,12 +47,12 @@ static int create_dir_r(const char *path) {
   snprintf(tmp, sizeof(tmp), "%s", path);
   len = strlen(tmp);
 
-  if (len > 0 && (tmp[len - 1] == '/' || tmp[len - 1] == '\\')) {
+  if (len > 0 && tmp[len - 1] == '/') {
     tmp[len - 1] = '\0';
   }
 
   for (p = tmp + 1; *p; p++) {
-    if (*p == '/' || *p == '\\') {
+    if (*p == '/') {
       *p = '\0';
       mkdir_p(tmp);
       *p = '/';
@@ -123,24 +123,26 @@ static void queue_init(MessageQueue *q) {
   q->tail = 0;
   q->count = 0;
   q->shutdown = false;
-  InitializeCriticalSection(&q->lock);
-  InitializeConditionVariable(&q->not_empty);
-  InitializeConditionVariable(&q->not_full);
+  pthread_mutex_init(&q->mutex, NULL);
+  pthread_cond_init(&q->not_empty, NULL);
+  pthread_cond_init(&q->not_full, NULL);
 }
 
 static void queue_destroy(MessageQueue *q) {
-  DeleteCriticalSection(&q->lock);
+  pthread_mutex_destroy(&q->mutex);
+  pthread_cond_destroy(&q->not_empty);
+  pthread_cond_destroy(&q->not_full);
 }
 
 static bool queue_push(MessageQueue *q, const LogMessage *msg) {
-  EnterCriticalSection(&q->lock);
+  pthread_mutex_lock(&q->mutex);
 
   while (q->count == MESSAGE_QUEUE_SIZE && !q->shutdown) {
-    SleepConditionVariableCS(&q->not_full, &q->lock, INFINITE);
+    pthread_cond_wait(&q->not_full, &q->mutex);
   }
 
   if (q->shutdown) {
-    LeaveCriticalSection(&q->lock);
+    pthread_mutex_unlock(&q->mutex);
     return false;
   }
 
@@ -148,20 +150,20 @@ static bool queue_push(MessageQueue *q, const LogMessage *msg) {
   q->tail = (q->tail + 1) % MESSAGE_QUEUE_SIZE;
   q->count++;
 
-  WakeConditionVariable(&q->not_empty);
-  LeaveCriticalSection(&q->lock);
+  pthread_cond_signal(&q->not_empty);
+  pthread_mutex_unlock(&q->mutex);
   return true;
 }
 
 static bool queue_pop(MessageQueue *q, LogMessage *msg) {
-  EnterCriticalSection(&q->lock);
+  pthread_mutex_lock(&q->mutex);
 
   while (q->count == 0 && !q->shutdown) {
-    SleepConditionVariableCS(&q->not_empty, &q->lock, INFINITE);
+    pthread_cond_wait(&q->not_empty, &q->mutex);
   }
 
   if (q->count == 0 && q->shutdown) {
-    LeaveCriticalSection(&q->lock);
+    pthread_mutex_unlock(&q->mutex);
     return false;
   }
 
@@ -169,14 +171,14 @@ static bool queue_pop(MessageQueue *q, LogMessage *msg) {
   q->head = (q->head + 1) % MESSAGE_QUEUE_SIZE;
   q->count--;
 
-  WakeConditionVariable(&q->not_full);
-  LeaveCriticalSection(&q->lock);
+  pthread_cond_signal(&q->not_full);
+  pthread_mutex_unlock(&q->mutex);
   return true;
 }
 
 // --- LOGGER THREAD ---
 
-static DWORD WINAPI logger_thread_func(LPVOID arg) {
+static void *logger_thread_func(void *arg) {
   (void)arg;
 
   LogMessage msg;
@@ -204,7 +206,7 @@ static DWORD WINAPI logger_thread_func(LPVOID arg) {
     }
   }
 
-  return 0;
+  return NULL;
 }
 
 // --- PUBLIC API ---
@@ -221,8 +223,8 @@ bool br_logger_init(const char *game_name) {
     return false;
   }
 
-  struct _stat st;
-  if (_stat(current_log_path, &st) == 0) {
+  struct stat st;
+  if (stat(current_log_path, &st) == 0) {
     bytes_written = st.st_size;
 
     if (bytes_written > MAX_LOG_SIZE) {
@@ -242,8 +244,7 @@ bool br_logger_init(const char *game_name) {
 
   queue_init(&msg_queue);
 
-  logger_thread = CreateThread(NULL, 0, logger_thread_func, NULL, 0, NULL);
-  if (!logger_thread) {
+  if (pthread_create(&logger_thread, NULL, logger_thread_func, NULL) != 0) {
     fprintf(stderr, "Failed to create logger thread\n");
     if (log_file) {
       fclose(log_file);
@@ -257,14 +258,12 @@ bool br_logger_init(const char *game_name) {
 }
 
 void br_logger_shutdown(void) {
-  EnterCriticalSection(&msg_queue.lock);
+  pthread_mutex_lock(&msg_queue.mutex);
   msg_queue.shutdown = true;
-  WakeAllConditionVariable(&msg_queue.not_empty);
-  WakeAllConditionVariable(&msg_queue.not_full);
-  LeaveCriticalSection(&msg_queue.lock);
-
-  WaitForSingleObject(logger_thread, INFINITE);
-  CloseHandle(logger_thread);
+  pthread_cond_broadcast(&msg_queue.not_empty);
+  pthread_cond_broadcast(&msg_queue.not_full);
+  pthread_mutex_unlock(&msg_queue.mutex);
+  pthread_join(logger_thread, NULL);
 
   queue_destroy(&msg_queue);
 

@@ -1,5 +1,5 @@
-#ifndef BORKA_EVENTS_H
-#define BORKA_EVENTS_H
+#ifndef BORKA_EVENT_H
+#define BORKA_EVENT_H
 
 /**
  * @brief Describes the type of event.
@@ -33,4 +33,4 @@ typedef struct {
   } data;
 } BrEvent;
 
-#endif // BORKA_EVENTS_H
+#endif // BORKA_EVENT_H

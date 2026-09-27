@@ -1,7 +1,7 @@
 #ifndef BR_WINDOW_EVENT_H
 #define BR_WINDOW_EVENT_H
 
-#include "borka_events.h"
+#include "borka_event.h"
 #include <stdbool.h>
 
 bool br_event_poll(BrEvent *out_event);

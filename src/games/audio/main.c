@@ -1,7 +1,7 @@
 #include "audio/br_audio.h"
 #include "borka_log.h"
 #include "borka_time.h"
-#include "logger/br_logger.h"
+#include "log/br_logger.h"
 
 // sleep() puts its whole argument into tv_nsec, which nanosleep rejects at a
 // full second, so longer waits have to be made in chunks.

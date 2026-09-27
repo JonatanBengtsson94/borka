@@ -1,5 +1,5 @@
-#include "logger/br_logger.h"
-#include "renderer/br_renderer.h"
+#include "log/br_logger.h"
+#include "render/br_renderer.h"
 #include "window/br_window.h"
 
 #define WINDOW_WIDTH 320

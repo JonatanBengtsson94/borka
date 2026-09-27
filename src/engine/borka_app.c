@@ -2,8 +2,8 @@
 #include "audio/br_audio.h"
 #include "borka_log.h"
 #include "ecs/br_registry.h"
-#include "logger/br_logger.h"
-#include "renderer/br_renderer.h"
+#include "log/br_logger.h"
+#include "render/br_renderer.h"
 #include "window/br_window.h"
 
 static void app_cleanup(BrApp *app) {

@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "borka_log.h"
-#include "renderer/br_render_queue.h"
+#include "render/br_render_queue.h"
 
 static void warn_overflow(BrRenderQueue *queue, const char *what) {
   if (queue->overflowed)

@@ -43,12 +43,12 @@ endif
 # Platform configuration
 ifeq ($(PLATFORM),linux)
 	CFLAGS += -D_POSIX_C_SOURCE=199309L
-	SRC += $(wildcard src/engine/logger/platform/linux/*.c)
+	SRC += $(wildcard src/engine/log/platform/linux/*.c)
 	SRC += $(wildcard src/engine/audio/platform/linux/*.c)
 	LDFLAGS += -lasound
 else ifeq ($(PLATFORM),windows)
 	CFLAGS += -D_WIN32_WINNT=0x0600
-	SRC += $(wildcard src/engine/logger/platform/windows/*.c)
+	SRC += $(wildcard src/engine/log/platform/windows/*.c)
 	SRC += $(wildcard src/engine/audio/platform/windows/*.c)
 endif
 
@@ -69,16 +69,16 @@ ifeq ($(WINDOW_BACKEND),wayland)
 	SRC += $(wildcard src/engine/window/platform/wayland/*.c)
 
 	ifeq ($(RENDER_BACKEND),software)
-		SRC += src/engine/renderer/software/br_software_renderer.c
-		SRC += $(wildcard src/engine/renderer/software/platform/wayland/*.c)
+		SRC += src/engine/render/software/br_software_renderer.c
+		SRC += $(wildcard src/engine/render/software/platform/wayland/*.c)
 	endif
 
 else ifeq ($(WINDOW_BACKEND),win32)
 	SRC += $(wildcard src/engine/window/platform/win32/*.c)
 
 	ifeq ($(RENDER_BACKEND), software)
-		SRC += src/engine/renderer/software/br_software_renderer.c
-		SRC += $(wildcard src/engine/renderer/software/platform/windows/*.c)
+		SRC += src/engine/render/software/br_software_renderer.c
+		SRC += $(wildcard src/engine/render/software/platform/windows/*.c)
 	endif
 endif
 

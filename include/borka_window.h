@@ -1,7 +1,7 @@
 #ifndef BORKA_WINDOW_H
 #define BORKA_WINDOW_H
 
-#include "borka_events.h"
+#include "borka_event.h"
 #include <stdbool.h>
 
 /**

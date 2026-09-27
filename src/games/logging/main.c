@@ -1,4 +1,4 @@
-#include "logger/br_logger.h"
+#include "log/br_logger.h"
 
 int main() {
   if (!br_logger_init("logging")) {
