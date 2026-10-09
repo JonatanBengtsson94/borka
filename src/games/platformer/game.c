@@ -58,6 +58,7 @@ void game_handle_event(Game *game, BrEvent event) {
 
 void game_update(Game *game, double delta_time) {
   system_player_actions(game->app->registry);
+  system_gravity(game->app->registry, delta_time);
   system_movement(game->app->registry, delta_time);
   system_render(game->app->registry, game->app->renderer);
 }

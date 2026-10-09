@@ -3,6 +3,7 @@
 
 #include "borka.h"
 
+#include "body.h"
 #include "input_controlled.h"
 #include "position.h"
 #include "renderable.h"
@@ -12,6 +13,7 @@ extern BrComponentTypeId COMPONENT_POSITION;
 extern BrComponentTypeId COMPONENT_RENDERABLE;
 extern BrComponentTypeId COMPONENT_VELOCITY;
 extern BrComponentTypeId COMPONENT_INPUT_CONTROLLED;
+extern BrComponentTypeId COMPONENT_BODY;
 
 bool components_register(BrRegistry *registry);
 

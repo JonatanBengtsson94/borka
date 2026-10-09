@@ -14,35 +14,39 @@ BrEntity player_create(BrRegistry *registry, const Assets *assets) {
   BrTexture *texture = assets->textures.player_texture;
   assert(texture);
 
-  Position player_pos = {GAME_WIDTH / 2.0, GAME_HEIGHT / 2.0};
-  Renderable player_ren = {
+  Position pos = {GAME_WIDTH / 2.0, GAME_HEIGHT / 2.0};
+  Renderable ren = {
       .type = RENDERABLE_TEXTURE,
       .layer = RENDER_LAYER_WORLD,
       .texture.texture = texture,
   };
-  Velocity player_vel = {0, 0};
-  InputControlled player_control = {};
+  Velocity vel = {0, 0};
+  InputControlled control = {};
+  Body body = {};
 
-  if (!br_component_add(registry, player, COMPONENT_POSITION, &player_pos)) {
+  if (!br_component_add(registry, player, COMPONENT_POSITION, &pos)) {
     BR_LOG_ERROR("Failed to add position component");
     goto error;
   }
-  if (!br_component_add(registry, player, COMPONENT_RENDERABLE, &player_ren)) {
+  if (!br_component_add(registry, player, COMPONENT_RENDERABLE, &ren)) {
     BR_LOG_ERROR("Failed to add renderable component");
     goto error;
   }
-  if (!br_component_add(registry, player, COMPONENT_VELOCITY, &player_vel)) {
+  if (!br_component_add(registry, player, COMPONENT_VELOCITY, &vel)) {
     BR_LOG_ERROR("Failed to add velocity component");
     goto error;
   }
   if (!br_component_add(registry, player, COMPONENT_INPUT_CONTROLLED,
-                        &player_control)) {
+                        &control)) {
     BR_LOG_ERROR("Failed to add input controlled component");
     goto error;
   }
+  if (!br_component_add(registry, player, COMPONENT_BODY, &body)) {
+    BR_LOG_ERROR("Failed to add body component");
+    goto error;
+  }
 
-  BR_LOG_DEBUG("Created player entity at (%.1f, %.1f)", player_pos.x,
-               player_pos.y);
+  BR_LOG_DEBUG("Created player entity at (%.1f, %.1f)", pos.x, pos.y);
   return player;
 
 error:

@@ -5,6 +5,7 @@ BrSystemId SYSTEM_RENDER = BR_INVALID_SYSTEM_ID;
 BrSystemId SYSTEM_INPUT = BR_INVALID_SYSTEM_ID;
 BrSystemId SYSTEM_PLAYER_ACTIONS = BR_INVALID_SYSTEM_ID;
 BrSystemId SYSTEM_MOVEMENT = BR_INVALID_SYSTEM_ID;
+BrSystemId SYSTEM_GRAVITY = BR_INVALID_SYSTEM_ID;
 
 bool systems_register(BrRegistry *registry) {
   BrComponentTypeId render_required[] = {COMPONENT_RENDERABLE,
@@ -14,6 +15,7 @@ bool systems_register(BrRegistry *registry) {
   BrComponentTypeId input_required[] = {COMPONENT_INPUT_CONTROLLED};
   BrComponentTypeId player_actions_required[] = {COMPONENT_INPUT_CONTROLLED,
                                                  COMPONENT_VELOCITY};
+  BrComponentTypeId gravity_required[] = {COMPONENT_BODY, COMPONENT_VELOCITY};
 
   SYSTEM_RENDER =
       br_system_register(registry, COMPONENT_RENDERABLE, render_required, 2);
@@ -23,9 +25,11 @@ bool systems_register(BrRegistry *registry) {
                                     input_required, 1);
   SYSTEM_PLAYER_ACTIONS = br_system_register(
       registry, COMPONENT_INPUT_CONTROLLED, player_actions_required, 2);
+  SYSTEM_GRAVITY =
+      br_system_register(registry, COMPONENT_BODY, gravity_required, 2);
 
   BrSystemId ids[] = {SYSTEM_RENDER, SYSTEM_MOVEMENT, SYSTEM_INPUT,
-                      SYSTEM_PLAYER_ACTIONS};
+                      SYSTEM_PLAYER_ACTIONS, SYSTEM_GRAVITY};
 
   size_t length = sizeof(ids) / sizeof(BrSystemId);
   for (size_t i = 0; i < length; i++) {
